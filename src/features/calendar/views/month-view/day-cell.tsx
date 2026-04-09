@@ -4,7 +4,7 @@ import { cva } from "class-variance-authority";
 import { isToday, startOfDay, isSunday, isSameMonth } from "date-fns";
 import { motion } from "framer-motion";
 import { useMemo, useCallback } from "react";
-
+import { EventItem } from "../../components/event-item";
 import { cn } from "@/features/calendar/lib/utils";
 import { transition } from "@/features/calendar/animations";
 import { EventListDialog } from "@/features/calendar/dialogs/events-list-dialog";
@@ -90,11 +90,18 @@ export function DayCell({ cell, events, eventPositions }: IProps) {
           {showBullet && (
             <EventBullet className="lg:hidden" color={event.color} />
           )}
-          <MonthEventBadge
-            className="hidden lg:flex"
-            event={event}
-            cellDate={startOfDay(date)}
-          />
+
+          <div className="hidden lg:block">
+            <EventItem
+              title={event.title}
+              startDate={event.startDate}
+              endDate={event.endDate}
+              status={event.status}
+              type={event.type}
+              priority={event.priority}
+              secondaryLabel={event.user?.name}
+            />
+          </div>
         </motion.div>
       );
     },
@@ -118,16 +125,19 @@ export function DayCell({ cell, events, eventPositions }: IProps) {
         transition={transition}
       >
         <DroppableArea date={date} className="w-full h-full py-2">
-          <motion.span
-            className={cn(
-              "h-6 px-1 text-xs font-semibold lg:px-2",
-              !currentMonth && "opacity-20",
-              isToday(date) &&
-                "flex w-6 translate-x-1 items-center justify-center rounded-full bg-primary px-0 font-bold text-primary-foreground",
-            )}
-          >
-            {day}
-          </motion.span>
+          <EventListDialog date={date} events={cellEvents}>
+            <motion.span
+              className={cn(
+                "h-6 px-1 text-xs font-semibold lg:px-2 cursor-pointer transition-colors duration-200",
+                "hover:text-primary hover:bg-muted/70 rounded-full",
+                !currentMonth && "opacity-20",
+                isToday(date) &&
+                  "flex w-6 translate-x-1 items-center justify-center rounded-full bg-primary px-0 font-bold text-primary-foreground",
+              )}
+            >
+              {day}
+            </motion.span>
+          </EventListDialog>
 
           <motion.div
             className={cn(

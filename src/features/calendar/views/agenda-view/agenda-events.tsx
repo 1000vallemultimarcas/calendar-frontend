@@ -1,6 +1,5 @@
 import { format, parseISO } from "date-fns";
 import type { FC } from "react";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   Command,
   CommandEmpty,
@@ -9,18 +8,14 @@ import {
   CommandItem,
   CommandList,
 } from "@/components/ui/command";
-import { cn } from "@/features/calendar/lib/utils";
 import { useCalendar } from "@/features/calendar/contexts/calendar-context";
 import { EventDetailsDialog } from "@/features/calendar/dialogs/event-details-dialog";
 import {
   formatTime,
-  getBgColor,
-  getColorClass,
   getEventsForMonth,
-  getFirstLetters,
   toCapitalize,
 } from "@/features/calendar/helpers";
-import { EventBullet } from "@/features/calendar/views/month-view/event-bullet";
+import { EventItem } from "@/features/calendar/components/event-item";
 
 export const AgendaEvents: FC = () => {
   const {
@@ -61,67 +56,19 @@ export const AgendaEvents: FC = () => {
             {groupedEvents!.map((event) => (
               <CommandItem
                 key={event.id}
-                className={cn(
-                  "mb-2 p-4 border rounded-md data-[selected=true]:bg-bg transition-all data-[selected=true]:text-none hover:cursor-pointer",
-                  {
-                    [getColorClass(event.color)]: badgeVariant === "colored",
-                    "hover:bg-zinc-200 dark:hover:bg-gray-900":
-                      badgeVariant === "dot",
-                    "hover:opacity-60": badgeVariant === "colored",
-                  },
-                )}
+                className="mb-2 p-0 border-0 data-[selected=true]:bg-transparent hover:cursor-pointer"
               >
                 <EventDetailsDialog event={event}>
-                  <div className="w-full flex items-center justify-between gap-4">
-                    <div className="flex items-center gap-2">
-                      {badgeVariant === "dot" ? (
-                        <EventBullet color={event.color} />
-                      ) : (
-                        <Avatar>
-                          <AvatarImage src="" alt="@shadcn" />
-                          <AvatarFallback className={getBgColor(event.color)}>
-                            {getFirstLetters(event.title)}
-                          </AvatarFallback>
-                        </Avatar>
-                      )}
-                      <div className="flex flex-col">
-                        <p
-                          className={cn({
-                            "font-medium": badgeVariant === "dot",
-                            "text-foreground": badgeVariant === "dot",
-                          })}
-                        >
-                          {event.title}
-                        </p>
-                        <p className="text-muted-foreground text-sm line-clamp-1 text-ellipsis md:text-clip w-1/3">
-                          {event.description}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="w-40 flex justify-center items-center gap-1">
-                      {agendaModeGroupBy === "date" ? (
-                        <>
-                          <p className="text-sm">
-                            {formatTime(event.startDate, use24HourFormat)}
-                          </p>
-                          <span className="text-muted-foreground">-</span>
-                          <p className="text-sm">
-                            {formatTime(event.endDate, use24HourFormat)}
-                          </p>
-                        </>
-                      ) : (
-                        <>
-                          <p className="text-sm">
-                            {format(event.startDate, "MM/dd/yyyy")}
-                          </p>
-                          <span className="text-sm">at</span>
-                          <p className="text-sm">
-                            {formatTime(event.startDate, use24HourFormat)}
-                          </p>
-                        </>
-                      )}
-                    </div>
-                  </div>
+                  <EventItem
+                    title={event.title}
+                    startDate={event.startDate}
+                    endDate={event.endDate}
+                    status={event.status}
+                    type={event.type}
+                    priority={event.priority}
+                    secondaryLabel={event.user?.name}
+                    use24HourFormat={use24HourFormat}
+                  />
                 </EventDetailsDialog>
               </CommandItem>
             ))}

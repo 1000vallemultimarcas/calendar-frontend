@@ -1,4 +1,4 @@
-import { COLORS } from "@/features/calendar/constants";
+import { COLORS, EVENT_STATUSES, EVENT_TYPES, EVENT_PRIORITIES } from "@/features/calendar/constants";
 import type { IEvent, IUser } from "@/features/calendar/interfaces";
 
 export const USERS_MOCK: IUser[] = [
@@ -138,6 +138,9 @@ const mockGenerator = (numberOfEvents: number): IEvent[] => {
 		description:
 			"Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
 		user: randomUser,
+		status: EVENT_STATUSES[Math.floor(Math.random() * EVENT_STATUSES.length)],
+		type: EVENT_TYPES[Math.floor(Math.random() * EVENT_TYPES.length)],
+		priority: EVENT_PRIORITIES[Math.floor(Math.random() * EVENT_PRIORITIES.length)],
 	};
 
 	result.push(currentEvent);
@@ -186,6 +189,9 @@ const mockGenerator = (numberOfEvents: number): IEvent[] => {
 			description:
 				"Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
 			user: USERS_MOCK[Math.floor(Math.random() * USERS_MOCK.length)],
+			status: EVENT_STATUSES[Math.floor(Math.random() * EVENT_STATUSES.length)],
+			type: EVENT_TYPES[Math.floor(Math.random() * EVENT_TYPES.length)],
+			priority: EVENT_PRIORITIES[Math.floor(Math.random() * EVENT_PRIORITIES.length)],
 		});
 	}
 

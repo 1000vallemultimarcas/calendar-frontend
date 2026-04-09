@@ -1,16 +1,10 @@
-type EventStatus =
-  | "scheduled"
-  | "confirmed"
-  | "cancelled"
-  | "attended"
-  | "rescheduled"
-  | "not_attended";
+import type { TEventStatus } from "@/features/calendar/types";
 
 type EventStatusBadgeProps = {
-  status: EventStatus;
+  status: TEventStatus;
 };
 
-const STATUS_LABELS: Record<EventStatus, string> = {
+const STATUS_LABELS: Record<TEventStatus, string> = {
   scheduled: "Agendado",
   confirmed: "Confirmado",
   cancelled: "Cancelado",
@@ -19,7 +13,7 @@ const STATUS_LABELS: Record<EventStatus, string> = {
   not_attended: "Não atendido",
 };
 
-const STATUS_STYLES: Record<EventStatus, string> = {
+const STATUS_STYLES: Record<TEventStatus, string> = {
   scheduled:
     "border-blue-200 bg-blue-50 text-blue-700 dark:border-blue-800 dark:bg-blue-950/40 dark:text-blue-300",
   confirmed:

@@ -1,4 +1,4 @@
-import type { TEventColor } from "@/features/calendar/types";
+import type { TEventColor, TEventStatus, TEventType, TEventPriority } from "@/features/calendar/types";
 
 export const COLORS: TEventColor[] = [
 	"blue",
@@ -7,4 +7,28 @@ export const COLORS: TEventColor[] = [
 	"yellow",
 	"purple",
 	"orange",
+];
+
+export const EVENT_STATUSES: TEventStatus[] = [
+	"scheduled",
+	"confirmed",
+	"cancelled",
+	"attended",
+	"rescheduled",
+	"not_attended",
+];
+
+export const EVENT_TYPES: TEventType[] = [
+	"meeting",
+	"appointment",
+	"personal",
+	"work",
+	"test_drive",
+];
+
+export const EVENT_PRIORITIES: TEventPriority[] = [
+	"low",
+	"normal",
+	"high",
+	"urgent",
 ];
