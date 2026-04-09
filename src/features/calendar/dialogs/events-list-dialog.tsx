@@ -7,7 +7,7 @@ import {
   ModalTitle,
   ModalTrigger,
 } from "@/components/ui/responsive-modal";
-import { cn } from "@/lib/utils";
+import { cn } from "@/features/calendar/lib/utils";
 import { useCalendar } from "@/features/calendar/contexts/calendar-context";
 import { formatTime } from "@/features/calendar/helpers";
 import type { IEvent } from "@/features/calendar/interfaces";

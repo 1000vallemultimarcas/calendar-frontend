@@ -2,7 +2,7 @@ import { motion, AnimatePresence } from "motion/react";
 
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
-import { cn } from "@/lib/utils";
+import { cn } from "@/features/calendar/lib/utils";
 import { useCalendar } from "../contexts/calendar-context";
 import {
   CalendarRange,

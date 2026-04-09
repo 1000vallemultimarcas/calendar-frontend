@@ -8,7 +8,7 @@ import {
 	useRef,
 	useState,
 } from "react";
-import { cn } from "@/lib/utils";
+import { cn } from "@/features/calendar/lib/utils";
 
 interface MousePosition {
 	x: number;

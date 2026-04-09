@@ -2,7 +2,7 @@ import type { VariantProps } from "class-variance-authority";
 import type * as React from "react";
 import { Children, cloneElement, type ReactElement } from "react";
 import type { buttonVariants } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
+import { cn } from "@/features/calendar/lib/utils";
 
 interface ButtonGroupProps {
 	className?: string;

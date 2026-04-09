@@ -9,7 +9,7 @@ import {
   CommandItem,
   CommandList,
 } from "@/components/ui/command";
-import { cn } from "@/lib/utils";
+import { cn } from "@/features/calendar/lib/utils";
 import { useCalendar } from "@/features/calendar/contexts/calendar-context";
 import { EventDetailsDialog } from "@/features/calendar/dialogs/event-details-dialog";
 import {

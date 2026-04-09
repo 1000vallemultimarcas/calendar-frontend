@@ -5,7 +5,7 @@ import { isToday, startOfDay, isSunday, isSameMonth } from "date-fns";
 import { motion } from "framer-motion";
 import { useMemo, useCallback } from "react";
 
-import { cn } from "@/lib/utils";
+import { cn } from "@/features/calendar/lib/utils";
 import { transition } from "@/features/calendar/animations";
 import { EventListDialog } from "@/features/calendar/dialogs/events-list-dialog";
 import { DroppableArea } from "@/features/calendar/dnd/droppable-area";

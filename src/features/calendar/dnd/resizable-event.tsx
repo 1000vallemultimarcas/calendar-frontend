@@ -12,7 +12,7 @@ import { motion } from "framer-motion";
 import { Resizable, type ResizeCallback } from "re-resizable";
 import type React from "react";
 import { useCallback, useMemo, useState } from "react";
-import { cn } from "@/lib/utils";
+import { cn } from "@/features/calendar/lib/utils";
 import { useCalendar } from "@/features/calendar/contexts/calendar-context";
 
 import type { IEvent } from "@/features/calendar/interfaces";
