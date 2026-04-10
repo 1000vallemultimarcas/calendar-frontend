@@ -12,7 +12,11 @@ export interface AddEditEventDialogProps {
 
 export interface EventDialogFormSectionsProps {
   form: UseFormReturn<TEventFormData>;
+<<<<<<< HEAD
   users?: IUser[];
   isUserSelectionDisabled?: boolean;
   currentUserId?: IUser["id"];
+=======
+  users: IUser[];
+>>>>>>> 71cc2b3 (feat(calendar): create reusable components and refactor add-event dialog structure)
 }
