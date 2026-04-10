@@ -16,6 +16,7 @@ type EventItemProps = {
   type: TEventType;
   priority: TEventPriority;
   secondaryLabel?: string;
+  description?: string;
   use24HourFormat?: boolean;
 };
 
@@ -27,6 +28,7 @@ export function EventItem({
   type,
   priority,
   secondaryLabel,
+  description,
   use24HourFormat = true,
 }: EventItemProps) {
   const startTime = formatTime(startDate, use24HourFormat);
@@ -54,6 +56,12 @@ export function EventItem({
         <span className="text-[11px] text-muted-foreground">
           {secondaryLabel}
         </span>
+      )}
+
+      {description && (
+        <p className="text-[11px] leading-5 text-muted-foreground">
+          {description}
+        </p>
       )}
     </div>
   );

@@ -68,6 +68,7 @@ export function EventListDialog({
                   type={event.type}
                   priority={event.priority}
                   secondaryLabel={event.user?.name}
+                  description={event.description}
                   use24HourFormat={use24HourFormat}
                 />
               </EventDetailsDialog>
