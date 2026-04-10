@@ -87,20 +87,9 @@ export function DayCell({ cell, events, eventPositions }: IProps) {
           animate={{ opacity: 1, x: 0 }}
           transition={{ delay: position * 0.1, ...transition }}
         >
-          {showBullet && (
-            <EventBullet className="lg:hidden" color={event.color} />
-          )}
-
-          <div className="hidden lg:block">
-            <EventItem
-              title={event.title}
-              startDate={event.startDate}
-              endDate={event.endDate}
-              status={event.status}
-              type={event.type}
-              priority={event.priority}
-              secondaryLabel={event.user?.name}
-            />
+          <div className="flex items-center gap-2 rounded-lg border border-muted-foreground/20 bg-muted/40 px-2 py-1 text-[11px] text-muted-foreground">
+            <EventBullet color={event.color} className="size-2!" />
+            <span className="truncate">{event.user?.name ?? "Sem responsável"}</span>
           </div>
         </motion.div>
       );
@@ -141,7 +130,7 @@ export function DayCell({ cell, events, eventPositions }: IProps) {
 
           <motion.div
             className={cn(
-              "flex h-fit gap-1 px-2 mt-1 lg:h-[94px] lg:flex-col lg:gap-2 lg:px-0",
+              "flex h-fit gap-1 px-2 mt-1 lg:h-23.5 lg:flex-col lg:gap-2 lg:px-0",
               !currentMonth && "opacity-50",
             )}
           >
