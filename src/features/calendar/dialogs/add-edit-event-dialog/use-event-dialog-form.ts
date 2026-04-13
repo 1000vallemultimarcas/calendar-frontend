@@ -3,6 +3,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { useCalendar } from "@/features/calendar/contexts/calendar-context";
+import { useAuth } from "@/features/calendar/contexts/authContext";
 import { useDisclosure } from "@/features/calendar/hooks";
 import { eventSchema, type TEventFormData } from "@/features/calendar/schemas";
 import { EVENT_FORM_TEXTS_PT_BR } from "@/features/calendar/constants/event-form.constants";
@@ -16,8 +17,12 @@ export function useEventDialogForm({
   startTime,
 }: Pick<AddEditEventDialogProps, "event" | "startDate" | "startTime">) {
   const { addEvent, updateEvent, users } = useCalendar();
+  const { user, isManager, isEmployee } = useAuth();
   const { isOpen, onClose, onToggle } = useDisclosure();
   const isEditing = !!event;
+
+  const currentUserId = user?.userId;
+  const isUserSelectionDisabled = !isManager && !!currentUserId;
 
   const initialDates = useMemo(
     () =>
@@ -30,7 +35,9 @@ export function useEventDialogForm({
     [event, isEditing, startDate, startTime],
   );
 
-  const defaultUserId = getDefaultUserId(users, event);
+  const defaultUserId = isUserSelectionDisabled
+    ? currentUserId ?? getDefaultUserId(users, event)
+    : getDefaultUserId(users, event);
 
   const form = useForm<TEventFormData>({
     resolver: zodResolver(eventSchema),
@@ -54,7 +61,13 @@ export function useEventDialogForm({
   const onSubmit = (values: TEventFormData) => {
     try {
       const formattedEvent = buildFormattedEvent({
-        values,
+        values: {
+          ...values,
+          userId:
+            !isManager && isEmployee && currentUserId
+              ? currentUserId
+              : values.userId,
+        },
         event,
         isEditing,
         users,
@@ -91,5 +104,8 @@ export function useEventDialogForm({
     isEditing,
     onSubmit,
     users,
+    isUserSelectionDisabled,
+    currentUserId,
+    currentUserName: user?.name,
   };
 }

@@ -3,7 +3,9 @@ import type { IEvent } from "@/features/calendar/interfaces";
 import {
   appendEvent,
   replaceEvent,
-  removeEventById,
+  softDeleteEventById,
+  restoreEventById,
+  purgeEventById,
 } from "@/features/calendar/lib/calendar-events";
 
 type UseCalendarEventStateParams = {
@@ -23,8 +25,16 @@ export function useCalendarEventState({
     setAllEvents((prev) => replaceEvent(prev, event));
   };
 
-  const removeEvent = (eventId: number) => {
-    setAllEvents((prev) => removeEventById(prev, eventId));
+  const removeEvent = (eventId: number, deletedBy?: string) => {
+    setAllEvents((prev) => softDeleteEventById(prev, eventId, deletedBy));
+  };
+
+  const restoreEvent = (eventId: number) => {
+    setAllEvents((prev) => restoreEventById(prev, eventId));
+  };
+
+  const purgeEvent = (eventId: number) => {
+    setAllEvents((prev) => purgeEventById(prev, eventId));
   };
 
   return {
@@ -32,5 +42,7 @@ export function useCalendarEventState({
     addEvent,
     updateEvent,
     removeEvent,
+    restoreEvent,
+    purgeEvent,
   };
 }

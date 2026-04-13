@@ -33,7 +33,7 @@ interface DecodedToken {
 }
 
 const mockManager: DecodedToken = {
-  userId: "1",
+  userId: "f3b035ac-49f7-4e92-a715-35680bf63175",
   id: 1,
   name: "Gerente Teste",
   mail: "gerente@email.com",
@@ -43,7 +43,7 @@ const mockManager: DecodedToken = {
 };
 
 const mockEmployee: DecodedToken = {
-  userId: "2",
+  userId: "3e36ea6e-78f3-40dd-ab8c-a6c737c3c422",
   id: 2,
   name: "Funcionário Teste",
   mail: "funcionario@email.com",

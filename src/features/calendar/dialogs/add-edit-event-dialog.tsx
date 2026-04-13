@@ -16,15 +16,15 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import {
-  Modal,
-  ModalClose,
-  ModalContent,
-  ModalDescription,
-  ModalFooter,
-  ModalHeader,
-  ModalTitle,
-  ModalTrigger,
-} from "@/components/ui/responsive-modal";
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import {
   Select,
   SelectContent,
@@ -63,7 +63,7 @@ export function AddEditEventDialog({
   startTime,
   event,
 }: IProps) {
-  const { isOpen, onClose, onToggle } = useDisclosure();
+  const { isOpen, onOpen, onClose } = useDisclosure();
   const { addEvent, updateEvent, users } = useCalendar();
   const isEditing = !!event;
 
@@ -157,31 +157,32 @@ export function AddEditEventDialog({
   };
 
   return (
-    <Modal open={isOpen} onOpenChange={onToggle} modal={false}>
-      <ModalTrigger asChild>{children}</ModalTrigger>
+    <Dialog open={isOpen} onOpenChange={(open) => (open ? onOpen() : onClose())}>
+      <DialogTrigger asChild>{children}</DialogTrigger>
 
-      <ModalContent>
-        <ModalHeader>
-          <ModalTitle>
+      <DialogContent className="z-60 w-[min(95vw,630px)] max-h-[90dvh]">
+        <DialogHeader>
+          <DialogTitle>
             {isEditing
               ? EVENT_FORM_TEXTS_PT_BR.editTitle
               : EVENT_FORM_TEXTS_PT_BR.createTitle}
-          </ModalTitle>
+          </DialogTitle>
 
-          <ModalDescription>
+          <DialogDescription>
             {isEditing
               ? EVENT_FORM_TEXTS_PT_BR.editDescription
               : EVENT_FORM_TEXTS_PT_BR.createDescription}
-          </ModalDescription>
-        </ModalHeader>
+          </DialogDescription>
+        </DialogHeader>
 
-        <Form {...form}>
-          <form
-            id="event-form"
-            onSubmit={form.handleSubmit(onSubmit)}
-            className="grid gap-4 py-4"
-          >
-            <FormField
+        <div className="overflow-y-auto max-h-[70vh] pr-2">
+          <Form {...form}>
+            <form
+              id="event-form"
+              onSubmit={form.handleSubmit(onSubmit)}
+              className="grid gap-4 py-4"
+            >
+              <FormField
               control={form.control}
               name="title"
               render={({ field, fieldState }) => (
@@ -386,21 +387,22 @@ export function AddEditEventDialog({
             />
           </form>
         </Form>
+        </div>
 
-        <ModalFooter className="flex justify-end gap-2">
-          <ModalClose asChild>
+        <DialogFooter className="flex justify-end gap-2">
+          <DialogClose asChild>
             <Button type="button" variant="outline">
               {EVENT_FORM_TEXTS_PT_BR.cancelButton}
             </Button>
-          </ModalClose>
+          </DialogClose>
 
           <Button form="event-form" type="submit">
             {isEditing
               ? EVENT_FORM_TEXTS_PT_BR.editButton
               : EVENT_FORM_TEXTS_PT_BR.createButton}
           </Button>
-        </ModalFooter>
-      </ModalContent>
-    </Modal>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }

@@ -13,4 +13,6 @@ export interface AddEditEventDialogProps {
 export interface EventDialogFormSectionsProps {
   form: UseFormReturn<TEventFormData>;
   users?: IUser[];
+  isUserSelectionDisabled?: boolean;
+  currentUserId?: IUser["id"];
 }

@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useCalendar } from "@/features/calendar/contexts/calendar-context";
+import { useAuth } from "@/features/calendar/contexts/authContext";
 import { AddEditEventDialog } from "@/features/calendar/dialogs/add-edit-event-dialog";
 import { formatTime } from "@/features/calendar/helpers";
 import type { IEvent } from "@/features/calendar/interfaces";
@@ -28,10 +29,14 @@ export function EventDetailsDialog({ event, children }: IProps) {
   const startDate = parseISO(event.startDate);
   const endDate = parseISO(event.endDate);
   const { use24HourFormat, removeEvent } = useCalendar();
+  const { user, isManager } = useAuth();
+
+  const currentUserId = user?.userId;
+  const canModify = isManager || currentUserId === event.user.id;
 
   const deleteEvent = (eventId: number) => {
     try {
-      removeEvent(eventId);
+      removeEvent(eventId, user?.name);
       toast.success("Event deleted successfully.");
     } catch {
       toast.error("Error deleting event.");
@@ -94,17 +99,25 @@ export function EventDetailsDialog({ event, children }: IProps) {
           </div>
         </ScrollArea>
         <div className="flex justify-end gap-2">
-          <AddEditEventDialog event={event}>
-            <Button variant="outline">Edit</Button>
-          </AddEditEventDialog>
-          <Button
-            variant="destructive"
-            onClick={() => {
-              deleteEvent(event.id);
-            }}
-          >
-            Delete
-          </Button>
+          {canModify ? (
+            <>
+              <AddEditEventDialog event={event}>
+                <Button variant="outline">Edit</Button>
+              </AddEditEventDialog>
+              <Button
+                variant="destructive"
+                onClick={() => {
+                  deleteEvent(event.id);
+                }}
+              >
+                Delete
+              </Button>
+            </>
+          ) : (
+            <div className="rounded-md border border-orange-200 bg-orange-50 px-4 py-3 text-sm text-orange-700">
+              Você só pode editar e excluir seus próprios eventos.
+            </div>
+          )}
         </div>
         <DialogClose />
       </DialogContent>

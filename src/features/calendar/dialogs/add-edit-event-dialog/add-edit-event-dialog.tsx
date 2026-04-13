@@ -23,12 +23,21 @@ export function AddEditEventDialog({
   startDate,
   startTime,
 }: AddEditEventDialogProps) {
-  const { form, isOpen, onToggle, onSubmit, isEditing, users } =
-    useEventDialogForm({
-      event,
-      startDate,
-      startTime,
-    });
+  const {
+    form,
+    isOpen,
+    onClose,
+    onToggle,
+    onSubmit,
+    isEditing,
+    users,
+    isUserSelectionDisabled,
+    currentUserId,
+  } = useEventDialogForm({
+    event,
+    startDate,
+    startTime,
+  });
 
   return (
     <Modal open={isOpen} onOpenChange={onToggle} modal={false}>
@@ -56,7 +65,12 @@ export function AddEditEventDialog({
           >
             <EventBasicFields form={form} />
             <EventScheduleFields form={form} />
-            <EventMetaFields form={form} users={users} />
+            <EventMetaFields
+              form={form}
+              users={users}
+              isUserSelectionDisabled={isUserSelectionDisabled}
+              currentUserId={currentUserId}
+            />
           </form>
         </Form>
 

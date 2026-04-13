@@ -17,6 +17,8 @@ export interface IEvent {
 	status: TEventStatus;
 	type: TEventType;
 	priority: TEventPriority;
+	deletedAt?: string;
+	deletedBy?: string;
 }
 
 export interface ICalendarCell {

@@ -1,7 +1,7 @@
 "use client";
 
 import type React from "react";
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext, useMemo, useState } from "react";
 import type { IEvent, IUser } from "@/features/calendar/interfaces";
 import type { TCalendarView } from "@/features/calendar/types";
 import type { ICalendarContext } from "./calendar-context.types";
@@ -27,10 +27,16 @@ export function CalendarProvider({
 }: CalendarProviderProps) {
   const [selectedDate, setSelectedDateState] = useState(new Date());
 
-  const { allEvents, addEvent, updateEvent, removeEvent } =
-    useCalendarEventState({
-      initialEvents: events,
-    });
+  const {
+    allEvents,
+    addEvent,
+    updateEvent,
+    removeEvent,
+    restoreEvent,
+    purgeEvent,
+  } = useCalendarEventState({
+    initialEvents: events,
+  });
 
   const {
     badgeVariant,
@@ -46,6 +52,16 @@ export function CalendarProvider({
     initialView: view,
   });
 
+  const activeEvents = useMemo(
+    () => allEvents.filter((event) => !event.deletedAt),
+    [allEvents],
+  );
+
+  const deletedEvents = useMemo(
+    () => allEvents.filter((event) => event.deletedAt),
+    [allEvents],
+  );
+
   const {
     selectedUserId,
     setSelectedUserId,
@@ -55,7 +71,7 @@ export function CalendarProvider({
     filteredEvents,
     clearFilter,
   } = useCalendarFilterState({
-    events: allEvents,
+    events: activeEvents,
   });
 
   const setSelectedDate = (date: Date | undefined) => {
@@ -75,6 +91,7 @@ export function CalendarProvider({
     filterEventsBySelectedColors,
     filterEventsBySelectedUser,
     events: filteredEvents,
+    deletedEvents,
     view: currentView,
     use24HourFormat,
     toggleTimeFormat,
@@ -84,6 +101,8 @@ export function CalendarProvider({
     addEvent,
     updateEvent,
     removeEvent,
+    restoreEvent,
+    purgeEvent,
     clearFilter,
   };
 
