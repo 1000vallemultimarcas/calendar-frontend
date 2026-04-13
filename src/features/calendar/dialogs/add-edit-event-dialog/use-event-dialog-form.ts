@@ -1,0 +1,95 @@
+import { useEffect, useMemo } from "react";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import { toast } from "sonner";
+import { useCalendar } from "@/features/calendar/contexts/calendar-context";
+import { useDisclosure } from "@/features/calendar/hooks";
+import { eventSchema, type TEventFormData } from "@/features/calendar/schemas";
+import { EVENT_FORM_TEXTS_PT_BR } from "@/features/calendar/constants/event-form.constants";
+import { getDefaultFormValues, getDefaultUserId, buildFormattedEvent } from "./event-dialog.utils";
+import { getInitialDates } from "@/features/calendar/lib/event-form.utils";
+import type { AddEditEventDialogProps } from "./event-dialog.types";
+
+export function useEventDialogForm({
+  event,
+  startDate,
+  startTime,
+}: Pick<AddEditEventDialogProps, "event" | "startDate" | "startTime">) {
+  const { addEvent, updateEvent, users } = useCalendar();
+  const { isOpen, onClose, onToggle } = useDisclosure();
+  const isEditing = !!event;
+
+  const initialDates = useMemo(
+    () =>
+      getInitialDates({
+        startDate,
+        startTime,
+        event,
+        isEditing,
+      }),
+    [event, isEditing, startDate, startTime],
+  );
+
+  const defaultUserId = getDefaultUserId(users, event);
+
+  const form = useForm<TEventFormData>({
+    resolver: zodResolver(eventSchema),
+    defaultValues: getDefaultFormValues({
+      event,
+      initialDates,
+      defaultUserId,
+    }),
+  });
+
+  useEffect(() => {
+    form.reset(
+      getDefaultFormValues({
+        event,
+        initialDates,
+        defaultUserId,
+      }),
+    );
+  }, [event, form, initialDates, defaultUserId]);
+
+  const onSubmit = (values: TEventFormData) => {
+    try {
+      const formattedEvent = buildFormattedEvent({
+        values,
+        event,
+        isEditing,
+        users,
+      });
+
+      if (isEditing) {
+        updateEvent(formattedEvent);
+        toast.success(EVENT_FORM_TEXTS_PT_BR.editSuccess);
+      } else {
+        addEvent(formattedEvent);
+        toast.success(EVENT_FORM_TEXTS_PT_BR.createSuccess);
+      }
+
+      onClose();
+      form.reset();
+    } catch (error) {
+      console.error(
+        `Erro ao ${isEditing ? "editar" : "criar"} agendamento:`,
+        error,
+      );
+      toast.error(
+        isEditing
+          ? EVENT_FORM_TEXTS_PT_BR.editError
+          : EVENT_FORM_TEXTS_PT_BR.createError,
+      );
+    }
+  };
+
+  return {
+    form,
+    isOpen,
+    onClose,
+    onToggle,
+    isEditing,
+    onSubmit,
+    users,
+  };
+}

@@ -4,7 +4,7 @@ import * as DialogPrimitive from "@radix-ui/react-dialog";
 import { cva, type VariantProps } from "class-variance-authority";
 import { X } from "lucide-react";
 import type { HTMLAttributes } from "react";
-import { cn } from "@/lib/utils";
+import { cn } from "@/features/calendar/lib/utils";
 
 const Modal = DialogPrimitive.Root;
 const ModalTrigger = DialogPrimitive.Trigger;

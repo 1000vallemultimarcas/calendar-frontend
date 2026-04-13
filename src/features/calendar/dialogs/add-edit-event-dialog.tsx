@@ -1,8 +1,9 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { addMinutes, format, set } from "date-fns";
+import { format } from "date-fns";
 import { type ReactNode, useEffect, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { DateTimePicker } from "@/components/ui/date-time-picker";
 import {
@@ -32,10 +33,21 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { COLORS } from "@/features/calendar/constants";
+import {
+  EVENT_PRIORITIES,
+  EVENT_STATUSES,
+  EVENT_TYPES,
+} from "@/features/calendar/constants";
+import {
+  EVENT_FORM_TEXTS_PT_BR,
+  PRIORITY_LABELS_PT_BR,
+  STATUS_LABELS_PT_BR,
+  TYPE_LABELS_PT_BR,
+} from "@/features/calendar/constants/event-form.constants";
 import { useCalendar } from "@/features/calendar/contexts/calendar-context";
 import { useDisclosure } from "@/features/calendar/hooks";
 import type { IEvent } from "@/features/calendar/interfaces";
+import { getColorByType, getInitialDates } from "@/features/calendar/lib/event-form.utils";
 import { eventSchema, type TEventFormData } from "@/features/calendar/schemas";
 
 interface IProps {
@@ -52,31 +64,21 @@ export function AddEditEventDialog({
   event,
 }: IProps) {
   const { isOpen, onClose, onToggle } = useDisclosure();
-  const { addEvent, updateEvent } = useCalendar();
+  const { addEvent, updateEvent, users } = useCalendar();
   const isEditing = !!event;
 
-  const initialDates = useMemo(() => {
-    if (!isEditing && !event) {
-      if (!startDate) {
-        const now = new Date();
-        return { startDate: now, endDate: addMinutes(now, 30) };
-      }
-      const start = startTime
-        ? set(new Date(startDate), {
-            hours: startTime.hour,
-            minutes: startTime.minute,
-            seconds: 0,
-          })
-        : new Date(startDate);
-      const end = addMinutes(start, 30);
-      return { startDate: start, endDate: end };
-    }
+  const initialDates = useMemo(
+    () =>
+      getInitialDates({
+        startDate,
+        startTime,
+        event,
+        isEditing,
+      }),
+    [startDate, startTime, event, isEditing],
+  );
 
-    return {
-      startDate: new Date(event.startDate),
-      endDate: new Date(event.endDate),
-    };
-  }, [startDate, startTime, event, isEditing]);
+  const defaultUserId = event?.user?.id ?? users[0]?.id ?? "";
 
   const form = useForm<TEventFormData>({
     resolver: zodResolver(eventSchema),
@@ -85,7 +87,11 @@ export function AddEditEventDialog({
       description: event?.description ?? "",
       startDate: initialDates.startDate,
       endDate: initialDates.endDate,
-      color: event?.color ?? "blue",
+      status: event?.status ?? "scheduled",
+      type: event?.type ?? "appointment",
+      priority: event?.priority ?? "normal",
+      userId: defaultUserId,
+      color: event?.color ?? getColorByType(event?.type ?? "appointment"),
     },
   });
 
@@ -95,53 +101,77 @@ export function AddEditEventDialog({
       description: event?.description ?? "",
       startDate: initialDates.startDate,
       endDate: initialDates.endDate,
-      color: event?.color ?? "blue",
+      status: event?.status ?? "scheduled",
+      type: event?.type ?? "appointment",
+      priority: event?.priority ?? "normal",
+      userId: event?.user?.id ?? users[0]?.id ?? "",
+      color: event?.color ?? getColorByType(event?.type ?? "appointment"),
     });
-  }, [event, initialDates, form]);
+  }, [event, initialDates, users, form]);
 
   const onSubmit = (values: TEventFormData) => {
     try {
+      const selectedUser = users.find((user) => user.id === values.userId);
+
+      const eventUser =
+        selectedUser ?? event?.user ?? users[0] ?? {
+          id: values.userId,
+          name: "Responsável não identificado",
+          picturePath: null,
+        };
+
       const formattedEvent: IEvent = {
-        ...values,
+        id: isEditing ? event.id : Math.floor(Math.random() * 1000000),
+        title: values.title,
+        description: values.description,
         startDate: format(values.startDate, "yyyy-MM-dd'T'HH:mm:ss"),
         endDate: format(values.endDate, "yyyy-MM-dd'T'HH:mm:ss"),
-        id: isEditing ? event.id : Math.floor(Math.random() * 1000000),
-        user: isEditing
-          ? event.user
-          : {
-              id: Math.floor(Math.random() * 1000000).toString(),
-              name: "Jeraidi Yassir",
-              picturePath: null,
-            },
-        color: values.color,
+        status: values.status,
+        type: values.type,
+        priority: values.priority,
+        user: eventUser,
+        color: getColorByType(values.type),
       };
 
       if (isEditing) {
         updateEvent(formattedEvent);
-        toast.success("Event updated successfully");
+        toast.success(EVENT_FORM_TEXTS_PT_BR.editSuccess);
       } else {
         addEvent(formattedEvent);
-        toast.success("Event created successfully");
+        toast.success(EVENT_FORM_TEXTS_PT_BR.createSuccess);
       }
 
       onClose();
       form.reset();
     } catch (error) {
-      console.error(`Error ${isEditing ? "editing" : "adding"} event:`, error);
-      toast.error(`Failed to ${isEditing ? "edit" : "add"} event`);
+      console.error(
+        `Erro ao ${isEditing ? "editar" : "criar"} agendamento:`,
+        error,
+      );
+      toast.error(
+        isEditing
+          ? EVENT_FORM_TEXTS_PT_BR.editError
+          : EVENT_FORM_TEXTS_PT_BR.createError,
+      );
     }
   };
 
   return (
     <Modal open={isOpen} onOpenChange={onToggle} modal={false}>
       <ModalTrigger asChild>{children}</ModalTrigger>
+
       <ModalContent>
         <ModalHeader>
-          <ModalTitle>{isEditing ? "Edit Event" : "Add New Event"}</ModalTitle>
+          <ModalTitle>
+            {isEditing
+              ? EVENT_FORM_TEXTS_PT_BR.editTitle
+              : EVENT_FORM_TEXTS_PT_BR.createTitle}
+          </ModalTitle>
+
           <ModalDescription>
             {isEditing
-              ? "Modify your existing event."
-              : "Create a new event for your calendar."}
+              ? EVENT_FORM_TEXTS_PT_BR.editDescription
+              : EVENT_FORM_TEXTS_PT_BR.createDescription}
           </ModalDescription>
         </ModalHeader>
 
@@ -157,12 +187,12 @@ export function AddEditEventDialog({
               render={({ field, fieldState }) => (
                 <FormItem>
                   <FormLabel htmlFor="title" className="required">
-                    Title
+                    {EVENT_FORM_TEXTS_PT_BR.titleLabel}
                   </FormLabel>
                   <FormControl>
                     <Input
                       id="title"
-                      placeholder="Enter a title"
+                      placeholder={EVENT_FORM_TEXTS_PT_BR.titlePlaceholder}
                       {...field}
                       className={fieldState.invalid ? "border-red-500" : ""}
                     />
@@ -171,6 +201,7 @@ export function AddEditEventDialog({
                 </FormItem>
               )}
             />
+
             <FormField
               control={form.control}
               name="startDate"
@@ -178,6 +209,7 @@ export function AddEditEventDialog({
                 <DateTimePicker form={form} field={field} />
               )}
             />
+
             <FormField
               control={form.control}
               name="endDate"
@@ -185,49 +217,166 @@ export function AddEditEventDialog({
                 <DateTimePicker form={form} field={field} />
               )}
             />
-            <FormField
-              control={form.control}
-              name="color"
-              render={({ field, fieldState }) => (
-                <FormItem>
-                  <FormLabel className="required">Variant</FormLabel>
-                  <FormControl>
-                    <Select value={field.value} onValueChange={field.onChange}>
-                      <SelectTrigger
-                        className={`w-full ${
-                          fieldState.invalid ? "border-red-500" : ""
-                        }`}
-                      >
-                        <SelectValue placeholder="Select a variant" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {COLORS.map((color) => (
-                          <SelectItem value={color} key={color}>
-                            <div className="flex items-center gap-2">
-                              <div
-                                className={`size-3.5 rounded-full bg-${color}-600 dark:bg-${color}-700`}
-                              />
-                              {color}
-                            </div>
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+
+            <div className="grid gap-4 lg:grid-cols-2">
+              <FormField
+                control={form.control}
+                name="status"
+                render={({ field, fieldState }) => (
+                  <FormItem>
+                    <FormLabel className="required">
+                      {EVENT_FORM_TEXTS_PT_BR.statusLabel}
+                    </FormLabel>
+                    <FormControl>
+                      <Select value={field.value} onValueChange={field.onChange}>
+                        <SelectTrigger
+                          className={`w-full ${
+                            fieldState.invalid ? "border-red-500" : ""
+                          }`}
+                        >
+                          <SelectValue
+                            placeholder={EVENT_FORM_TEXTS_PT_BR.statusPlaceholder}
+                          />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {EVENT_STATUSES.map((status) => (
+                            <SelectItem value={status} key={status}>
+                              {STATUS_LABELS_PT_BR[status]}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="type"
+                render={({ field, fieldState }) => (
+                  <FormItem>
+                    <FormLabel className="required">
+                      {EVENT_FORM_TEXTS_PT_BR.typeLabel}
+                    </FormLabel>
+                    <FormControl>
+                      <Select value={field.value} onValueChange={field.onChange}>
+                        <SelectTrigger
+                          className={`w-full ${
+                            fieldState.invalid ? "border-red-500" : ""
+                          }`}
+                        >
+                          <SelectValue
+                            placeholder={EVENT_FORM_TEXTS_PT_BR.typePlaceholder}
+                          />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {EVENT_TYPES.map((type) => (
+                            <SelectItem value={type} key={type}>
+                              {TYPE_LABELS_PT_BR[type]}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            <div className="grid gap-4 lg:grid-cols-2">
+              <FormField
+                control={form.control}
+                name="priority"
+                render={({ field, fieldState }) => (
+                  <FormItem>
+                    <FormLabel className="required">
+                      {EVENT_FORM_TEXTS_PT_BR.priorityLabel}
+                    </FormLabel>
+                    <FormControl>
+                      <Select value={field.value} onValueChange={field.onChange}>
+                        <SelectTrigger
+                          className={`w-full ${
+                            fieldState.invalid ? "border-red-500" : ""
+                          }`}
+                        >
+                          <SelectValue
+                            placeholder={EVENT_FORM_TEXTS_PT_BR.priorityPlaceholder}
+                          />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {EVENT_PRIORITIES.map((priority) => (
+                            <SelectItem value={priority} key={priority}>
+                              {PRIORITY_LABELS_PT_BR[priority]}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="userId"
+                render={({ field, fieldState }) => (
+                  <FormItem>
+                    <FormLabel className="required">
+                      {EVENT_FORM_TEXTS_PT_BR.responsibleLabel}
+                    </FormLabel>
+                    <FormControl>
+                      <Select value={field.value} onValueChange={field.onChange}>
+                        <SelectTrigger
+                          className={`w-full ${
+                            fieldState.invalid ? "border-red-500" : ""
+                          }`}
+                        >
+                          <SelectValue
+                            placeholder={EVENT_FORM_TEXTS_PT_BR.responsiblePlaceholder}
+                          />
+                        </SelectTrigger>
+                        <SelectContent align="end">
+                          {users.map((user) => (
+                            <SelectItem value={user.id} key={user.id}>
+                              <div className="flex items-center gap-2">
+                                <Avatar className="size-6">
+                                  <AvatarImage
+                                    src={user.picturePath ?? undefined}
+                                    alt={user.name}
+                                  />
+                                  <AvatarFallback className="text-xxs">
+                                    {user.name[0]}
+                                  </AvatarFallback>
+                                </Avatar>
+                                <span>{user.name}</span>
+                              </div>
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+
             <FormField
               control={form.control}
               name="description"
               render={({ field, fieldState }) => (
                 <FormItem>
-                  <FormLabel className="required">Description</FormLabel>
+                  <FormLabel className="required">
+                    {EVENT_FORM_TEXTS_PT_BR.descriptionLabel}
+                  </FormLabel>
                   <FormControl>
                     <Textarea
                       {...field}
-                      placeholder="Enter a description"
+                      placeholder={EVENT_FORM_TEXTS_PT_BR.descriptionPlaceholder}
                       className={fieldState.invalid ? "border-red-500" : ""}
                     />
                   </FormControl>
@@ -237,14 +386,18 @@ export function AddEditEventDialog({
             />
           </form>
         </Form>
+
         <ModalFooter className="flex justify-end gap-2">
           <ModalClose asChild>
             <Button type="button" variant="outline">
-              Cancel
+              {EVENT_FORM_TEXTS_PT_BR.cancelButton}
             </Button>
           </ModalClose>
+
           <Button form="event-form" type="submit">
-            {isEditing ? "Save Changes" : "Create Event"}
+            {isEditing
+              ? EVENT_FORM_TEXTS_PT_BR.editButton
+              : EVENT_FORM_TEXTS_PT_BR.createButton}
           </Button>
         </ModalFooter>
       </ModalContent>

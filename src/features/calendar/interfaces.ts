@@ -1,4 +1,4 @@
-import type { TEventColor } from "@/features/calendar/types";
+import type { TEventColor, TEventStatus, TEventType, TEventPriority } from "@/features/calendar/types";
 
 export interface IUser {
 	id: string;
@@ -14,6 +14,9 @@ export interface IEvent {
 	color: TEventColor;
 	description: string;
 	user: IUser;
+	status: TEventStatus;
+	type: TEventType;
+	priority: TEventPriority;
 }
 
 export interface ICalendarCell {

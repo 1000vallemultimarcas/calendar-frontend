@@ -6,3 +6,17 @@ export type TEventColor =
 	| "yellow"
 	| "purple"
 	| "orange";
+export type TEventStatus =
+	| "scheduled"
+	| "confirmed"
+	| "cancelled"
+	| "attended"
+	| "rescheduled"
+	| "not_attended";
+export type TEventType =
+	| "meeting"
+	| "appointment"
+	| "personal"
+	| "work"
+	| "test_drive";
+export type TEventPriority = "low" | "normal" | "high" | "urgent";

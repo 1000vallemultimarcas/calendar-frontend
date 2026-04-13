@@ -5,6 +5,23 @@ export const eventSchema = z.object({
 	description: z.string().min(1, "Description is required"),
 	startDate: z.date("Start date is required"),
 	endDate: z.date("End date is required"),
+	status: z.enum([
+		"scheduled",
+		"confirmed",
+		"cancelled",
+		"attended",
+		"rescheduled",
+		"not_attended",
+	]),
+	type: z.enum([
+		"meeting",
+		"appointment",
+		"personal",
+		"work",
+		"test_drive",
+	]),
+	priority: z.enum(["low", "normal", "high", "urgent"]),
+	userId: z.string().min(1, "Responsible user is required"),
 	color: z.enum(["blue", "green", "red", "yellow", "purple", "orange"]),
 });
 

@@ -15,7 +15,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
-import { cn } from "@/lib/utils";
+import { cn } from "@/features/calendar/lib/utils";
 import { useCalendar } from "@/features/calendar/contexts/calendar-context";
 import type { TEventFormData } from "@/features/calendar/schemas";
 
