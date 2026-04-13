@@ -58,7 +58,7 @@ export function EventMetaFields({ form, users }: EventDialogFormSectionsProps) {
                   />
                 </SelectTrigger>
                 <SelectContent align="end">
-                  {users.map((user) => (
+                  {users?.map((user) => (
                     <SelectItem value={user.id} key={user.id}>
                       <div className="flex items-center gap-2">
                         <Avatar className="size-6">

@@ -12,5 +12,5 @@ export interface AddEditEventDialogProps {
 
 export interface EventDialogFormSectionsProps {
   form: UseFormReturn<TEventFormData>;
-  users: IUser[];
+  users?: IUser[];
 }
