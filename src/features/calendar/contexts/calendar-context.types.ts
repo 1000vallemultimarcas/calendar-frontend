@@ -20,6 +20,7 @@ export interface ICalendarContext {
   users: IUser[];
   events: IEvent[];
   deletedEvents: IEvent[];
+  isLoadingEvents: boolean;
   addEvent: (event: IEvent) => void;
   updateEvent: (event: IEvent) => void;
   removeEvent: (eventId: number, deletedBy?: string) => void;

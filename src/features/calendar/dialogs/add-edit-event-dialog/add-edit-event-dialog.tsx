@@ -26,8 +26,7 @@ export function AddEditEventDialog({
   const {
     form,
     isOpen,
-    onClose,
-    onToggle,
+    setIsOpen,
     onSubmit,
     isEditing,
     users,
@@ -40,7 +39,7 @@ export function AddEditEventDialog({
   });
 
   return (
-    <Modal open={isOpen} onOpenChange={onToggle} modal={false}>
+    <Modal open={isOpen} onOpenChange={setIsOpen} modal={false}>
       <ModalTrigger asChild>{children}</ModalTrigger>
 
       <ModalContent className="max-w-[95vw] sm:max-w-175">

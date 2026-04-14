@@ -23,6 +23,7 @@ export const EVENT_TYPES: TEventType[] = [
 	"appointment",
 	"personal",
 	"work",
+	"visit",
 	"test_drive",
 ];
 

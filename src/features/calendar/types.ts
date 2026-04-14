@@ -18,5 +18,6 @@ export type TEventType =
 	| "appointment"
 	| "personal"
 	| "work"
+	| "visit"
 	| "test_drive";
 export type TEventPriority = "low" | "normal" | "high" | "urgent";

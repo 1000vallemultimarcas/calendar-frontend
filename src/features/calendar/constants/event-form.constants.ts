@@ -18,6 +18,7 @@ export const TYPE_LABELS_PT_BR: Record<TEventType, string> = {
   appointment: "Compromisso",
   personal: "Pessoal",
   work: "Trabalho",
+  visit: "Visita",
   test_drive: "Test drive",
 };
 

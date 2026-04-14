@@ -20,7 +20,7 @@ interface BuildFormattedEventParams {
 }
 
 export function getDefaultUserId(users: IUser[], event?: IEvent) {
-  return event?.user?.id ?? users[0]?.id ?? "";
+  return event?.user?.id ?? "";
 }
 
 export function getDefaultFormValues({
@@ -34,10 +34,10 @@ export function getDefaultFormValues({
     startDate: initialDates.startDate,
     endDate: initialDates.endDate,
     status: event?.status ?? "scheduled",
-    type: event?.type ?? "appointment",
+    type: event?.type ?? "visit",
     priority: event?.priority ?? "normal",
     userId: defaultUserId,
-    color: event?.color ?? getColorByType(event?.type ?? "appointment"),
+    color: event?.color ?? getColorByType(event?.type ?? "visit"),
   };
 }
 
@@ -47,11 +47,13 @@ export function buildFormattedEvent({
   isEditing,
   users,
 }: BuildFormattedEventParams): IEvent {
-  const selectedUser = users.find((user) => user.id === values.userId);
-  const eventUser = selectedUser ?? event?.user;
+  const selectedUser = values.userId
+    ? users.find((user) => user.id === values.userId)
+    : undefined;
+  const eventUser = selectedUser ?? event?.user ?? users[0];
 
   if (!eventUser) {
-    throw new Error("Responsible user not found");
+    throw new Error("No available user was found to associate with the event");
   }
 
   return {
@@ -64,6 +66,8 @@ export function buildFormattedEvent({
     type: values.type,
     priority: values.priority,
     user: eventUser,
+    attendantId: selectedUser?.id ?? event?.attendantId ?? eventUser.id,
+    customerId: event?.customerId,
     color: getColorByType(values.type),
   };
 }

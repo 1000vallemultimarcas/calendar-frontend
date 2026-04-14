@@ -3,6 +3,7 @@
 import {
   createContext,
   useContext,
+  useEffect,
   useState,
   ReactNode,
 } from "react";
@@ -57,7 +58,24 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [token, setToken] = useState<string | null>(null);
   const [testRole, setTestRole] = useState<"manager" | "employee">("manager");
-  const [user, setUser] = useState<DecodedToken | null>(mockManager);
+  const [user, setUser] = useState<DecodedToken | null>(null);
+
+  useEffect(() => {
+    const storedToken = localStorage.getItem("token");
+
+    if (!storedToken) {
+      return;
+    }
+
+    try {
+      const decoded: DecodedToken = jwtDecode(storedToken);
+      setToken(storedToken);
+      setUser(decoded);
+    } catch (error) {
+      console.error("Token invÃ¡lido:", error);
+      localStorage.removeItem("token");
+    }
+  }, []);
 
   const switchRole = () => {
     setTestRole((prev) => {

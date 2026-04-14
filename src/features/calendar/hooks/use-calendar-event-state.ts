@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import type { IEvent } from "@/features/calendar/interfaces";
 import {
   appendEvent,
@@ -17,28 +17,33 @@ export function useCalendarEventState({
 }: UseCalendarEventStateParams) {
   const [allEvents, setAllEvents] = useState<IEvent[]>(initialEvents || []);
 
-  const addEvent = (event: IEvent) => {
+  const setEvents = useCallback((events: IEvent[]) => {
+    setAllEvents(events);
+  }, []);
+
+  const addEvent = useCallback((event: IEvent) => {
     setAllEvents((prev) => appendEvent(prev, event));
-  };
+  }, []);
 
-  const updateEvent = (event: IEvent) => {
+  const updateEvent = useCallback((event: IEvent) => {
     setAllEvents((prev) => replaceEvent(prev, event));
-  };
+  }, []);
 
-  const removeEvent = (eventId: number, deletedBy?: string) => {
+  const removeEvent = useCallback((eventId: number, deletedBy?: string) => {
     setAllEvents((prev) => softDeleteEventById(prev, eventId, deletedBy));
-  };
+  }, []);
 
-  const restoreEvent = (eventId: number) => {
+  const restoreEvent = useCallback((eventId: number) => {
     setAllEvents((prev) => restoreEventById(prev, eventId));
-  };
+  }, []);
 
-  const purgeEvent = (eventId: number) => {
+  const purgeEvent = useCallback((eventId: number) => {
     setAllEvents((prev) => purgeEventById(prev, eventId));
-  };
+  }, []);
 
   return {
     allEvents,
+    setEvents,
     addEvent,
     updateEvent,
     removeEvent,

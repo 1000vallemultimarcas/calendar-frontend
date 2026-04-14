@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { useCalendar } from "@/features/calendar/contexts/calendar-context";
 import { useAuth } from "@/features/calendar/contexts/authContext";
 import { useDisclosure } from "@/features/calendar/hooks";
+import { createEvent as createEventRequest } from "@/features/calendar/requests";
 import { eventSchema, type TEventFormData } from "@/features/calendar/schemas";
 import { EVENT_FORM_TEXTS_PT_BR } from "@/features/calendar/constants/event-form.constants";
 import { getDefaultFormValues, getDefaultUserId, buildFormattedEvent } from "./event-dialog.utils";
@@ -18,7 +19,7 @@ export function useEventDialogForm({
 }: Pick<AddEditEventDialogProps, "event" | "startDate" | "startTime">) {
   const { addEvent, updateEvent, users } = useCalendar();
   const { user, isManager, isEmployee } = useAuth();
-  const { isOpen, onClose, onToggle } = useDisclosure();
+  const { isOpen, onClose, onOpen, onToggle, setIsOpen } = useDisclosure();
   const isEditing = !!event;
 
   const currentUserId = user?.userId;
@@ -58,7 +59,7 @@ export function useEventDialogForm({
     );
   }, [event, form, initialDates, defaultUserId]);
 
-  const onSubmit = (values: TEventFormData) => {
+  const onSubmit = async (values: TEventFormData) => {
     try {
       const formattedEvent = buildFormattedEvent({
         values: {
@@ -77,7 +78,8 @@ export function useEventDialogForm({
         updateEvent(formattedEvent);
         toast.success(EVENT_FORM_TEXTS_PT_BR.editSuccess);
       } else {
-        addEvent(formattedEvent);
+        const createdEvent = await createEventRequest(formattedEvent);
+        addEvent(createdEvent);
         toast.success(EVENT_FORM_TEXTS_PT_BR.createSuccess);
       }
 
@@ -99,7 +101,9 @@ export function useEventDialogForm({
   return {
     form,
     isOpen,
+    setIsOpen,
     onClose,
+    onOpen,
     onToggle,
     isEditing,
     onSubmit,

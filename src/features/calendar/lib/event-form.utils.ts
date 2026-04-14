@@ -19,6 +19,8 @@ export function getColorByType(type: TEventType): TEventColor {
       return "purple";
     case "work":
       return "orange";
+    case "visit":
+      return "yellow";
     case "test_drive":
       return "red";
     default:

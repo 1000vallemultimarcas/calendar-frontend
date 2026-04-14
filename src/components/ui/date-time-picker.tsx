@@ -14,7 +14,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/features/calendar/lib/utils";
 import { useCalendar } from "@/features/calendar/contexts/calendar-context";
 import type { TEventFormData } from "@/features/calendar/schemas";
@@ -27,10 +27,20 @@ interface DatePickerProps {
 export function DateTimePicker({ form, field }: DatePickerProps) {
   const { use24HourFormat } = useCalendar();
 
+  const selectedDate = field.value ?? new Date();
+
   function handleDateSelect(date: Date | undefined) {
-    if (date) {
-      form.setValue(field.name, date);
-    }
+    if (!date) return;
+
+    const currentDate = form.getValues(field.name) || new Date();
+    const nextDate = new Date(date);
+
+    nextDate.setHours(currentDate.getHours());
+    nextDate.setMinutes(currentDate.getMinutes());
+    nextDate.setSeconds(0);
+    nextDate.setMilliseconds(0);
+
+    form.setValue(field.name, nextDate, { shouldValidate: true });
   }
 
   function handleTimeChange(type: "hour" | "minute" | "ampm", value: string) {
@@ -38,94 +48,123 @@ export function DateTimePicker({ form, field }: DatePickerProps) {
     const newDate = new Date(currentDate);
 
     if (type === "hour") {
-      newDate.setHours(parseInt(value, 10));
-    } else if (type === "minute") {
+      const numericHour = parseInt(value, 10);
+
+      if (use24HourFormat) {
+        newDate.setHours(numericHour);
+      } else {
+        const currentHours = newDate.getHours();
+        const isPM = currentHours >= 12;
+        const normalizedHour = numericHour % 12;
+
+        newDate.setHours(isPM ? normalizedHour + 12 : normalizedHour);
+      }
+    }
+
+    if (type === "minute") {
       newDate.setMinutes(parseInt(value, 10));
-    } else if (type === "ampm") {
+    }
+
+    if (type === "ampm") {
       const hours = newDate.getHours();
+
       if (value === "AM" && hours >= 12) {
         newDate.setHours(hours - 12);
-      } else if (value === "PM" && hours < 12) {
+      }
+
+      if (value === "PM" && hours < 12) {
         newDate.setHours(hours + 12);
       }
     }
 
-    form.setValue(field.name, newDate);
+    newDate.setSeconds(0);
+    newDate.setMilliseconds(0);
+
+    form.setValue(field.name, newDate, { shouldValidate: true });
   }
+
+  const hourOptions = use24HourFormat
+    ? Array.from({ length: 24 }, (_, i) => i)
+    : Array.from({ length: 12 }, (_, i) => i + 1);
+
+  const selectedHour = use24HourFormat
+    ? selectedDate.getHours()
+    : ((selectedDate.getHours() + 11) % 12) + 1;
+
+  const selectedMinute = selectedDate.getMinutes();
+  const isPM = selectedDate.getHours() >= 12;
 
   return (
     <FormItem className="flex flex-col">
       <FormLabel>
-        {field.name === "startDate" ? "Start Date" : "End Date"}
+        {field.name === "startDate" ? "Data inicial" : "Data final"}
       </FormLabel>
-      <Popover modal={true}>
+
+      <Popover modal={false}>
         <PopoverTrigger asChild>
           <FormControl>
             <Button
-              variant={"outline"}
+              type="button"
+              variant="outline"
               className={cn(
-                "w-full pl-3 text-left font-normal",
+                "w-full justify-between pl-3 text-left font-normal",
                 !field.value && "text-muted-foreground",
               )}
             >
               {field.value ? (
                 format(
                   field.value,
-                  use24HourFormat ? "MM/dd/yyyy HH:mm" : "MM/dd/yyyy hh:mm aa",
+                  use24HourFormat ? "dd/MM/yyyy HH:mm" : "dd/MM/yyyy hh:mm aa",
                 )
               ) : (
-                <span>MM/DD/YYYY hh:mm aa</span>
+                <span>Selecione data e hora</span>
               )}
-              <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+
+              <CalendarIcon className="ml-2 h-4 w-4 opacity-50" />
             </Button>
           </FormControl>
         </PopoverTrigger>
-        <PopoverContent className="w-auto p-0">
-          <div className="sm:flex">
+
+        <PopoverContent
+          align="start"
+          sideOffset={8}
+          className="z-[80] w-[340px] max-w-[95vw] overflow-hidden rounded-xl p-0 shadow-xl"
+        >
+          <div className="flex flex-col">
             <Calendar
               mode="single"
               selected={field.value}
               onSelect={handleDateSelect}
               initialFocus
             />
-            <div className="flex flex-col sm:flex-row sm:h-[300px] divide-y sm:divide-y-0 sm:divide-x">
-              <ScrollArea className="w-64 sm:w-auto">
-                <div className="flex sm:flex-col p-2">
-                  {Array.from(
-                    { length: use24HourFormat ? 24 : 12 },
-                    (_, i) => i,
-                  ).map((hour) => (
+
+            <div className="grid grid-cols-2 border-t sm:grid-cols-3">
+              <ScrollArea className="h-44 border-r">
+                <div className="grid gap-1 p-2">
+                  {hourOptions.map((hour) => (
                     <Button
                       key={hour}
-                      size="icon"
-                      variant={
-                        field.value &&
-                        field.value.getHours() % (use24HourFormat ? 24 : 12) ===
-                          hour % (use24HourFormat ? 24 : 12)
-                          ? "default"
-                          : "ghost"
-                      }
-                      className="sm:w-full shrink-0 aspect-square"
+                      type="button"
+                      size="sm"
+                      variant={selectedHour === hour ? "default" : "ghost"}
+                      className="w-full justify-center"
                       onClick={() => handleTimeChange("hour", hour.toString())}
                     >
                       {hour.toString().padStart(2, "0")}
                     </Button>
                   ))}
                 </div>
-                <ScrollBar orientation="horizontal" className="sm:hidden" />
               </ScrollArea>
-              <ScrollArea className="w-64 sm:w-auto">
-                <div className="flex sm:flex-col p-2">
+
+              <ScrollArea className="h-44 border-r">
+                <div className="grid gap-1 p-2">
                   {Array.from({ length: 12 }, (_, i) => i * 5).map((minute) => (
                     <Button
                       key={minute}
-                      size="icon"
-                      variant={
-                        field.value && field.value.getMinutes() === minute
-                          ? "default"
-                          : "ghost"
-                      }
-                      className="sm:w-full shrink-0 aspect-square"
+                      type="button"
+                      size="sm"
+                      variant={selectedMinute === minute ? "default" : "ghost"}
+                      className="w-full justify-center"
                       onClick={() =>
                         handleTimeChange("minute", minute.toString())
                       }
@@ -134,12 +173,37 @@ export function DateTimePicker({ form, field }: DatePickerProps) {
                     </Button>
                   ))}
                 </div>
-                <ScrollBar orientation="horizontal" className="sm:hidden" />
               </ScrollArea>
+
+              {!use24HourFormat && (
+                <div className="grid gap-1 p-2">
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant={!isPM ? "default" : "ghost"}
+                    className="w-full"
+                    onClick={() => handleTimeChange("ampm", "AM")}
+                  >
+                    AM
+                  </Button>
+
+                    <Button
+                    type="button"
+                    size="sm"
+                    variant={isPM ? "default" : "ghost"}
+                    className="w-full"
+                    onClick={() => handleTimeChange("ampm", "PM")}
+                  >
+                    PM
+                  </Button>
+                </div>
+              )}
             </div>
           </div>
+
         </PopoverContent>
       </Popover>
+
       <FormMessage />
     </FormItem>
   );

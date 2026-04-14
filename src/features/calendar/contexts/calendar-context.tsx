@@ -1,13 +1,15 @@
 "use client";
 
 import type React from "react";
-import { createContext, useContext, useMemo, useState } from "react";
+import { createContext, useContext, useEffect, useMemo, useState } from "react";
 import type { IEvent, IUser } from "@/features/calendar/interfaces";
 import type { TCalendarView } from "@/features/calendar/types";
 import type { ICalendarContext } from "./calendar-context.types";
 import { useCalendarFilterState } from "@/features/calendar/hooks/use-calendar-filter-state";
 import { useCalendarSettingsState } from "@/features/calendar/hooks/use-calendar-settings-state";
 import { useCalendarEventState } from "../hooks/use-calendar-event-state";
+import { useAuth } from "./authContext";
+import { getEvents, getUsers, mapViewToSchedulePeriod } from "../requests";
 const CalendarContext = createContext({} as ICalendarContext);
 
 type CalendarProviderProps = {
@@ -25,10 +27,14 @@ export function CalendarProvider({
   badge = "colored",
   view = "day",
 }: CalendarProviderProps) {
+  const { token } = useAuth();
   const [selectedDate, setSelectedDateState] = useState(new Date());
+  const [isLoadingEvents, setIsLoadingEvents] = useState(false);
+  const [calendarUsers, setCalendarUsers] = useState<IUser[]>(users);
 
   const {
     allEvents,
+    setEvents,
     addEvent,
     updateEvent,
     removeEvent,
@@ -79,6 +85,47 @@ export function CalendarProvider({
     setSelectedDateState(date);
   };
 
+  useEffect(() => {
+    let isActive = true;
+
+    async function syncEvents() {
+      if (!token) {
+        setCalendarUsers([]);
+        setEvents([]);
+        setIsLoadingEvents(false);
+        return;
+      }
+
+      setIsLoadingEvents(true);
+
+      try {
+        const nextUsers = await getUsers();
+        const nextEvents = await getEvents({
+          period: mapViewToSchedulePeriod(currentView),
+          referenceDate: selectedDate,
+          users: nextUsers,
+        });
+
+        if (isActive) {
+          setCalendarUsers(nextUsers);
+          setEvents(nextEvents);
+        }
+      } catch (error) {
+        console.error("Erro ao carregar agendamentos:", error);
+      } finally {
+        if (isActive) {
+          setIsLoadingEvents(false);
+        }
+      }
+    }
+
+    void syncEvents();
+
+    return () => {
+      isActive = false;
+    };
+  }, [currentView, selectedDate, setEvents, token]);
+
   const value: ICalendarContext = {
     selectedDate,
     setSelectedDate,
@@ -86,12 +133,13 @@ export function CalendarProvider({
     setSelectedUserId,
     badgeVariant,
     setBadgeVariant,
-    users,
+    users: calendarUsers,
     selectedColors,
     filterEventsBySelectedColors,
     filterEventsBySelectedUser,
     events: filteredEvents,
     deletedEvents,
+    isLoadingEvents,
     view: currentView,
     use24HourFormat,
     toggleTimeFormat,

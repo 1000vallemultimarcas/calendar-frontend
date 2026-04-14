@@ -17,6 +17,8 @@ export interface IEvent {
 	status: TEventStatus;
 	type: TEventType;
 	priority: TEventPriority;
+	customerId?: number;
+	attendantId?: string;
 	deletedAt?: string;
 	deletedBy?: string;
 }

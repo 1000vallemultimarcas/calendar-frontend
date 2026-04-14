@@ -11,7 +11,7 @@ export function useDisclosure({
 	const onClose = () => setIsOpen(false);
 	const onToggle = () => setIsOpen((currentValue) => !currentValue);
 
-	return { onOpen, onClose, isOpen, onToggle };
+	return { onOpen, onClose, isOpen, onToggle, setIsOpen };
 }
 
 export const useLocalStorage = <T>(

@@ -18,10 +18,11 @@ export const eventSchema = z.object({
 		"appointment",
 		"personal",
 		"work",
+		"visit",
 		"test_drive",
 	]),
 	priority: z.enum(["low", "normal", "high", "urgent"]),
-	userId: z.string().min(1, "Responsible user is required"),
+	userId: z.string().optional(),
 	color: z.enum(["blue", "green", "red", "yellow", "purple", "orange"]),
 });
 

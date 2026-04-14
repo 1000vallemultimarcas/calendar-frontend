@@ -51,7 +51,7 @@ export function EventMetaFields({
         name="userId"
         render={({ field, fieldState }) => (
           <FormItem>
-            <FormLabel className="required">
+            <FormLabel>
               {EVENT_FORM_TEXTS_PT_BR.responsibleLabel}
             </FormLabel>
             <FormControl>
@@ -64,7 +64,10 @@ export function EventMetaFields({
                   <Input type="hidden" {...field} />
                 </>
               ) : (
-                <Select value={field.value} onValueChange={field.onChange}>
+                <Select
+                  value={field.value || undefined}
+                  onValueChange={field.onChange}
+                >
                   <SelectTrigger
                     className={`w-full ${fieldState.invalid ? "border-red-500" : ""}`}
                   >
