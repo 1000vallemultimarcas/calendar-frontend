@@ -22,6 +22,14 @@ type ScheduleApiItem = {
   type: string;
 };
 
+type UserApiItem = {
+  id: string;
+  name: string;
+  picturePath?: string | null;
+};
+
+type UsersApiResponse = UserApiItem[] | { users: UserApiItem[] };
+
 type GetEventsParams = {
   period?: SchedulePeriod;
   referenceDate?: Date;
@@ -31,6 +39,19 @@ type GetEventsParams = {
 const DEFAULT_CUSTOMER_ID = Number(
   process.env.NEXT_PUBLIC_DEFAULT_CUSTOMER_ID ?? "1342",
 );
+const USERS_ENDPOINT = process.env.NEXT_PUBLIC_USERS_ENDPOINT ?? "/users";
+const SCHEDULES_ENDPOINT =
+  process.env.NEXT_PUBLIC_SCHEDULES_ENDPOINT ?? "/schedules";
+
+function normalizeUsersResponse(payload: UsersApiResponse): IUser[] {
+  const items = Array.isArray(payload) ? payload : payload.users;
+
+  return items.map((user) => ({
+    id: user.id,
+    name: user.name,
+    picturePath: user.picturePath ?? null,
+  }));
+}
 
 function normalizeStatus(status: string): TEventStatus {
   switch (status.toUpperCase()) {
@@ -143,7 +164,8 @@ function mapEventStatusToApi(status: TEventStatus): string {
 }
 
 export async function getUsers(): Promise<IUser[]> {
-  return fetcher<IUser[]>("/users");
+  const payload = await fetcher<UsersApiResponse>(USERS_ENDPOINT);
+  return normalizeUsersResponse(payload);
 }
 
 export async function getEvents({
@@ -157,14 +179,14 @@ export async function getEvents({
   });
 
   const schedules = await fetcher<ScheduleApiItem[]>(
-    `/schedules?${params.toString()}`,
+    `${SCHEDULES_ENDPOINT}?${params.toString()}`,
   );
 
   return schedules.map((schedule) => mapScheduleToEvent(schedule, users));
 }
 
 export async function createEvent(event: Omit<IEvent, "id">): Promise<IEvent> {
-  const createdSchedule = await fetcher<ScheduleApiItem>("/schedules", {
+  const createdSchedule = await fetcher<ScheduleApiItem>(SCHEDULES_ENDPOINT, {
     method: "POST",
     body: JSON.stringify({
       title: event.title,

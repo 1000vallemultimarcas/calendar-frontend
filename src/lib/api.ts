@@ -3,6 +3,11 @@ export const API_BASE_URL =
 	process.env.NEXT_PUBLIC_API_URL ||
 	"http://localhost:4000";
 
+const API_PREFIX =
+	process.env.NEXT_PUBLIC_BACKEND_API_PREFIX ||
+	process.env.BACKEND_API_PREFIX ||
+	"";
+
 function getClientAuthToken() {
 	if (typeof window === "undefined") {
 		return null;
@@ -13,7 +18,12 @@ function getClientAuthToken() {
 
 export async function fetcher<T>(path: string, init?: RequestInit): Promise<T> {
 	const normalizedPath = path.startsWith("/") ? path : `/${path}`;
-	const url = `${API_BASE_URL.replace(/\/$/, "")}${normalizedPath}`;
+	const normalizedPrefix = API_PREFIX
+		? API_PREFIX.startsWith("/")
+			? API_PREFIX
+			: `/${API_PREFIX}`
+		: "";
+	const url = `${API_BASE_URL.replace(/\/$/, "")}${normalizedPrefix}${normalizedPath}`;
 	const token = getClientAuthToken();
 	const headers = new Headers(init?.headers);
 

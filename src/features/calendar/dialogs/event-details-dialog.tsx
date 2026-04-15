@@ -1,6 +1,7 @@
 "use client";
 
 import { format, parseISO } from "date-fns";
+import { ptBR } from "date-fns/locale";
 import { Calendar, Clock, Text, User } from "lucide-react";
 import type { ReactNode } from "react";
 import { toast } from "sonner";
@@ -17,7 +18,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { useCalendar } from "@/features/calendar/contexts/calendar-context";
 import { useAuth } from "@/features/calendar/contexts/authContext";
 import { AddEditEventDialog } from "@/features/calendar/dialogs/add-edit-event-dialog";
-import { formatTime } from "@/features/calendar/helpers";
+import { formatTime, toCapitalize } from "@/features/calendar/helpers";
 import type { IEvent } from "@/features/calendar/interfaces";
 
 interface IProps {
@@ -68,8 +69,13 @@ export function EventDetailsDialog({ event, children }: IProps) {
               <div>
                 <p className="text-sm font-medium">Start Date</p>
                 <p className="text-sm text-muted-foreground">
-                  {format(startDate, "EEEE dd MMMM")}
-                  <span className="mx-1">at</span>
+                  {toCapitalize(
+                    format(startDate, "EEEE dd MMMM", { locale: ptBR }).replace(
+                      "-feira",
+                      "",
+                    ),
+                  )}
+                  <span className="mx-1">as</span>
                   {formatTime(parseISO(event.startDate), use24HourFormat)}
                 </p>
               </div>
@@ -80,8 +86,13 @@ export function EventDetailsDialog({ event, children }: IProps) {
               <div>
                 <p className="text-sm font-medium">End Date</p>
                 <p className="text-sm text-muted-foreground">
-                  {format(endDate, "EEEE dd MMMM")}
-                  <span className="mx-1">at</span>
+                  {toCapitalize(
+                    format(endDate, "EEEE dd MMMM", { locale: ptBR }).replace(
+                      "-feira",
+                      "",
+                    ),
+                  )}
+                  <span className="mx-1">as</span>
                   {formatTime(parseISO(event.endDate), use24HourFormat)}
                 </p>
               </div>

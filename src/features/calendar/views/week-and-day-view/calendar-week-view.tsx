@@ -1,4 +1,5 @@
 import {addDays, format, isSameDay, parseISO, startOfWeek} from "date-fns";
+import { ptBR } from "date-fns/locale";
 import {motion} from "framer-motion";
 import {ScrollArea} from "@/components/ui/scroll-area";
 import {
@@ -9,7 +10,7 @@ import {
 import {useCalendar} from "@/features/calendar/contexts/calendar-context";
 import {AddEditEventDialog} from "@/features/calendar/dialogs/add-edit-event-dialog";
 import {DroppableArea} from "@/features/calendar/dnd/droppable-area";
-import {groupEvents} from "@/features/calendar/helpers";
+import {groupEvents, toCapitalize} from "@/features/calendar/helpers";
 import type {IEvent} from "@/features/calendar/interfaces";
 import {CalendarTimeline} from "@/features/calendar/views/week-and-day-view/calendar-time-line";
 import {RenderGroupedEvents} from "@/features/calendar/views/week-and-day-view/render-grouped-events";
@@ -44,8 +45,8 @@ export function CalendarWeekView({singleDayEvents, multiDayEvents}: IProps) {
                 animate={{opacity: 1, y: 0}}
                 transition={transition}
             >
-                <p>Weekly view is not recommended on smaller devices.</p>
-                <p>Please switch to a desktop device or use the daily view instead.</p>
+                <p>A visualização semanal não é recomendada em dispositivos menores.</p>
+                <p>Troque para um dispositivo desktop ou use a visualização diária.</p>
             </motion.div>
 
             <motion.div
@@ -78,14 +79,16 @@ export function CalendarWeekView({singleDayEvents, multiDayEvents}: IProps) {
                                 >
                                     {/* Mobile: Show only day abbreviation and number */}
                                     <span className="block sm:hidden">
-									{format(day, "EEE").charAt(0)}
+									{format(day, "EEE", { locale: ptBR }).charAt(0).toUpperCase()}
                                         <span className="block font-semibold text-t-secondary text-xs">
 										{format(day, "d")}
 									</span>
 								</span>
                                     {/* Desktop: Show full format */}
                                     <span className="hidden sm:inline">
-									{format(day, "EE")}{" "}
+									{toCapitalize(
+                                        format(day, "EEEE", { locale: ptBR }).replace("-feira", ""),
+                                    )}{" "}
                                         <span className="ml-1 font-semibold text-t-secondary">
 										{format(day, "d")}
 									</span>

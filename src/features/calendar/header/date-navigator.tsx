@@ -1,4 +1,5 @@
-import { formatDate } from "date-fns";
+import { format } from "date-fns";
+import { ptBR } from "date-fns/locale";
 import { AnimatePresence, motion } from "framer-motion";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useMemo } from "react";
@@ -11,6 +12,7 @@ import {
   getEventsCount,
   navigateDate,
   rangeText,
+  toCapitalize,
 } from "@/features/calendar/helpers";
 
 import type { IEvent } from "@/features/calendar/interfaces";
@@ -27,7 +29,7 @@ const MotionBadge = motion.create(Badge);
 export function DateNavigator({ view, events }: IProps) {
   const { selectedDate, setSelectedDate } = useCalendar();
 
-  const month = formatDate(selectedDate, "MMMM");
+  const month = toCapitalize(format(selectedDate, "MMMM", { locale: ptBR }));
   const year = selectedDate.getFullYear();
 
   const eventCount = useMemo(
@@ -60,7 +62,7 @@ export function DateNavigator({ view, events }: IProps) {
             exit={{ scale: 0.8, opacity: 0 }}
             transition={transition}
           >
-            {eventCount} events
+            {eventCount} eventos
           </MotionBadge>
         </AnimatePresence>
       </div>

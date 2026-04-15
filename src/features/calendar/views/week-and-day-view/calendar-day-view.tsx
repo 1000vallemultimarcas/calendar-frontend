@@ -1,4 +1,5 @@
 import { format, isWithinInterval, parseISO } from "date-fns";
+import { ptBR } from "date-fns/locale";
 import { Calendar, Clock, User } from "lucide-react";
 import { useEffect, useRef } from "react";
 import { DayPicker } from "@/components/ui/day-picker";
@@ -7,7 +8,7 @@ import { useCalendar } from "@/features/calendar/contexts/calendar-context";
 
 import { AddEditEventDialog } from "@/features/calendar/dialogs/add-edit-event-dialog";
 import { DroppableArea } from "@/features/calendar/dnd/droppable-area";
-import { groupEvents } from "@/features/calendar/helpers";
+import { groupEvents, toCapitalize } from "@/features/calendar/helpers";
 import type { IEvent } from "@/features/calendar/interfaces";
 import { CalendarTimeline } from "@/features/calendar/views/week-and-day-view/calendar-time-line";
 import { DayViewMultiDayEventsRow } from "@/features/calendar/views/week-and-day-view/day-view-multi-day-events-row";
@@ -91,7 +92,12 @@ export function CalendarDayView({ singleDayEvents, multiDayEvents }: IProps) {
           <div className="relative z-20 flex border-b">
             <div className="w-18"></div>
             <span className="flex-1 border-l py-2 text-center text-xs font-medium text-t-quaternary">
-              {format(selectedDate, "EE")}{" "}
+              {toCapitalize(
+                format(selectedDate, "EEEE", { locale: ptBR }).replace(
+                  "-feira",
+                  "",
+                ),
+              )}{" "}
               <span className="font-semibold text-t-secondary">
                 {format(selectedDate, "d")}
               </span>
@@ -194,12 +200,12 @@ export function CalendarDayView({ singleDayEvents, multiDayEvents }: IProps) {
               </span>
 
               <p className="text-sm font-semibold text-t-secondary">
-                Happening now
+                Acontecendo agora
               </p>
             </div>
           ) : (
             <p className="p-4 text-center text-sm italic text-t-tertiary">
-              No appointments or consultations at the moment
+              Nenhum agendamento ou consulta no momento
             </p>
           )}
 
@@ -227,7 +233,13 @@ export function CalendarDayView({ singleDayEvents, multiDayEvents }: IProps) {
                       <div className="flex items-center gap-1.5">
                         <Calendar className="size-4 text-t-quinary" />
                         <span className="text-sm text-t-tertiary">
-                          {format(new Date(event.startDate), "MMM d, yyyy")}
+                          {toCapitalize(
+                            format(
+                              new Date(event.startDate),
+                              "d 'de' MMMM 'de' yyyy",
+                              { locale: ptBR },
+                            ),
+                          )}
                         </span>
                       </div>
 

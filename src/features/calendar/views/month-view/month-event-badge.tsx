@@ -121,7 +121,7 @@ export function MonthEventBadge({
               <p className="flex-1 truncate font-semibold">
                 {eventCurrentDay && (
                   <span className="text-xs">
-                    Day {eventCurrentDay} of {eventTotalDays} •{" "}
+                    Dia {eventCurrentDay} de {eventTotalDays} •{" "}
                   </span>
                 )}
                 {event.title}
