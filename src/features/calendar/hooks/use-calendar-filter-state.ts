@@ -18,9 +18,7 @@ type UseCalendarFilterStateParams = {
 export function useCalendarFilterState({
   events,
 }: UseCalendarFilterStateParams) {
-  const [selectedUserId, setSelectedUserId] = useState<IUser["id"] | "all">(
-    "all",
-  );
+  const [selectedUserIds, setSelectedUserIds] = useState<IUser["id"][]>([]);
   const [selectedColors, setSelectedColors] = useState<TEventColor[]>([]);
   const [selectedStatuses, setSelectedStatuses] = useState<TEventStatus[]>([]);
   const [selectedTypes, setSelectedTypes] = useState<TEventType[]>([]);
@@ -33,7 +31,16 @@ export function useCalendarFilterState({
   };
 
   const filterEventsBySelectedUser = (userId: IUser["id"] | "all") => {
-    setSelectedUserId(userId);
+    if (userId === "all") {
+      setSelectedUserIds([]);
+      return;
+    }
+
+    setSelectedUserIds((prev) =>
+      prev.includes(userId)
+        ? prev.filter((selectedId) => selectedId !== userId)
+        : [...prev, userId],
+    );
   };
 
   const filterEventsBySelectedStatus = (status: TEventStatus) => {
@@ -57,13 +64,13 @@ export function useCalendarFilterState({
     setSelectedStatuses([]);
     setSelectedTypes([]);
     setSelectedPriorities([]);
-    setSelectedUserId("all");
+    setSelectedUserIds([]);
   };
 
   const filteredEvents = useMemo(() => {
     return applyEventFilters({
       events,
-      selectedUserId,
+      selectedUserIds,
       selectedColors,
       selectedStatuses,
       selectedTypes,
@@ -71,7 +78,7 @@ export function useCalendarFilterState({
     });
   }, [
     events,
-    selectedUserId,
+    selectedUserIds,
     selectedColors,
     selectedStatuses,
     selectedTypes,
@@ -79,8 +86,8 @@ export function useCalendarFilterState({
   ]);
 
   return {
-    selectedUserId,
-    setSelectedUserId,
+    selectedUserIds,
+    setSelectedUserIds,
     selectedColors,
     selectedStatuses,
     selectedTypes,

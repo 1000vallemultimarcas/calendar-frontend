@@ -25,7 +25,6 @@ import { DateNavigator } from "@/features/calendar/header/date-navigator";
 import FilterEvents from "@/features/calendar/header/filter";
 import { TodayButton } from "@/features/calendar/header/today-button";
 import { UserSelect } from "@/features/calendar/header/user-select";
-import { Settings } from "@/features/calendar/settings/settings";
 import Views from "./view-tabs";
 
 export function CalendarHeader() {
@@ -45,7 +44,7 @@ export function CalendarHeader() {
       </motion.div>
 
       <motion.div
-        className="flex flex-col gap-4 lg:flex-row lg:items-center lg:gap-1.5"
+        className="flex flex-col gap-3 lg:flex-row lg:items-center lg:gap-1"
         variants={slideFromRight}
         initial="initial"
         animate="animate"
@@ -56,7 +55,7 @@ export function CalendarHeader() {
           <Views />
         </div>
 
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:gap-1.5">
+        <div className="flex flex-col gap-3 lg:flex-row lg:flex-wrap lg:items-center lg:gap-1">
           <UserSelect />
           <DeletedEventsDialog />
 
@@ -67,7 +66,6 @@ export function CalendarHeader() {
             </Button>
           </AddEditEventDialog>
         </div>
-        <Settings />
       </motion.div>
     </div>
   );

@@ -151,8 +151,8 @@ export function CalendarProvider({
   );
 
   const {
-    selectedUserId,
-    setSelectedUserId,
+    selectedUserIds,
+    setSelectedUserIds,
     selectedColors,
     selectedStatuses,
     selectedTypes,
@@ -217,8 +217,8 @@ export function CalendarProvider({
   const value: ICalendarContext = {
     selectedDate,
     setSelectedDate,
-    selectedUserId,
-    setSelectedUserId,
+    selectedUserIds,
+    setSelectedUserIds,
     badgeVariant,
     setBadgeVariant,
     users: calendarUsers,

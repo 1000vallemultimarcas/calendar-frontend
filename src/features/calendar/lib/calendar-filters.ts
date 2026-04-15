@@ -8,7 +8,7 @@ import type {
 
 type filterParams = {
   events: IEvent[];
-  selectedUserId: IUser["id"] | "all";
+  selectedUserIds: IUser["id"][];
   selectedColors: TEventColor[];
   selectedStatuses: TEventStatus[];
   selectedTypes: TEventType[];
@@ -17,7 +17,7 @@ type filterParams = {
 
 export function applyEventFilters({
   events,
-  selectedUserId,
+  selectedUserIds,
   selectedColors,
   selectedStatuses,
   selectedTypes,
@@ -25,7 +25,7 @@ export function applyEventFilters({
 }: filterParams): IEvent[] {
   return events.filter((event) => {
     const matchesUser =
-      selectedUserId === "all" || event.user.id === selectedUserId;
+      selectedUserIds.length === 0 || selectedUserIds.includes(event.user.id);
 
     const eventColor = event.color || "blue";
     const matchesColor =

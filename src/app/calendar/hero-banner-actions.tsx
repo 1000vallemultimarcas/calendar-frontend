@@ -24,7 +24,7 @@ export function HeroBannerActions() {
           ) : (
             <MoonIcon className="size-4" />
           )}
-          {isDarkMode ? "Light" : "Dark"}
+          {isDarkMode ? "Claro" : "Escuro"}
         </Button>
 
         <Link href="https://turboflow.com.br/" target="_blank">

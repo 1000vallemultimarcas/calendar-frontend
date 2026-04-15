@@ -208,3 +208,9 @@ export async function createEvent(event: Omit<IEvent, "id">): Promise<IEvent> {
 
   return mapScheduleToEvent(createdSchedule, [event.user]);
 }
+
+export async function deleteEvent(eventId: number): Promise<void> {
+  await fetcher(`${SCHEDULES_ENDPOINT}/${eventId}`, {
+    method: "DELETE",
+  });
+}

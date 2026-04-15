@@ -16,8 +16,8 @@ export interface ICalendarContext {
   use24HourFormat: boolean;
   toggleTimeFormat: () => void;
   setSelectedDate: (date: Date | undefined) => void;
-  selectedUserId: IUser["id"] | "all";
-  setSelectedUserId: (userId: IUser["id"] | "all") => void;
+  selectedUserIds: IUser["id"][];
+  setSelectedUserIds: (userIds: IUser["id"][]) => void;
   badgeVariant: "dot" | "colored";
   setBadgeVariant: (variant: "dot" | "colored") => void;
   selectedColors: TEventColor[];
