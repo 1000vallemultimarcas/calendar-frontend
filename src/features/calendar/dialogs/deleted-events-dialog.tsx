@@ -107,7 +107,9 @@ export function DeletedEventsDialog() {
 
         <ModalFooter className="justify-end">
           <ModalClose asChild>
-            <Button variant="outline">Fechar</Button>
+            <Button className="bg-orange-600 text-white hover:bg-orange-700">
+              Fechar
+            </Button>
           </ModalClose>
         </ModalFooter>
       </ModalContent>

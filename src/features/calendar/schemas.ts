@@ -1,4 +1,4 @@
-import { z } from "zod/v4";
+﻿import { z } from "zod/v4";
 
 export const eventSchema = z.object({
 	title: z.string().min(1, "Title is required"),
@@ -18,18 +18,11 @@ export const eventSchema = z.object({
 		"appointment",
 		"personal",
 		"work",
-<<<<<<< HEAD
 		"visit",
 		"test_drive",
 	]),
 	priority: z.enum(["low", "normal", "high", "urgent"]),
 	userId: z.string().optional(),
-=======
-		"test_drive",
-	]),
-	priority: z.enum(["low", "normal", "high", "urgent"]),
-	userId: z.string().min(1, "Responsible user is required"),
->>>>>>> 71cc2b3 (feat(calendar): create reusable components and refactor add-event dialog structure)
 	color: z.enum(["blue", "green", "red", "yellow", "purple", "orange"]),
 });
 

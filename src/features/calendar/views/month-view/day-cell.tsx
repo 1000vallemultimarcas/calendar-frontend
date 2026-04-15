@@ -135,8 +135,7 @@ export function DayCell({ cell, events, eventPositions }: IProps) {
             {cellEvents.length === 0 && !isMobile ? (
               <div className="w-full h-full flex justify-center items-center group">
                 <Button
-                  variant="ghost"
-                  className="border opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+                  className="bg-orange-600 text-white opacity-0 transition-opacity duration-200 hover:bg-orange-700 group-hover:opacity-100"
                 >
                   <Plus className="h-4 w-4" />
                   <span className="max-sm:hidden">Adicionar Evento</span>

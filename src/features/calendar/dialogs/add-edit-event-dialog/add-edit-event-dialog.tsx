@@ -80,7 +80,11 @@ export function AddEditEventDialog({
             </Button>
           </ModalClose>
 
-          <Button form="event-form" type="submit">
+          <Button
+            form="event-form"
+            type="submit"
+            className="bg-orange-600 text-white hover:bg-orange-700"
+          >
             {isEditing
               ? EVENT_FORM_TEXTS_PT_BR.editButton
               : EVENT_FORM_TEXTS_PT_BR.createButton}

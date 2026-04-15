@@ -1,6 +1,7 @@
 import { Suspense } from "react";
 import { Calendar } from "@/features/calendar/calendar";
 import { CalendarSkeleton } from "@/features/calendar/skeletons/calendar-skeleton";
+import { HeroBannerActions } from "./hero-banner-actions";
 
 export default function CalendarPage() {
 	return (
@@ -13,6 +14,7 @@ export default function CalendarPage() {
 							alt="TurboFlow"
 							className="h-full w-full object-contain opacity-85"
 						/>
+						<HeroBannerActions />
 						<div className="absolute inset-0 bg-gradient-to-r from-slate-950/85 via-slate-900/55 to-transparent"></div>
 						<div className="absolute inset-x-0 top-0 p-6 md:p-8">
 							<div className="inline-flex items-center rounded-full border border-orange-300/40 bg-orange-500 px-3 py-1 text-xs font-bold tracking-wide text-white">

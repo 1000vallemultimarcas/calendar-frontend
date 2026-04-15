@@ -1,4 +1,4 @@
-import { addMinutes, set } from "date-fns";
+﻿import { addMinutes, set } from "date-fns";
 import type { IEvent } from "@/features/calendar/interfaces";
 import type { TEventColor, TEventType } from "@/features/calendar/types";
 
@@ -19,11 +19,8 @@ export function getColorByType(type: TEventType): TEventColor {
       return "purple";
     case "work":
       return "orange";
-<<<<<<< HEAD
     case "visit":
       return "yellow";
-=======
->>>>>>> 71cc2b3 (feat(calendar): create reusable components and refactor add-event dialog structure)
     case "test_drive":
       return "red";
     default:
@@ -61,8 +58,4 @@ export function getInitialDates({
     startDate: new Date(event!.startDate),
     endDate: new Date(event!.endDate),
   };
-<<<<<<< HEAD
 }
-=======
-}
->>>>>>> 71cc2b3 (feat(calendar): create reusable components and refactor add-event dialog structure)

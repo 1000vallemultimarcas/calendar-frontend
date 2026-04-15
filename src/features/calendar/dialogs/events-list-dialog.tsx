@@ -1,4 +1,4 @@
-import { format } from "date-fns";
+﻿import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import type { ReactNode } from "react";
 import {
@@ -9,7 +9,6 @@ import {
   ModalTrigger,
 } from "@/components/ui/responsive-modal";
 import { Button } from "@/components/ui/button";
-import { cn } from "@/features/calendar/lib/utils";
 import { useCalendar } from "@/features/calendar/contexts/calendar-context";
 import { useAuth } from "@/features/calendar/contexts/authContext";
 import type { IEvent } from "@/features/calendar/interfaces";
@@ -33,7 +32,7 @@ export function EventListDialog({
 }: EventListDialogProps) {
   const cellEvents = events;
   const hiddenEventsCount = Math.max(cellEvents.length - maxVisibleEvents, 0);
-  const { badgeVariant, use24HourFormat, removeEvent } = useCalendar();
+  const { use24HourFormat, removeEvent } = useCalendar();
   const { user, isManager } = useAuth();
 
   const currentUserId = user?.userId;
@@ -41,7 +40,7 @@ export function EventListDialog({
   const defaultTrigger = (
     <span className="cursor-pointer text-slate-900">
       <span className="sm:hidden">+{hiddenEventsCount}</span>
-      <span className="hidden sm:inline bg-slate-200 text-slate-900 py-1 px-3 my-1 rounded-xl border border-slate-300 shadow-sm">
+      <span className="hidden rounded-xl border border-slate-300 bg-slate-200 px-3 py-1 text-slate-900 shadow-sm sm:inline">
         {hiddenEventsCount}
         <span className="mx-1">mais...</span>
       </span>
@@ -51,8 +50,7 @@ export function EventListDialog({
   return (
     <Modal>
       <ModalTrigger asChild>{children || defaultTrigger}</ModalTrigger>
-<<<<<<< HEAD
-      <ModalContent className="sm:max-w-106.25 bg-slate-750 text-slate-800">
+      <ModalContent className="bg-slate-750 text-slate-800 sm:max-w-106.25">
         <ModalHeader>
           <ModalTitle className="my-2">
             <div className="flex items-center gap-2">
@@ -61,22 +59,12 @@ export function EventListDialog({
                 className="shadow-sm"
               />
               <p className="text-sm font-semibold italic text-slate-50">
-                Eventos em{" "}
-                {format(date, "EEEE, d 'de' MMMM 'de' yyyy", { locale: ptBR })}
-=======
-      <ModalContent className="sm:max-w-106.25">
-        <ModalHeader>
-          <ModalTitle className="my-2">
-            <div className="flex items-center gap-2">
-              <EventBullet color={cellEvents[0]?.color} className="" />
-              <p className="text-sm font-medium">
                 Eventos em {format(date, "EEEE, d 'de' MMMM 'de' yyyy", { locale: ptBR })}
->>>>>>> 71cc2b3 (feat(calendar): create reusable components and refactor add-event dialog structure)
               </p>
             </div>
           </ModalTitle>
         </ModalHeader>
-        <div className="max-h-[60vh] overflow-y-auto space-y-3 px-2 pb-4">
+        <div className="max-h-[60vh] space-y-3 overflow-y-auto px-2 pb-4">
           {cellEvents.length > 0 ? (
             cellEvents.map((event) => {
               const canModify = isManager || currentUserId === event.user.id;
@@ -84,7 +72,7 @@ export function EventListDialog({
               return (
                 <div
                   key={event.id}
-                  className="space-y-2 rounded-2xl border border-slate-900 bg-slate-00 p-3 shadow-lg text-amber-50"
+                  className="space-y-2 rounded-2xl border border-slate-900 bg-slate-00 p-3 text-amber-50 shadow-lg"
                 >
                   <EventDetailsDialog event={event}>
                     <EventItem
@@ -128,9 +116,7 @@ export function EventListDialog({
               );
             })
           ) : (
-            <p className="text-sm text-muted-foreground">
-              Nenhum evento nesta data.
-            </p>
+            <p className="text-sm text-muted-foreground">Nenhum evento nesta data.</p>
           )}
         </div>
       </ModalContent>

@@ -1,4 +1,4 @@
-import { format } from "date-fns";
+﻿import { format } from "date-fns";
 import { getColorByType } from "@/features/calendar/lib/event-form.utils";
 import type { IEvent, IUser } from "@/features/calendar/interfaces";
 import type { TEventFormData } from "@/features/calendar/schemas";
@@ -20,11 +20,7 @@ interface BuildFormattedEventParams {
 }
 
 export function getDefaultUserId(users: IUser[], event?: IEvent) {
-<<<<<<< HEAD
-  return event?.user?.id ?? "";
-=======
   return event?.user?.id ?? users[0]?.id ?? "";
->>>>>>> 71cc2b3 (feat(calendar): create reusable components and refactor add-event dialog structure)
 }
 
 export function getDefaultFormValues({
@@ -38,17 +34,10 @@ export function getDefaultFormValues({
     startDate: initialDates.startDate,
     endDate: initialDates.endDate,
     status: event?.status ?? "scheduled",
-<<<<<<< HEAD
     type: event?.type ?? "visit",
     priority: event?.priority ?? "normal",
     userId: defaultUserId,
     color: event?.color ?? getColorByType(event?.type ?? "visit"),
-=======
-    type: event?.type ?? "appointment",
-    priority: event?.priority ?? "normal",
-    userId: defaultUserId,
-    color: event?.color ?? getColorByType(event?.type ?? "appointment"),
->>>>>>> 71cc2b3 (feat(calendar): create reusable components and refactor add-event dialog structure)
   };
 }
 
@@ -58,7 +47,6 @@ export function buildFormattedEvent({
   isEditing,
   users,
 }: BuildFormattedEventParams): IEvent {
-<<<<<<< HEAD
   const selectedUser = values.userId
     ? users.find((user) => user.id === values.userId)
     : undefined;
@@ -66,13 +54,6 @@ export function buildFormattedEvent({
 
   if (!eventUser) {
     throw new Error("No available user was found to associate with the event");
-=======
-  const selectedUser = users.find((user) => user.id === values.userId);
-  const eventUser = selectedUser ?? event?.user;
-
-  if (!eventUser) {
-    throw new Error("Responsible user not found");
->>>>>>> 71cc2b3 (feat(calendar): create reusable components and refactor add-event dialog structure)
   }
 
   return {
@@ -85,11 +66,8 @@ export function buildFormattedEvent({
     type: values.type,
     priority: values.priority,
     user: eventUser,
-<<<<<<< HEAD
     attendantId: selectedUser?.id ?? event?.attendantId ?? eventUser.id,
     customerId: event?.customerId,
-=======
->>>>>>> 71cc2b3 (feat(calendar): create reusable components and refactor add-event dialog structure)
     color: getColorByType(values.type),
   };
 }

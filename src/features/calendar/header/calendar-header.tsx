@@ -61,7 +61,7 @@ export function CalendarHeader() {
           <DeletedEventsDialog />
 
           <AddEditEventDialog>
-            <Button>
+            <Button className="bg-orange-600 text-white hover:bg-orange-700">
               <Plus className="h-4 w-4" />
               Adicionar evento
             </Button>
