@@ -51,6 +51,7 @@ export function EventListDialog({
   return (
     <Modal>
       <ModalTrigger asChild>{children || defaultTrigger}</ModalTrigger>
+<<<<<<< HEAD
       <ModalContent className="sm:max-w-106.25 bg-slate-750 text-slate-800">
         <ModalHeader>
           <ModalTitle className="my-2">
@@ -62,6 +63,15 @@ export function EventListDialog({
               <p className="text-sm font-semibold italic text-slate-50">
                 Eventos em{" "}
                 {format(date, "EEEE, d 'de' MMMM 'de' yyyy", { locale: ptBR })}
+=======
+      <ModalContent className="sm:max-w-106.25">
+        <ModalHeader>
+          <ModalTitle className="my-2">
+            <div className="flex items-center gap-2">
+              <EventBullet color={cellEvents[0]?.color} className="" />
+              <p className="text-sm font-medium">
+                Eventos em {format(date, "EEEE, d 'de' MMMM 'de' yyyy", { locale: ptBR })}
+>>>>>>> 71cc2b3 (feat(calendar): create reusable components and refactor add-event dialog structure)
               </p>
             </div>
           </ModalTitle>

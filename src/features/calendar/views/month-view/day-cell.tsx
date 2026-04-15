@@ -85,11 +85,17 @@ export function DayCell({ cell, events, eventPositions }: IProps) {
           animate={{ opacity: 1, x: 0 }}
           transition={{ delay: position * 0.1, ...transition }}
         >
+<<<<<<< HEAD
           <div className="group flex items-center gap-2 rounded-lg border border-muted-foreground/20 bg-muted/40 px-2 py-2 text-[10px] text-muted-foreground transition hover:bg-muted/60">
             <EventBullet color={event.color} className="size-2!" />
             <span className="truncate font-semibold text-[11px]">
               {event.user?.name ?? "Sem responsável"}
             </span>
+=======
+          <div className="flex items-center gap-2 rounded-lg border border-muted-foreground/20 bg-muted/40 px-2 py-1 text-[11px] text-muted-foreground">
+            <EventBullet color={event.color} className="size-2!" />
+            <span className="truncate">{event.user?.name ?? "Sem responsável"}</span>
+>>>>>>> 71cc2b3 (feat(calendar): create reusable components and refactor add-event dialog structure)
           </div>
         </motion.div>
       );
@@ -127,6 +133,41 @@ export function DayCell({ cell, events, eventPositions }: IProps) {
               {day}
             </motion.span>
 
+<<<<<<< HEAD
+=======
+          <motion.div
+            className={cn(
+              "flex h-fit gap-1 px-2 mt-1 lg:h-23.5 lg:flex-col lg:gap-2 lg:px-0",
+              !currentMonth && "opacity-50",
+            )}
+          >
+            {cellEvents.length === 0 && !isMobile ? (
+              <div className="w-full h-full flex justify-center items-center group">
+                <AddEditEventDialog startDate={date}>
+                  <Button
+                    variant="ghost"
+                    className="border opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+                  >
+                    <Plus className="h-4 w-4" />
+                    <span className="max-sm:hidden">Add Event</span>
+                  </Button>
+                </AddEditEventDialog>
+              </div>
+            ) : (
+              [0, 1, 2].map(renderEventAtPosition)
+            )}
+          </motion.div>
+
+          {showMobileMore && (
+            <div className="flex justify-end items-end mx-2">
+              <span className="text-[0.6rem] font-semibold text-accent-foreground">
+                +{showMoreCount}
+              </span>
+            </div>
+          )}
+
+          {showDesktopMore && (
+>>>>>>> 71cc2b3 (feat(calendar): create reusable components and refactor add-event dialog structure)
             <motion.div
               className={cn(
                 "flex h-fit gap-1 px-2 mt-1 lg:h-23.5 lg:flex-col lg:gap-2 lg:px-0",

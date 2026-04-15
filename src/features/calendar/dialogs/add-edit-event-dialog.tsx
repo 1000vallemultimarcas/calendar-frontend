@@ -63,7 +63,11 @@ export function AddEditEventDialog({
   startTime,
   event,
 }: IProps) {
+<<<<<<< HEAD
   const { isOpen, onOpen, onClose } = useDisclosure();
+=======
+  const { isOpen, onClose, onToggle } = useDisclosure();
+>>>>>>> 71cc2b3 (feat(calendar): create reusable components and refactor add-event dialog structure)
   const { addEvent, updateEvent, users } = useCalendar();
   const isEditing = !!event;
 
@@ -157,8 +161,28 @@ export function AddEditEventDialog({
   };
 
   return (
+<<<<<<< HEAD
     <Dialog open={isOpen} onOpenChange={(open) => (open ? onOpen() : onClose())}>
       <DialogTrigger asChild>{children}</DialogTrigger>
+=======
+    <Modal open={isOpen} onOpenChange={onToggle} modal={false}>
+      <ModalTrigger asChild>{children}</ModalTrigger>
+
+      <ModalContent>
+        <ModalHeader>
+          <ModalTitle>
+            {isEditing
+              ? EVENT_FORM_TEXTS_PT_BR.editTitle
+              : EVENT_FORM_TEXTS_PT_BR.createTitle}
+          </ModalTitle>
+
+          <ModalDescription>
+            {isEditing
+              ? EVENT_FORM_TEXTS_PT_BR.editDescription
+              : EVENT_FORM_TEXTS_PT_BR.createDescription}
+          </ModalDescription>
+        </ModalHeader>
+>>>>>>> 71cc2b3 (feat(calendar): create reusable components and refactor add-event dialog structure)
 
       <DialogContent className="z-60 w-[min(95vw,630px)] max-h-[90dvh]">
         <DialogHeader>
@@ -387,6 +411,7 @@ export function AddEditEventDialog({
             />
           </form>
         </Form>
+<<<<<<< HEAD
         </div>
 
         <DialogFooter className="flex justify-end gap-2">
@@ -395,6 +420,15 @@ export function AddEditEventDialog({
               {EVENT_FORM_TEXTS_PT_BR.cancelButton}
             </Button>
           </DialogClose>
+=======
+
+        <ModalFooter className="flex justify-end gap-2">
+          <ModalClose asChild>
+            <Button type="button" variant="outline">
+              {EVENT_FORM_TEXTS_PT_BR.cancelButton}
+            </Button>
+          </ModalClose>
+>>>>>>> 71cc2b3 (feat(calendar): create reusable components and refactor add-event dialog structure)
 
           <Button form="event-form" type="submit">
             {isEditing

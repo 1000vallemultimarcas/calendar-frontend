@@ -23,6 +23,7 @@ export function AddEditEventDialog({
   startDate,
   startTime,
 }: AddEditEventDialogProps) {
+<<<<<<< HEAD
   const {
     form,
     isOpen,
@@ -40,6 +41,17 @@ export function AddEditEventDialog({
 
   return (
     <Modal open={isOpen} onOpenChange={setIsOpen} modal={false}>
+=======
+  const { form, isOpen, onToggle, onSubmit, isEditing, users } =
+    useEventDialogForm({
+      event,
+      startDate,
+      startTime,
+    });
+
+  return (
+    <Modal open={isOpen} onOpenChange={onToggle} modal={false}>
+>>>>>>> 71cc2b3 (feat(calendar): create reusable components and refactor add-event dialog structure)
       <ModalTrigger asChild>{children}</ModalTrigger>
 
       <ModalContent className="max-w-[95vw] sm:max-w-175">
@@ -64,12 +76,16 @@ export function AddEditEventDialog({
           >
             <EventBasicFields form={form} />
             <EventScheduleFields form={form} />
+<<<<<<< HEAD
             <EventMetaFields
               form={form}
               users={users}
               isUserSelectionDisabled={isUserSelectionDisabled}
               currentUserId={currentUserId}
             />
+=======
+            <EventMetaFields form={form} users={users} />
+>>>>>>> 71cc2b3 (feat(calendar): create reusable components and refactor add-event dialog structure)
           </form>
         </Form>
 

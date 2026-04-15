@@ -18,7 +18,10 @@ export const TYPE_LABELS_PT_BR: Record<TEventType, string> = {
   appointment: "Compromisso",
   personal: "Pessoal",
   work: "Trabalho",
+<<<<<<< HEAD
   visit: "Visita",
+=======
+>>>>>>> 71cc2b3 (feat(calendar): create reusable components and refactor add-event dialog structure)
   test_drive: "Test drive",
 };
 
@@ -53,4 +56,8 @@ export const EVENT_FORM_TEXTS_PT_BR = {
   editSuccess: "Agendamento atualizado com sucesso",
   createError: "Falha ao criar agendamento",
   editError: "Falha ao editar agendamento",
+<<<<<<< HEAD
 };
+=======
+};
+>>>>>>> 71cc2b3 (feat(calendar): create reusable components and refactor add-event dialog structure)
