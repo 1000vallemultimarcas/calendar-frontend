@@ -1,8 +1,9 @@
 import { format } from "date-fns";
+import { ptBR } from "date-fns/locale";
 import { CalendarIcon } from "lucide-react";
 import type { ControllerRenderProps, UseFormReturn } from "react-hook-form";
 import { Button } from "@/components/ui/button";
-import { Calendar } from "@/components/ui/calendar";
+import { DayPicker } from "@/components/ui/day-picker";
 import {
   FormControl,
   FormItem,
@@ -100,7 +101,7 @@ export function DateTimePicker({ form, field }: DatePickerProps) {
         {field.name === "startDate" ? "Data inicial" : "Data final"}
       </FormLabel>
 
-      <Popover modal={false}>
+      <Popover modal>
         <PopoverTrigger asChild>
           <FormControl>
             <Button
@@ -126,20 +127,26 @@ export function DateTimePicker({ form, field }: DatePickerProps) {
         </PopoverTrigger>
 
         <PopoverContent
-          align="start"
-          sideOffset={8}
-          className="z-[80] w-[340px] max-w-[95vw] overflow-hidden rounded-xl p-0 shadow-xl"
+          side="right"
+          align="center"
+          sideOffset={10}
+          collisionPadding={12}
+          className="z-[80] h-[420px] w-[340px] max-h-[calc(100dvh-2rem)] max-w-[95vw] overflow-hidden rounded-xl p-0 shadow-xl"
         >
-          <div className="flex flex-col">
-            <Calendar
-              mode="single"
-              selected={field.value}
-              onSelect={handleDateSelect}
-              initialFocus
-            />
+          <div className="flex h-full flex-col">
+            <div className="flex-1 overflow-y-auto p-2">
+              <DayPicker
+                mode="single"
+                selected={field.value}
+                onSelect={handleDateSelect}
+                locale={ptBR}
+                initialFocus
+                className="mx-auto w-fit p-0"
+              />
+            </div>
 
-            <div className="grid grid-cols-2 border-t sm:grid-cols-3">
-              <ScrollArea className="h-44 border-r">
+            <div className="grid shrink-0 grid-cols-2 border-t sm:grid-cols-3">
+              <ScrollArea className="h-36 border-r">
                 <div className="grid gap-1 p-2">
                   {hourOptions.map((hour) => (
                     <Button
@@ -156,7 +163,7 @@ export function DateTimePicker({ form, field }: DatePickerProps) {
                 </div>
               </ScrollArea>
 
-              <ScrollArea className="h-44 border-r">
+              <ScrollArea className="h-36 border-r">
                 <div className="grid gap-1 p-2">
                   {Array.from({ length: 12 }, (_, i) => i * 5).map((minute) => (
                     <Button

@@ -13,9 +13,11 @@ import { Resizable, type ResizeCallback } from "re-resizable";
 import type React from "react";
 import { useCallback, useMemo, useState } from "react";
 import { cn } from "@/features/calendar/lib/utils";
+import { useAuth } from "@/features/calendar/contexts/authContext";
 import { useCalendar } from "@/features/calendar/contexts/calendar-context";
 
 import type { IEvent } from "@/features/calendar/interfaces";
+import { canManageEvent } from "@/features/calendar/lib/permissions";
 
 interface ResizableEventBlockProps {
   event: IEvent;
@@ -33,6 +35,8 @@ export function ResizableEvent({
   className,
 }: ResizableEventBlockProps) {
   const { updateEvent, use24HourFormat } = useCalendar();
+  const { user, isManager } = useAuth();
+  const canResize = canManageEvent(event.user?.id, user?.userId, isManager);
 
   const [isResizing, setIsResizing] = useState(false);
   const [resizePreview, setResizePreview] = useState<{
@@ -58,11 +62,13 @@ export function ResizableEvent({
   }, [start]);
 
   const handleResizeStart = useCallback(() => {
+    if (!canResize) return;
     setIsResizing(true);
-  }, []);
+  }, [canResize]);
 
   const handleResize: ResizeCallback = useCallback(
     (_, direction, ref) => {
+      if (!canResize) return;
       const newHeight = parseInt(ref.style.height, 10);
       const newDuration = Math.max(
         MIN_DURATION,
@@ -105,6 +111,7 @@ export function ResizableEvent({
       use24HourFormat,
       updateEvent,
       event,
+      canResize,
     ],
   );
 
@@ -118,8 +125,8 @@ export function ResizableEvent({
       minHeight: 15,
       maxHeight: 1440,
       enable: {
-        top: true,
-        bottom: true,
+        top: canResize,
+        bottom: canResize,
         topRight: false,
         bottomRight: false,
         bottomLeft: false,
@@ -151,7 +158,7 @@ export function ResizableEvent({
         isResizing && "z-50 shadow-lg",
       ),
     }),
-    [handleResizeStart, handleResize, handleResizeStop, isResizing],
+    [handleResizeStart, handleResize, handleResizeStop, isResizing, canResize],
   );
 
   return (

@@ -1,5 +1,11 @@
 import type { IUser, IEvent } from "../interfaces";
-import type { TCalendarView, TEventColor } from "../types";
+import type {
+  TCalendarView,
+  TEventColor,
+  TEventPriority,
+  TEventStatus,
+  TEventType,
+} from "../types";
 
 export interface ICalendarContext {
   selectedDate: Date;
@@ -15,7 +21,13 @@ export interface ICalendarContext {
   badgeVariant: "dot" | "colored";
   setBadgeVariant: (variant: "dot" | "colored") => void;
   selectedColors: TEventColor[];
+  selectedStatuses: TEventStatus[];
+  selectedTypes: TEventType[];
+  selectedPriorities: TEventPriority[];
   filterEventsBySelectedColors: (color: TEventColor) => void;
+  filterEventsBySelectedStatus: (status: TEventStatus) => void;
+  filterEventsBySelectedType: (type: TEventType) => void;
+  filterEventsBySelectedPriority: (priority: TEventPriority) => void;
   filterEventsBySelectedUser: (userId: IUser["id"] | "all") => void;
   users: IUser[];
   events: IEvent[];

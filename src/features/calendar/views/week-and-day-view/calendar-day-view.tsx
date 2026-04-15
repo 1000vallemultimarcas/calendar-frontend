@@ -126,7 +126,7 @@ export function CalendarDayView({ singleDayEvents, multiDayEvents }: IProps) {
             </div>
 
             {/* Day grid */}
-            <div className="relative flex-1 border-l">
+            <div className="relative isolate flex-1 border-l">
               <div className="relative">
                 {hours.map((hour, index) => (
                   <div
@@ -142,13 +142,13 @@ export function CalendarDayView({ singleDayEvents, multiDayEvents }: IProps) {
                       date={selectedDate}
                       hour={hour}
                       minute={0}
-                      className="absolute inset-x-0 top-0 h-[48px]"
+                      className="absolute inset-x-0 top-0 z-0 h-[48px]"
                     >
                       <AddEditEventDialog
                         startDate={selectedDate}
                         startTime={{ hour, minute: 0 }}
                       >
-                        <div className="absolute inset-0 cursor-pointer transition-colors hover:bg-secondary" />
+                        <div className="absolute inset-0 z-0 cursor-pointer transition-colors hover:bg-secondary" />
                       </AddEditEventDialog>
                     </DroppableArea>
 
@@ -158,13 +158,13 @@ export function CalendarDayView({ singleDayEvents, multiDayEvents }: IProps) {
                       date={selectedDate}
                       hour={hour}
                       minute={30}
-                      className="absolute inset-x-0 bottom-0 h-[48px]"
+                      className="absolute inset-x-0 bottom-0 z-0 h-[48px]"
                     >
                       <AddEditEventDialog
                         startDate={selectedDate}
                         startTime={{ hour, minute: 30 }}
                       >
-                        <div className="absolute inset-0 cursor-pointer transition-colors hover:bg-secondary" />
+                        <div className="absolute inset-0 z-0 cursor-pointer transition-colors hover:bg-secondary" />
                       </AddEditEventDialog>
                     </DroppableArea>
                   </div>

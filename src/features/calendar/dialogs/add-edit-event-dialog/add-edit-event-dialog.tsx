@@ -39,7 +39,7 @@ export function AddEditEventDialog({
   });
 
   return (
-    <Modal open={isOpen} onOpenChange={setIsOpen} modal={false}>
+    <Modal open={isOpen} onOpenChange={setIsOpen}>
       <ModalTrigger asChild>{children}</ModalTrigger>
 
       <ModalContent className="max-w-[95vw] sm:max-w-175">

@@ -10,6 +10,7 @@ import { eventSchema, type TEventFormData } from "@/features/calendar/schemas";
 import { EVENT_FORM_TEXTS_PT_BR } from "@/features/calendar/constants/event-form.constants";
 import { getDefaultFormValues, getDefaultUserId, buildFormattedEvent } from "./event-dialog.utils";
 import { getInitialDates } from "@/features/calendar/lib/event-form.utils";
+import { canManageEvent } from "@/features/calendar/lib/permissions";
 import type { AddEditEventDialogProps } from "./event-dialog.types";
 
 export function useEventDialogForm({
@@ -61,6 +62,11 @@ export function useEventDialogForm({
 
   const onSubmit = async (values: TEventFormData) => {
     try {
+      if (isEditing && !canManageEvent(event?.user?.id, currentUserId, isManager)) {
+        toast.error("Você só pode editar seus próprios eventos.");
+        return;
+      }
+
       const formattedEvent = buildFormattedEvent({
         values: {
           ...values,
@@ -78,6 +84,11 @@ export function useEventDialogForm({
         updateEvent(formattedEvent);
         toast.success(EVENT_FORM_TEXTS_PT_BR.editSuccess);
       } else {
+        if (!canManageEvent(formattedEvent.user?.id, currentUserId, isManager)) {
+          toast.error("Você só pode criar eventos para seu próprio usuário.");
+          return;
+        }
+
         const createdEvent = await createEventRequest(formattedEvent);
         addEvent(createdEvent);
         toast.success(EVENT_FORM_TEXTS_PT_BR.createSuccess);

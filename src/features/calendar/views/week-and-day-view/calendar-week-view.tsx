@@ -129,7 +129,7 @@ export function CalendarWeekView({singleDayEvents, multiDayEvents}: IProps) {
 
                         {/* Week grid */}
                         <motion.div
-                            className="relative flex-1 border-l"
+                            className="relative isolate flex-1 border-l"
                             variants={staggerContainer}
                         >
                             <div className="grid grid-cols-7 divide-x">
@@ -167,14 +167,14 @@ export function CalendarWeekView({singleDayEvents, multiDayEvents}: IProps) {
                                                         date={day}
                                                         hour={hour}
                                                         minute={0}
-                                                        className="absolute inset-x-0 top-0  h-[48px]"
+                                                        className="absolute inset-x-0 top-0 z-0 h-[48px]"
                                                     >
                                                         <AddEditEventDialog
                                                             startDate={day}
                                                             startTime={{hour, minute: 0}}
                                                         >
                                                             <div
-                                                                className="absolute inset-0 cursor-pointer transition-colors hover:bg-secondary"/>
+                                                                className="absolute inset-0 z-0 cursor-pointer transition-colors hover:bg-secondary"/>
                                                         </AddEditEventDialog>
                                                     </DroppableArea>
 
@@ -185,14 +185,14 @@ export function CalendarWeekView({singleDayEvents, multiDayEvents}: IProps) {
                                                         date={day}
                                                         hour={hour}
                                                         minute={30}
-                                                        className="absolute inset-x-0 bottom-0 h-[48px]"
+                                                        className="absolute inset-x-0 bottom-0 z-0 h-[48px]"
                                                     >
                                                         <AddEditEventDialog
                                                             startDate={day}
                                                             startTime={{hour, minute: 30}}
                                                         >
                                                             <div
-                                                                className="absolute inset-0 cursor-pointer transition-colors hover:bg-secondary"/>
+                                                                className="absolute inset-0 z-0 cursor-pointer transition-colors hover:bg-secondary"/>
                                                         </AddEditEventDialog>
                                                     </DroppableArea>
                                                 </motion.div>

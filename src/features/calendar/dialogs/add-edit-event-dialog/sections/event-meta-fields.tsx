@@ -84,7 +84,10 @@ export function EventMetaFields({
                               src={user.picturePath ?? undefined}
                               alt={user.name}
                             />
-                            <AvatarFallback className="text-xxs">
+                            <AvatarFallback
+                              className="text-xxs text-white"
+                              style={{ backgroundColor: user.userColor }}
+                            >
                               {user.name[0]}
                             </AvatarFallback>
                           </Avatar>

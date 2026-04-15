@@ -1,7 +1,15 @@
 "use client";
 
 import type React from "react";
-import { createContext, useContext, useEffect, useMemo, useState } from "react";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
+import { toast } from "sonner";
 import type { IEvent, IUser } from "@/features/calendar/interfaces";
 import type { TCalendarView } from "@/features/calendar/types";
 import type { ICalendarContext } from "./calendar-context.types";
@@ -9,6 +17,7 @@ import { useCalendarFilterState } from "@/features/calendar/hooks/use-calendar-f
 import { useCalendarSettingsState } from "@/features/calendar/hooks/use-calendar-settings-state";
 import { useCalendarEventState } from "../hooks/use-calendar-event-state";
 import { useAuth } from "./authContext";
+import { canManageEvent } from "@/features/calendar/lib/permissions";
 import { getEvents, getUsers, mapViewToSchedulePeriod } from "../requests";
 const CalendarContext = createContext({} as ICalendarContext);
 
@@ -27,7 +36,8 @@ export function CalendarProvider({
   badge = "colored",
   view = "day",
 }: CalendarProviderProps) {
-  const { token } = useAuth();
+  const { token, user, isManager } = useAuth();
+  const currentUserId = user?.userId;
   const [selectedDate, setSelectedDateState] = useState(new Date());
   const [isLoadingEvents, setIsLoadingEvents] = useState(false);
   const [calendarUsers, setCalendarUsers] = useState<IUser[]>(users);
@@ -35,11 +45,11 @@ export function CalendarProvider({
   const {
     allEvents,
     setEvents,
-    addEvent,
-    updateEvent,
-    removeEvent,
-    restoreEvent,
-    purgeEvent,
+    addEvent: addEventRaw,
+    updateEvent: updateEventRaw,
+    removeEvent: removeEventRaw,
+    restoreEvent: restoreEventRaw,
+    purgeEvent: purgeEventRaw,
   } = useCalendarEventState({
     initialEvents: events,
   });
@@ -64,15 +74,93 @@ export function CalendarProvider({
   );
 
   const deletedEvents = useMemo(
-    () => allEvents.filter((event) => event.deletedAt),
+    () => allEvents.filter((event) => !!event.deletedAt),
     [allEvents],
+  );
+
+  const addEvent = useCallback(
+    (event: IEvent) => {
+      if (!canManageEvent(event.user?.id, currentUserId, isManager)) {
+        toast.error("Atendente só pode criar eventos próprios.");
+        return;
+      }
+
+      addEventRaw(event);
+    },
+    [addEventRaw, currentUserId, isManager],
+  );
+
+  const updateEvent = useCallback(
+    (event: IEvent) => {
+      const existingEvent = allEvents.find((current) => current.id === event.id);
+      const ownerId = existingEvent?.user?.id ?? event.user?.id;
+
+      if (!canManageEvent(ownerId, currentUserId, isManager)) {
+        toast.error("Atendente só pode editar eventos próprios.");
+        return;
+      }
+
+      updateEventRaw(event);
+    },
+    [allEvents, currentUserId, isManager, updateEventRaw],
+  );
+
+  const removeEvent = useCallback(
+    (eventId: number, deletedBy?: string) => {
+      const event = allEvents.find((current) => current.id === eventId);
+      const ownerId = event?.user?.id;
+
+      if (!canManageEvent(ownerId, currentUserId, isManager)) {
+        toast.error("Atendente só pode excluir eventos próprios.");
+        return;
+      }
+
+      removeEventRaw(eventId, deletedBy);
+    },
+    [allEvents, currentUserId, isManager, removeEventRaw],
+  );
+
+  const restoreEvent = useCallback(
+    (eventId: number) => {
+      const event = allEvents.find((current) => current.id === eventId);
+      const ownerId = event?.user?.id;
+
+      if (!canManageEvent(ownerId, currentUserId, isManager)) {
+        toast.error("Atendente só pode restaurar eventos próprios.");
+        return;
+      }
+
+      restoreEventRaw(eventId);
+    },
+    [allEvents, currentUserId, isManager, restoreEventRaw],
+  );
+
+  const purgeEvent = useCallback(
+    (eventId: number) => {
+      const event = allEvents.find((current) => current.id === eventId);
+      const ownerId = event?.user?.id;
+
+      if (!canManageEvent(ownerId, currentUserId, isManager)) {
+        toast.error("Atendente só pode remover eventos próprios.");
+        return;
+      }
+
+      purgeEventRaw(eventId);
+    },
+    [allEvents, currentUserId, isManager, purgeEventRaw],
   );
 
   const {
     selectedUserId,
     setSelectedUserId,
     selectedColors,
+    selectedStatuses,
+    selectedTypes,
+    selectedPriorities,
     filterEventsBySelectedColors,
+    filterEventsBySelectedStatus,
+    filterEventsBySelectedType,
+    filterEventsBySelectedPriority,
     filterEventsBySelectedUser,
     filteredEvents,
     clearFilter,
@@ -135,7 +223,13 @@ export function CalendarProvider({
     setBadgeVariant,
     users: calendarUsers,
     selectedColors,
+    selectedStatuses,
+    selectedTypes,
+    selectedPriorities,
     filterEventsBySelectedColors,
+    filterEventsBySelectedStatus,
+    filterEventsBySelectedType,
+    filterEventsBySelectedPriority,
     filterEventsBySelectedUser,
     events: filteredEvents,
     deletedEvents,

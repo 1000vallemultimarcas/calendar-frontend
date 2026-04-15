@@ -1,6 +1,7 @@
 import { format } from "date-fns";
 import type { IEvent, IUser } from "@/features/calendar/interfaces";
 import { getColorByType } from "@/features/calendar/lib/event-form.utils";
+import { withUniqueUserColors, withUserColor } from "@/features/calendar/lib/user-color.utils";
 import type {
   TCalendarView,
   TEventStatus,
@@ -26,6 +27,7 @@ type UserApiItem = {
   id: string;
   name: string;
   picturePath?: string | null;
+  userColor?: string;
 };
 
 type UsersApiResponse = UserApiItem[] | { users: UserApiItem[] };
@@ -46,11 +48,14 @@ const SCHEDULES_ENDPOINT =
 function normalizeUsersResponse(payload: UsersApiResponse): IUser[] {
   const items = Array.isArray(payload) ? payload : payload.users;
 
-  return items.map((user) => ({
-    id: user.id,
-    name: user.name,
-    picturePath: user.picturePath ?? null,
-  }));
+  return withUniqueUserColors(
+    items.map((user) => ({
+      id: user.id,
+      name: user.name,
+      picturePath: user.picturePath ?? null,
+      userColor: user.userColor,
+    })),
+  );
 }
 
 function normalizeStatus(status: string): TEventStatus {
@@ -123,11 +128,12 @@ function mapScheduleToEvent(schedule: ScheduleApiItem, users: IUser[]): IEvent {
     customerId: schedule.customerId,
     attendantId: schedule.attendantId,
     user:
-      users.find((user) => user.id === schedule.attendantId) ?? {
+      users.find((user) => user.id === schedule.attendantId) ??
+      withUserColor({
         id: schedule.attendantId,
         name: fallbackUserName,
         picturePath: null,
-      },
+      }),
   };
 }
 

@@ -103,65 +103,59 @@ export function DayCell({ cell, events, eventPositions }: IProps) {
 
   const cellContent = useMemo(
     () => (
-      <EventListDialog date={date} events={cellEvents}>
-        <motion.div
-          className={cn(
-            "flex h-full lg:min-h-40 flex-col gap-1 border-l border-t transition duration-200",
-            isSunday(date) && "border-l-0",
-            currentMonth && "cursor-pointer hover:bg-muted/10 hover:shadow-sm",
-          )}
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={transition}
-        >
-          <DroppableArea date={date} className="w-full h-full py-2">
-            <motion.span
-              className={cn(
-                "h-6 px-1 text-xs font-semibold lg:px-2 transition-colors duration-200",
-                "rounded-full",
-                !currentMonth && "opacity-20",
-                isToday(date) &&
-                  "flex w-6 translate-x-1 items-center justify-center rounded-full bg-primary px-0 font-bold text-primary-foreground",
-              )}
-            >
-              {day}
-            </motion.span>
-
-            <motion.div
-              className={cn(
-                "flex h-fit gap-1 px-2 mt-1 lg:h-23.5 lg:flex-col lg:gap-2 lg:px-0",
-                !currentMonth && "opacity-50",
-              )}
-            >
-              {cellEvents.length === 0 && !isMobile ? (
-                <div className="w-full h-full flex justify-center items-center group">
-                  <AddEditEventDialog startDate={date}>
-                    <Button
-                      variant="ghost"
-                      onClick={(event) => event.stopPropagation()}
-                      className="border opacity-0 group-hover:opacity-100 transition-opacity duration-200"
-                    >
-                      <Plus className="h-4 w-4" />
-                      <span className="max-sm:hidden">Add Event</span>
-                    </Button>
-                  </AddEditEventDialog>
-                </div>
-              ) : (
-                [0, 1, 2].map(renderEventAtPosition)
-              )}
-            </motion.div>
-
-            {showMore && (
-              <div className="flex justify-end items-end mx-2">
-                <span className="text-[0.6rem] font-semibold text-accent-foreground">
-                  +{showMoreCount} mais
-                </span>
-              </div>
+      <motion.div
+        className={cn(
+          "flex h-full lg:min-h-40 flex-col gap-1 border-l border-t transition duration-200",
+          isSunday(date) && "border-l-0",
+          currentMonth && "cursor-pointer hover:bg-muted/10 hover:shadow-sm",
+        )}
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={transition}
+      >
+        <DroppableArea date={date} className="w-full h-full py-2">
+          <motion.span
+            className={cn(
+              "h-6 px-1 text-xs font-semibold lg:px-2 transition-colors duration-200",
+              "rounded-full",
+              !currentMonth && "opacity-20",
+              isToday(date) &&
+                "flex w-6 translate-x-1 items-center justify-center rounded-full bg-primary px-0 font-bold text-primary-foreground",
             )}
+          >
+            {day}
+          </motion.span>
 
-          </DroppableArea>
-        </motion.div>
-      </EventListDialog>
+          <motion.div
+            className={cn(
+              "flex h-fit gap-1 px-2 mt-1 lg:h-23.5 lg:flex-col lg:gap-2 lg:px-0",
+              !currentMonth && "opacity-50",
+            )}
+          >
+            {cellEvents.length === 0 && !isMobile ? (
+              <div className="w-full h-full flex justify-center items-center group">
+                <Button
+                  variant="ghost"
+                  className="border opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+                >
+                  <Plus className="h-4 w-4" />
+                  <span className="max-sm:hidden">Adicionar Evento</span>
+                </Button>
+              </div>
+            ) : (
+              [0, 1, 2].map(renderEventAtPosition)
+            )}
+          </motion.div>
+
+          {showMore && (
+            <div className="flex justify-end items-end mx-2">
+              <span className="text-[0.6rem] font-semibold text-accent-foreground">
+                +{showMoreCount} mais
+              </span>
+            </div>
+          )}
+        </DroppableArea>
+      </motion.div>
     ),
     [
       date,
@@ -175,13 +169,9 @@ export function DayCell({ cell, events, eventPositions }: IProps) {
     ],
   );
 
-  if (isMobile && currentMonth) {
-    return (
-      <EventListDialog date={date} events={cellEvents}>
-        {cellContent}
-      </EventListDialog>
-    );
+  if (currentMonth && cellEvents.length === 0) {
+    return <AddEditEventDialog startDate={date}>{cellContent}</AddEditEventDialog>;
   }
 
-  return cellContent;
+  return <EventListDialog date={date} events={cellEvents}>{cellContent}</EventListDialog>;
 }

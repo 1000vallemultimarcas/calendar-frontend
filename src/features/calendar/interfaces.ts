@@ -4,6 +4,7 @@ export interface IUser {
 	id: string;
 	name: string;
 	picturePath: string | null;
+	userColor: string;
 }
 
 export interface IEvent {

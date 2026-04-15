@@ -10,3 +10,13 @@ export function isManager(permissionLevel?: number | null) {
 export function isEmployee(permissionLevel?: number | null) {
   return permissionLevel === PERMISSION_LEVELS.EMPLOYEE;
 }
+
+export function canManageEvent(
+  eventOwnerId: string | undefined,
+  currentUserId: string | undefined,
+  isManagerUser: boolean,
+) {
+  if (isManagerUser) return true;
+  if (!currentUserId || !eventOwnerId) return false;
+  return currentUserId === eventOwnerId;
+}
