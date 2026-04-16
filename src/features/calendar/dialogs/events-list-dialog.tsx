@@ -50,7 +50,7 @@ export function EventListDialog({
   return (
     <Modal>
       <ModalTrigger asChild>{children || defaultTrigger}</ModalTrigger>
-      <ModalContent className="bg-slate-750 text-slate-800 sm:max-w-106.25">
+      <ModalContent className="bg-slate-100 text-foreground dark:bg-background sm:max-w-106.25">
         <ModalHeader>
           <ModalTitle className="my-2">
             <div className="flex items-center gap-2">
@@ -58,7 +58,7 @@ export function EventListDialog({
                 color={cellEvents[0]?.color ?? "blue"}
                 className="shadow-sm"
               />
-              <p className="text-sm font-semibold italic text-slate-50">
+              <p className="text-sm font-semibold italic text-foreground">
                 Eventos em {format(date, "EEEE, d 'de' MMMM 'de' yyyy", { locale: ptBR })}
               </p>
             </div>
@@ -72,7 +72,7 @@ export function EventListDialog({
               return (
                 <div
                   key={event.id}
-                  className="space-y-2 rounded-2xl border border-slate-900 bg-slate-00 p-3 text-amber-50 shadow-lg"
+                  className="space-y-2 rounded-2xl border border-slate-300 bg-slate-50 p-3 text-slate-900 shadow-lg dark:border-border dark:bg-card dark:text-card-foreground"
                 >
                   <EventDetailsDialog event={event}>
                     <EventItem
@@ -94,7 +94,7 @@ export function EventListDialog({
                         <Button
                           size="sm"
                           variant="secondary"
-                          className="border-slate-700 bg-slate-700 text-white hover:bg-slate-800"
+                          className="border-slate-300 bg-slate-100 text-slate-900 hover:bg-slate-200 dark:border-slate-700 dark:bg-slate-700 dark:text-white dark:hover:bg-slate-800"
                         >
                           Editar
                         </Button>
