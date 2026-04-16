@@ -46,7 +46,7 @@ const mockManager: DecodedToken = {
 const mockEmployee: DecodedToken = {
   userId: "3e36ea6e-78f3-40dd-ab8c-a6c737c3c422",
   id: 2,
-  name: "Funcionário Teste",
+  name: "Funcionario Teste",
   mail: "funcionario@email.com",
   permissionId: 1,
   permissionLevel: 1,
@@ -62,17 +62,24 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   useEffect(() => {
     const storedToken = localStorage.getItem("token");
+    const fallbackToken = process.env.NEXT_PUBLIC_TEST_MANAGER_TOKEN;
+    const tokenToUse = storedToken || fallbackToken;
 
-    if (!storedToken) {
+    if (!tokenToUse) {
       return;
     }
 
     try {
-      const decoded: DecodedToken = jwtDecode(storedToken);
-      setToken(storedToken);
+      const decoded: DecodedToken = jwtDecode(tokenToUse);
+
+      if (!storedToken && fallbackToken) {
+        localStorage.setItem("token", fallbackToken);
+      }
+
+      setToken(tokenToUse);
       setUser(decoded);
     } catch (error) {
-      console.error("Token invÃ¡lido:", error);
+      console.error("Token invalido:", error);
       localStorage.removeItem("token");
     }
   }, []);
@@ -93,7 +100,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setToken(newToken);
       setUser(decoded);
     } catch (error) {
-      console.error("Token inválido:", error);
+      console.error("Token invalido:", error);
     }
   };
 

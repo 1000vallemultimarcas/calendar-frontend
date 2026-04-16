@@ -113,13 +113,23 @@ To run the project locally, follow these steps:
     pnpm install
     ```
 
-3.  **Start the development server**:
+3.  **Configure environment variables**:
+
+    ```bash
+    cp .env.example .env.local
+    ```
+
+    - Set `NEXT_PUBLIC_API_BASE_URL` to your backend URL.
+    - If your backend exposes routes under `/api`, set:
+      `NEXT_PUBLIC_BACKEND_API_PREFIX=/api`
+
+4.  **Start the development server**:
 
     ```bash
     pnpm dev
     ```
 
-4.  **Open the application**:
+5.  **Open the application**:
 
     Open [http://localhost:3000](http://localhost:3000) in your browser to view the application.
 

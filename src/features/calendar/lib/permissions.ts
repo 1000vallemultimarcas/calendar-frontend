@@ -4,7 +4,8 @@ export const PERMISSION_LEVELS = {
 } as const;
 
 export function isManager(permissionLevel?: number | null) {
-  return permissionLevel === PERMISSION_LEVELS.MANAGER;
+  // Backend can return manager-like roles above 2 (e.g. manager geral/admin).
+  return (permissionLevel ?? 0) >= PERMISSION_LEVELS.MANAGER;
 }
 
 export function isEmployee(permissionLevel?: number | null) {
