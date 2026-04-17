@@ -1,6 +1,7 @@
 "use client";
 
 import { format, parseISO } from "date-fns";
+import { ptBR } from "date-fns/locale";
 import { Calendar, Clock, Text, User } from "lucide-react";
 import type { ReactNode } from "react";
 import { toast } from "sonner";
@@ -15,8 +16,9 @@ import {
 } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useCalendar } from "@/features/calendar/contexts/calendar-context";
+import { useAuth } from "@/features/calendar/contexts/authContext";
 import { AddEditEventDialog } from "@/features/calendar/dialogs/add-edit-event-dialog";
-import { formatTime } from "@/features/calendar/helpers";
+import { formatTime, toCapitalize } from "@/features/calendar/helpers";
 import type { IEvent } from "@/features/calendar/interfaces";
 
 interface IProps {
@@ -27,11 +29,18 @@ interface IProps {
 export function EventDetailsDialog({ event, children }: IProps) {
   const startDate = parseISO(event.startDate);
   const endDate = parseISO(event.endDate);
+  const scheduledAt = event.createdAt ? parseISO(event.createdAt) : null;
   const { use24HourFormat, removeEvent } = useCalendar();
+  const { user, canManageCalendar } = useAuth();
+  const schedulerRoleLabel =
+    typeof event.scheduledBy?.permissionLevel === "number" &&
+    event.scheduledBy.permissionLevel >= 2
+      ? "Gerente"
+      : "Usuario";
 
   const deleteEvent = (eventId: number) => {
     try {
-      removeEvent(eventId);
+      removeEvent(eventId, user?.name);
       toast.success("Event deleted successfully.");
     } catch {
       toast.error("Error deleting event.");
@@ -52,8 +61,35 @@ export function EventDetailsDialog({ event, children }: IProps) {
               <User className="mt-1 size-4 shrink-0 text-muted-foreground" />
               <div>
                 <p className="text-sm font-medium">Responsible</p>
+                <p className="text-sm text-muted-foreground">{event.user.name}</p>
+              </div>
+            </div>
+
+            <div className="flex items-start gap-2">
+              <User className="mt-1 size-4 shrink-0 text-muted-foreground" />
+              <div>
+                <p className="text-sm font-medium">Agendado por ({schedulerRoleLabel})</p>
                 <p className="text-sm text-muted-foreground">
-                  {event.user.name}
+                  {event.scheduledBy?.name ?? "Nao informado"}
+                </p>
+                {event.scheduledBy?.mail && (
+                  <p className="text-xs text-muted-foreground">
+                    {event.scheduledBy.mail}
+                  </p>
+                )}
+                {typeof event.scheduledBy?.permissionLevel === "number" && (
+                  <p className="text-xs text-muted-foreground">
+                    Nivel de permissao: {event.scheduledBy.permissionLevel}
+                  </p>
+                )}
+                <p className="text-xs text-muted-foreground">
+                  Agendado em:{" "}
+                  {scheduledAt
+                    ? format(
+                        scheduledAt,
+                        use24HourFormat ? "dd/MM/yyyy HH:mm" : "dd/MM/yyyy hh:mm a",
+                      )
+                    : "Nao informado"}
                 </p>
               </div>
             </div>
@@ -63,8 +99,13 @@ export function EventDetailsDialog({ event, children }: IProps) {
               <div>
                 <p className="text-sm font-medium">Start Date</p>
                 <p className="text-sm text-muted-foreground">
-                  {format(startDate, "EEEE dd MMMM")}
-                  <span className="mx-1">at</span>
+                  {toCapitalize(
+                    format(startDate, "EEEE dd MMMM", { locale: ptBR }).replace(
+                      "-feira",
+                      "",
+                    ),
+                  )}
+                  <span className="mx-1">as</span>
                   {formatTime(parseISO(event.startDate), use24HourFormat)}
                 </p>
               </div>
@@ -75,8 +116,13 @@ export function EventDetailsDialog({ event, children }: IProps) {
               <div>
                 <p className="text-sm font-medium">End Date</p>
                 <p className="text-sm text-muted-foreground">
-                  {format(endDate, "EEEE dd MMMM")}
-                  <span className="mx-1">at</span>
+                  {toCapitalize(
+                    format(endDate, "EEEE dd MMMM", { locale: ptBR }).replace(
+                      "-feira",
+                      "",
+                    ),
+                  )}
+                  <span className="mx-1">as</span>
                   {formatTime(parseISO(event.endDate), use24HourFormat)}
                 </p>
               </div>
@@ -86,25 +132,51 @@ export function EventDetailsDialog({ event, children }: IProps) {
               <Text className="mt-1 size-4 shrink-0 text-muted-foreground" />
               <div>
                 <p className="text-sm font-medium">Description</p>
-                <p className="text-sm text-muted-foreground">
-                  {event.description}
-                </p>
+                <p className="text-sm text-muted-foreground">{event.description}</p>
               </div>
             </div>
+
+            {(event.customerId || event.customerPhone) && (
+              <div className="flex items-start gap-2">
+                <Text className="mt-1 size-4 shrink-0 text-muted-foreground" />
+                <div>
+                  <p className="text-sm font-medium">Cliente</p>
+                  {event.customerId && (
+                    <p className="text-sm text-muted-foreground">
+                      ID: {event.customerId}
+                    </p>
+                  )}
+                  {event.customerPhone && (
+                    <p className="text-sm text-muted-foreground">
+                      Telefone: {event.customerPhone}
+                    </p>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
         </ScrollArea>
+
         <div className="flex justify-end gap-2">
-          <AddEditEventDialog event={event}>
-            <Button variant="outline">Edit</Button>
-          </AddEditEventDialog>
-          <Button
-            variant="destructive"
-            onClick={() => {
-              deleteEvent(event.id);
-            }}
-          >
-            Delete
-          </Button>
+          {canManageCalendar ? (
+            <>
+              <AddEditEventDialog event={event}>
+                <Button variant="outline">Edit</Button>
+              </AddEditEventDialog>
+              <Button
+                variant="destructive"
+                onClick={() => {
+                  deleteEvent(event.id);
+                }}
+              >
+                Delete
+              </Button>
+            </>
+          ) : (
+            <div className="rounded-md border border-orange-200 bg-orange-50 px-4 py-3 text-sm text-orange-700">
+              Perfil atendente possui acesso somente leitura.
+            </div>
+          )}
         </div>
         <DialogClose />
       </DialogContent>

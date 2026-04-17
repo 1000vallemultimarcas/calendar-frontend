@@ -3,11 +3,18 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { useCalendar } from "@/features/calendar/contexts/calendar-context";
+import { useAuth } from "@/features/calendar/contexts/authContext";
 import { useDisclosure } from "@/features/calendar/hooks";
+import { createEvent as createEventRequest } from "@/features/calendar/requests";
 import { eventSchema, type TEventFormData } from "@/features/calendar/schemas";
 import { EVENT_FORM_TEXTS_PT_BR } from "@/features/calendar/constants/event-form.constants";
-import { getDefaultFormValues, getDefaultUserId, buildFormattedEvent } from "./event-dialog.utils";
+import {
+  getDefaultFormValues,
+  getDefaultUserId,
+  buildFormattedEvent,
+} from "./event-dialog.utils";
 import { getInitialDates } from "@/features/calendar/lib/event-form.utils";
+import { canManageEvent } from "@/features/calendar/lib/permissions";
 import type { AddEditEventDialogProps } from "./event-dialog.types";
 
 export function useEventDialogForm({
@@ -16,8 +23,12 @@ export function useEventDialogForm({
   startTime,
 }: Pick<AddEditEventDialogProps, "event" | "startDate" | "startTime">) {
   const { addEvent, updateEvent, users } = useCalendar();
-  const { isOpen, onClose, onToggle } = useDisclosure();
+  const { user, isManager, canManageCalendar } = useAuth();
+  const { isOpen, onClose, onOpen, onToggle, setIsOpen } = useDisclosure();
   const isEditing = !!event;
+
+  const currentUserId = user?.userId;
+  const isUserSelectionDisabled = !isManager && !!currentUserId;
 
   const initialDates = useMemo(
     () =>
@@ -30,7 +41,9 @@ export function useEventDialogForm({
     [event, isEditing, startDate, startTime],
   );
 
-  const defaultUserId = getDefaultUserId(users, event);
+  const defaultUserId = isUserSelectionDisabled
+    ? currentUserId ?? getDefaultUserId(users, event)
+    : getDefaultUserId(users, event);
 
   const form = useForm<TEventFormData>({
     resolver: zodResolver(eventSchema),
@@ -51,8 +64,18 @@ export function useEventDialogForm({
     );
   }, [event, form, initialDates, defaultUserId]);
 
-  const onSubmit = (values: TEventFormData) => {
+  const onSubmit = async (values: TEventFormData) => {
     try {
+      if (!canManageCalendar) {
+        toast.error("Perfil atendente possui acesso somente leitura.");
+        return;
+      }
+
+      if (isEditing && !canManageEvent(event?.user?.id, currentUserId, isManager)) {
+        toast.error("Somente perfis com permissao de gestao podem editar eventos.");
+        return;
+      }
+
       const formattedEvent = buildFormattedEvent({
         values,
         event,
@@ -60,11 +83,26 @@ export function useEventDialogForm({
         users,
       });
 
+      if (!isEditing) {
+        formattedEvent.scheduledBy = {
+          id: user?.userId,
+          name: user?.name ?? "Usuario do sistema",
+          mail: user?.mail,
+          permissionLevel: user?.permissionLevel,
+        };
+      }
+
       if (isEditing) {
         updateEvent(formattedEvent);
         toast.success(EVENT_FORM_TEXTS_PT_BR.editSuccess);
       } else {
-        addEvent(formattedEvent);
+        if (!canManageEvent(formattedEvent.user?.id, currentUserId, isManager)) {
+          toast.error("Somente perfis com permissao de gestao podem criar eventos.");
+          return;
+        }
+
+        const createdEvent = await createEventRequest(formattedEvent);
+        addEvent(createdEvent);
         toast.success(EVENT_FORM_TEXTS_PT_BR.createSuccess);
       }
 
@@ -86,10 +124,14 @@ export function useEventDialogForm({
   return {
     form,
     isOpen,
+    setIsOpen,
     onClose,
+    onOpen,
     onToggle,
     isEditing,
     onSubmit,
     users,
+    isUserSelectionDisabled,
+    currentUserId,
   };
 }

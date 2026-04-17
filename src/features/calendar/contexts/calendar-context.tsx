@@ -1,13 +1,25 @@
 "use client";
 
 import type React from "react";
-import { createContext, useContext, useState } from "react";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
+import { toast } from "sonner";
 import type { IEvent, IUser } from "@/features/calendar/interfaces";
 import type { TCalendarView } from "@/features/calendar/types";
 import type { ICalendarContext } from "./calendar-context.types";
 import { useCalendarFilterState } from "@/features/calendar/hooks/use-calendar-filter-state";
 import { useCalendarSettingsState } from "@/features/calendar/hooks/use-calendar-settings-state";
 import { useCalendarEventState } from "../hooks/use-calendar-event-state";
+import { useAuth } from "./authContext";
+import { canManageEvent } from "@/features/calendar/lib/permissions";
+import { getEvents, getUsers, mapViewToSchedulePeriod } from "../requests";
+
 const CalendarContext = createContext({} as ICalendarContext);
 
 type CalendarProviderProps = {
@@ -25,12 +37,23 @@ export function CalendarProvider({
   badge = "colored",
   view = "day",
 }: CalendarProviderProps) {
+  const { token, user, isManager, canManageCalendar } = useAuth();
+  const currentUserId = user?.userId;
   const [selectedDate, setSelectedDateState] = useState(new Date());
+  const [isLoadingEvents, setIsLoadingEvents] = useState(false);
+  const [calendarUsers, setCalendarUsers] = useState<IUser[]>(users);
 
-  const { allEvents, addEvent, updateEvent, removeEvent } =
-    useCalendarEventState({
-      initialEvents: events,
-    });
+  const {
+    allEvents,
+    setEvents,
+    addEvent: addEventRaw,
+    updateEvent: updateEventRaw,
+    removeEvent: removeEventRaw,
+    restoreEvent: restoreEventRaw,
+    purgeEvent: purgeEventRaw,
+  } = useCalendarEventState({
+    initialEvents: events,
+  });
 
   const {
     badgeVariant,
@@ -46,16 +69,129 @@ export function CalendarProvider({
     initialView: view,
   });
 
+  const activeEvents = useMemo(
+    () => allEvents.filter((event) => !event.deletedAt),
+    [allEvents],
+  );
+
+  const deletedEvents = useMemo(
+    () => allEvents.filter((event) => !!event.deletedAt),
+    [allEvents],
+  );
+
+  const addEvent = useCallback(
+    (event: IEvent) => {
+      if (!canManageCalendar) {
+        toast.error("Perfil atendente possui acesso somente leitura.");
+        return;
+      }
+
+      if (!canManageEvent(event.user?.id, currentUserId, isManager)) {
+        toast.error("Somente perfis com permissao de gestao podem criar eventos.");
+        return;
+      }
+
+      addEventRaw(event);
+    },
+    [addEventRaw, canManageCalendar, currentUserId, isManager],
+  );
+
+  const updateEvent = useCallback(
+    (event: IEvent) => {
+      if (!canManageCalendar) {
+        toast.error("Perfil atendente possui acesso somente leitura.");
+        return;
+      }
+
+      const existingEvent = allEvents.find((current) => current.id === event.id);
+      const ownerId = existingEvent?.user?.id ?? event.user?.id;
+
+      if (!canManageEvent(ownerId, currentUserId, isManager)) {
+        toast.error("Somente perfis com permissao de gestao podem editar eventos.");
+        return;
+      }
+
+      updateEventRaw(event);
+    },
+    [allEvents, canManageCalendar, currentUserId, isManager, updateEventRaw],
+  );
+
+  const removeEvent = useCallback(
+    (eventId: number, deletedBy?: string) => {
+      if (!canManageCalendar) {
+        toast.error("Perfil atendente possui acesso somente leitura.");
+        return;
+      }
+
+      const event = allEvents.find((current) => current.id === eventId);
+      const ownerId = event?.user?.id;
+
+      if (!canManageEvent(ownerId, currentUserId, isManager)) {
+        toast.error("Somente perfis com permissao de gestao podem excluir eventos.");
+        return;
+      }
+
+      removeEventRaw(eventId, deletedBy);
+    },
+    [allEvents, canManageCalendar, currentUserId, isManager, removeEventRaw],
+  );
+
+  const restoreEvent = useCallback(
+    (eventId: number) => {
+      if (!canManageCalendar) {
+        toast.error("Perfil atendente possui acesso somente leitura.");
+        return;
+      }
+
+      const event = allEvents.find((current) => current.id === eventId);
+      const ownerId = event?.user?.id;
+
+      if (!canManageEvent(ownerId, currentUserId, isManager)) {
+        toast.error("Somente perfis com permissao de gestao podem restaurar eventos.");
+        return;
+      }
+
+      restoreEventRaw(eventId);
+    },
+    [allEvents, canManageCalendar, currentUserId, isManager, restoreEventRaw],
+  );
+
+  const purgeEvent = useCallback(
+    (eventId: number) => {
+      if (!canManageCalendar) {
+        toast.error("Perfil atendente possui acesso somente leitura.");
+        return;
+      }
+
+      const event = allEvents.find((current) => current.id === eventId);
+      const ownerId = event?.user?.id;
+
+      if (!canManageEvent(ownerId, currentUserId, isManager)) {
+        toast.error("Somente perfis com permissao de gestao podem remover eventos.");
+        return;
+      }
+
+      purgeEventRaw(eventId);
+    },
+    [allEvents, canManageCalendar, currentUserId, isManager, purgeEventRaw],
+  );
+
   const {
-    selectedUserId,
-    setSelectedUserId,
+    selectedUserIds,
+    setSelectedUserIds,
     selectedColors,
+    selectedStatuses,
+    selectedTypes,
+    selectedPriorities,
     filterEventsBySelectedColors,
+    filterEventsBySelectedStatus,
+    filterEventsBySelectedType,
+    filterEventsBySelectedPriority,
     filterEventsBySelectedUser,
     filteredEvents,
     clearFilter,
   } = useCalendarFilterState({
-    events: allEvents,
+    events: activeEvents,
   });
 
   const setSelectedDate = (date: Date | undefined) => {
@@ -63,18 +199,68 @@ export function CalendarProvider({
     setSelectedDateState(date);
   };
 
+  useEffect(() => {
+    let isActive = true;
+
+    async function syncEvents() {
+      if (!token) {
+        setCalendarUsers([]);
+        setEvents([]);
+        setIsLoadingEvents(false);
+        return;
+      }
+
+      setIsLoadingEvents(true);
+
+      try {
+        const nextUsers = await getUsers();
+        const nextEvents = await getEvents({
+          period: mapViewToSchedulePeriod(currentView),
+          referenceDate: selectedDate,
+          users: nextUsers,
+        });
+
+        if (isActive) {
+          setCalendarUsers(nextUsers);
+          setEvents(nextEvents);
+        }
+      } catch (error) {
+        console.error("Erro ao carregar agendamentos:", error);
+        toast.error("Sem conexao com o backend. Verifique se a API esta online.");
+      } finally {
+        if (isActive) {
+          setIsLoadingEvents(false);
+        }
+      }
+    }
+
+    void syncEvents();
+
+    return () => {
+      isActive = false;
+    };
+  }, [currentView, selectedDate, setEvents, token]);
+
   const value: ICalendarContext = {
     selectedDate,
     setSelectedDate,
-    selectedUserId,
-    setSelectedUserId,
+    selectedUserIds,
+    setSelectedUserIds,
     badgeVariant,
     setBadgeVariant,
-    users,
+    users: calendarUsers,
     selectedColors,
+    selectedStatuses,
+    selectedTypes,
+    selectedPriorities,
     filterEventsBySelectedColors,
+    filterEventsBySelectedStatus,
+    filterEventsBySelectedType,
+    filterEventsBySelectedPriority,
     filterEventsBySelectedUser,
     events: filteredEvents,
+    deletedEvents,
+    isLoadingEvents,
     view: currentView,
     use24HourFormat,
     toggleTimeFormat,
@@ -84,13 +270,13 @@ export function CalendarProvider({
     addEvent,
     updateEvent,
     removeEvent,
+    restoreEvent,
+    purgeEvent,
     clearFilter,
   };
 
   return (
-    <CalendarContext.Provider value={value}>
-      {children}
-    </CalendarContext.Provider>
+    <CalendarContext.Provider value={value}>{children}</CalendarContext.Provider>
   );
 }
 

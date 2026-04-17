@@ -1,4 +1,5 @@
 import {addDays, format, isSameDay, parseISO, startOfWeek} from "date-fns";
+import { ptBR } from "date-fns/locale";
 import {motion} from "framer-motion";
 import {ScrollArea} from "@/components/ui/scroll-area";
 import {
@@ -9,14 +10,14 @@ import {
 import {useCalendar} from "@/features/calendar/contexts/calendar-context";
 import {AddEditEventDialog} from "@/features/calendar/dialogs/add-edit-event-dialog";
 import {DroppableArea} from "@/features/calendar/dnd/droppable-area";
-import {groupEvents} from "@/features/calendar/helpers";
+import {groupEvents, toCapitalize} from "@/features/calendar/helpers";
 import type {IEvent} from "@/features/calendar/interfaces";
 import {CalendarTimeline} from "@/features/calendar/views/week-and-day-view/calendar-time-line";
 import {RenderGroupedEvents} from "@/features/calendar/views/week-and-day-view/render-grouped-events";
 import {
     WeekViewMultiDayEventsRow
 } from "@/features/calendar/views/week-and-day-view/week-view-multi-day-events-row";
-import {AlertCircleIcon} from 'lucide-react'
+import { useAuth } from "@/features/calendar/contexts/authContext";
 
 interface IProps {
     singleDayEvents: IEvent[];
@@ -25,6 +26,7 @@ interface IProps {
 
 export function CalendarWeekView({singleDayEvents, multiDayEvents}: IProps) {
     const {selectedDate, use24HourFormat} = useCalendar();
+    const { canManageCalendar } = useAuth();
 
     const weekStart = startOfWeek(selectedDate);
     const weekDays = Array.from({length: 7}, (_, i) => addDays(weekStart, i));
@@ -44,8 +46,8 @@ export function CalendarWeekView({singleDayEvents, multiDayEvents}: IProps) {
                 animate={{opacity: 1, y: 0}}
                 transition={transition}
             >
-                <p>Weekly view is not recommended on smaller devices.</p>
-                <p>Please switch to a desktop device or use the daily view instead.</p>
+                <p>A visualização semanal não é recomendada em dispositivos menores.</p>
+                <p>Troque para um dispositivo desktop ou use a visualização diária.</p>
             </motion.div>
 
             <motion.div
@@ -78,14 +80,16 @@ export function CalendarWeekView({singleDayEvents, multiDayEvents}: IProps) {
                                 >
                                     {/* Mobile: Show only day abbreviation and number */}
                                     <span className="block sm:hidden">
-									{format(day, "EEE").charAt(0)}
+									{format(day, "EEE", { locale: ptBR }).charAt(0).toUpperCase()}
                                         <span className="block font-semibold text-t-secondary text-xs">
 										{format(day, "d")}
 									</span>
 								</span>
                                     {/* Desktop: Show full format */}
                                     <span className="hidden sm:inline">
-									{format(day, "EE")}{" "}
+									{toCapitalize(
+                                        format(day, "EEEE", { locale: ptBR }).replace("-feira", ""),
+                                    )}{" "}
                                         <span className="ml-1 font-semibold text-t-secondary">
 										{format(day, "d")}
 									</span>
@@ -126,7 +130,7 @@ export function CalendarWeekView({singleDayEvents, multiDayEvents}: IProps) {
 
                         {/* Week grid */}
                         <motion.div
-                            className="relative flex-1 border-l"
+                            className="relative isolate flex-1 border-l"
                             variants={staggerContainer}
                         >
                             <div className="grid grid-cols-7 divide-x">
@@ -164,15 +168,19 @@ export function CalendarWeekView({singleDayEvents, multiDayEvents}: IProps) {
                                                         date={day}
                                                         hour={hour}
                                                         minute={0}
-                                                        className="absolute inset-x-0 top-0  h-[48px]"
+                                                        className="absolute inset-x-0 top-0 z-0 h-[48px]"
                                                     >
-                                                        <AddEditEventDialog
-                                                            startDate={day}
-                                                            startTime={{hour, minute: 0}}
-                                                        >
-                                                            <div
-                                                                className="absolute inset-0 cursor-pointer transition-colors hover:bg-secondary"/>
-                                                        </AddEditEventDialog>
+                                                        {canManageCalendar ? (
+                                                            <AddEditEventDialog
+                                                                startDate={day}
+                                                                startTime={{hour, minute: 0}}
+                                                            >
+                                                                <div
+                                                                    className="absolute inset-0 z-0 cursor-pointer transition-colors hover:bg-secondary"/>
+                                                            </AddEditEventDialog>
+                                                        ) : (
+                                                            <div className="absolute inset-0 z-0" />
+                                                        )}
                                                     </DroppableArea>
 
                                                     <div
@@ -182,15 +190,19 @@ export function CalendarWeekView({singleDayEvents, multiDayEvents}: IProps) {
                                                         date={day}
                                                         hour={hour}
                                                         minute={30}
-                                                        className="absolute inset-x-0 bottom-0 h-[48px]"
+                                                        className="absolute inset-x-0 bottom-0 z-0 h-[48px]"
                                                     >
-                                                        <AddEditEventDialog
-                                                            startDate={day}
-                                                            startTime={{hour, minute: 30}}
-                                                        >
-                                                            <div
-                                                                className="absolute inset-0 cursor-pointer transition-colors hover:bg-secondary"/>
-                                                        </AddEditEventDialog>
+                                                        {canManageCalendar ? (
+                                                            <AddEditEventDialog
+                                                                startDate={day}
+                                                                startTime={{hour, minute: 30}}
+                                                            >
+                                                                <div
+                                                                    className="absolute inset-0 z-0 cursor-pointer transition-colors hover:bg-secondary"/>
+                                                            </AddEditEventDialog>
+                                                        ) : (
+                                                            <div className="absolute inset-0 z-0" />
+                                                        )}
                                                     </DroppableArea>
                                                 </motion.div>
                                             ))}

@@ -1,4 +1,4 @@
-import { format } from "date-fns";
+﻿import { format } from "date-fns";
 import { getColorByType } from "@/features/calendar/lib/event-form.utils";
 import type { IEvent, IUser } from "@/features/calendar/interfaces";
 import type { TEventFormData } from "@/features/calendar/schemas";
@@ -34,10 +34,12 @@ export function getDefaultFormValues({
     startDate: initialDates.startDate,
     endDate: initialDates.endDate,
     status: event?.status ?? "scheduled",
-    type: event?.type ?? "appointment",
+    type: event?.type ?? "visit",
     priority: event?.priority ?? "normal",
     userId: defaultUserId,
-    color: event?.color ?? getColorByType(event?.type ?? "appointment"),
+    customerId: event?.customerId ? String(event.customerId) : undefined,
+    customerPhone: event?.customerPhone ?? "",
+    color: event?.color ?? getColorByType(event?.type ?? "visit"),
   };
 }
 
@@ -47,11 +49,13 @@ export function buildFormattedEvent({
   isEditing,
   users,
 }: BuildFormattedEventParams): IEvent {
-  const selectedUser = users.find((user) => user.id === values.userId);
-  const eventUser = selectedUser ?? event?.user;
+  const selectedUser = values.userId
+    ? users.find((user) => user.id === values.userId)
+    : undefined;
+  const eventUser = selectedUser ?? event?.user ?? users[0];
 
   if (!eventUser) {
-    throw new Error("Responsible user not found");
+    throw new Error("No available user was found to associate with the event");
   }
 
   return {
@@ -64,6 +68,10 @@ export function buildFormattedEvent({
     type: values.type,
     priority: values.priority,
     user: eventUser,
+    attendantId: selectedUser?.id ?? event?.attendantId ?? eventUser.id,
+    customerId: values.customerId ? Number(values.customerId) : event?.customerId,
+    customerPhone: values.customerPhone ?? event?.customerPhone,
+    scheduledBy: event?.scheduledBy,
     color: getColorByType(values.type),
   };
 }

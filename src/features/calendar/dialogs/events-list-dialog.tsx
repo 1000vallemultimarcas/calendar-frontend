@@ -1,4 +1,4 @@
-import { format } from "date-fns";
+import { format, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import type { ReactNode } from "react";
 import {
@@ -8,11 +8,13 @@ import {
   ModalTitle,
   ModalTrigger,
 } from "@/components/ui/responsive-modal";
-import { cn } from "@/features/calendar/lib/utils";
+import { Button } from "@/components/ui/button";
 import { useCalendar } from "@/features/calendar/contexts/calendar-context";
+import { useAuth } from "@/features/calendar/contexts/authContext";
 import type { IEvent } from "@/features/calendar/interfaces";
 import { EventBullet } from "@/features/calendar/views/month-view/event-bullet";
 import { EventDetailsDialog } from "@/features/calendar/dialogs/event-details-dialog";
+import { AddEditEventDialog } from "@/features/calendar/dialogs/add-edit-event-dialog";
 import { EventItem } from "@/features/calendar/components/event-item";
 
 interface EventListDialogProps {
@@ -30,12 +32,13 @@ export function EventListDialog({
 }: EventListDialogProps) {
   const cellEvents = events;
   const hiddenEventsCount = Math.max(cellEvents.length - maxVisibleEvents, 0);
-  const { badgeVariant, use24HourFormat } = useCalendar();
+  const { use24HourFormat, removeEvent } = useCalendar();
+  const { user, canManageCalendar } = useAuth();
 
   const defaultTrigger = (
-    <span className="cursor-pointer">
+    <span className="cursor-pointer text-black">
       <span className="sm:hidden">+{hiddenEventsCount}</span>
-      <span className="hidden sm:inline py-0.5 px-2 my-1 rounded-xl border">
+      <span className="hidden rounded-xl border border-slate-400 bg-slate-300 px-3 py-1 text-black shadow-sm sm:inline">
         {hiddenEventsCount}
         <span className="mx-1">mais...</span>
       </span>
@@ -45,34 +48,82 @@ export function EventListDialog({
   return (
     <Modal>
       <ModalTrigger asChild>{children || defaultTrigger}</ModalTrigger>
-      <ModalContent className="sm:max-w-106.25">
+      <ModalContent className="bg-slate-200 text-slate-950 dark:bg-background sm:max-w-106.25">
         <ModalHeader>
           <ModalTitle className="my-2">
             <div className="flex items-center gap-2">
-              <EventBullet color={cellEvents[0]?.color} className="" />
-              <p className="text-sm font-medium">
-                Eventos em {format(date, "EEEE, d 'de' MMMM 'de' yyyy", { locale: ptBR })}
+              <EventBullet
+                color={cellEvents[0]?.color ?? "blue"}
+                className="shadow-sm"
+              />
+              <p className="text-sm font-semibold italic text-slate-950 dark:text-foreground">
+                Eventos em{" "}
+                {format(date, "EEEE, d 'de' MMMM 'de' yyyy", { locale: ptBR })}
               </p>
             </div>
           </ModalTitle>
         </ModalHeader>
-        <div className="max-h-[60vh] overflow-y-auto space-y-2">
+        <div className="max-h-[60vh] space-y-3 overflow-y-auto px-2 pb-4">
           {cellEvents.length > 0 ? (
-            cellEvents.map((event) => (
-              <EventDetailsDialog event={event} key={event.id}>
-                <EventItem
-                  title={event.title}
-                  startDate={event.startDate}
-                  endDate={event.endDate}
-                  status={event.status}
-                  type={event.type}
-                  priority={event.priority}
-                  secondaryLabel={event.user?.name}
-                  description={event.description}
-                  use24HourFormat={use24HourFormat}
-                />
-              </EventDetailsDialog>
-            ))
+            cellEvents.map((event) => {
+              return (
+                <div
+                  key={event.id}
+                  className="space-y-2 rounded-2xl border border-slate-400 bg-white p-3 text-slate-950 shadow-lg dark:border-border dark:bg-card dark:text-card-foreground"
+                >
+                  <EventDetailsDialog event={event}>
+                    <EventItem
+                      title={event.title}
+                      startDate={event.startDate}
+                      endDate={event.endDate}
+                      status={event.status}
+                      type={event.type}
+                      priority={event.priority}
+                      secondaryLabel={event.user?.name}
+                      description={event.description}
+                      use24HourFormat={use24HourFormat}
+                    />
+                  </EventDetailsDialog>
+
+                  <div className="rounded-lg border border-slate-200 dark:border-white/20 px-3 py-2 text-xs font-semibold text-black dark:text-orange-100">
+                    <p>
+                      Agendado por: {event.scheduledBy?.name ?? "Nao informado"}
+                    </p>
+                    <p>
+                      Criado em:{" "}
+                      {event.createdAt
+                        ? format(parseISO(event.createdAt), "dd/MM/yyyy HH:mm")
+                        : "Nao informado"}
+                    </p>
+                  </div>
+
+                  <div className="flex flex-wrap gap-2">
+                    {canManageCalendar && (
+                      <AddEditEventDialog event={event}>
+                        <Button
+                          size="sm"
+                          variant="secondary"
+                          className="border-slate-300 bg-slate-100 text-slate-900 hover:bg-slate-200 dark:border-slate-700 dark:bg-slate-700 dark:text-white dark:hover:bg-slate-800"
+                        >
+                          Editar
+                        </Button>
+                      </AddEditEventDialog>
+                    )}
+
+                    {canManageCalendar && (
+                      <Button
+                        size="sm"
+                        variant="destructive"
+                        className="bg-red-600 text-white hover:bg-red-700"
+                        onClick={() => removeEvent(event.id, user?.name)}
+                      >
+                        Excluir
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              );
+            })
           ) : (
             <p className="text-sm text-muted-foreground">
               Nenhum evento nesta data.

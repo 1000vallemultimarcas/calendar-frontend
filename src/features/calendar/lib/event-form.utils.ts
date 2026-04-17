@@ -1,4 +1,4 @@
-import { addMinutes, set } from "date-fns";
+﻿import { addMinutes, set } from "date-fns";
 import type { IEvent } from "@/features/calendar/interfaces";
 import type { TEventColor, TEventType } from "@/features/calendar/types";
 
@@ -19,6 +19,8 @@ export function getColorByType(type: TEventType): TEventColor {
       return "purple";
     case "work":
       return "orange";
+    case "visit":
+      return "yellow";
     case "test_drive":
       return "red";
     default:

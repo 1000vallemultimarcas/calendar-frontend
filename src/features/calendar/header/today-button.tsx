@@ -1,4 +1,5 @@
-import { formatDate } from "date-fns";
+import { format } from "date-fns";
+import { ptBR } from "date-fns/locale";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { buttonHover, transition } from "@/features/calendar/animations";
@@ -28,7 +29,7 @@ export function TodayButton() {
         animate={{ y: 0, opacity: 1 }}
         transition={{ delay: 0.1, ...transition }}
       >
-        {formatDate(today, "MMM").toUpperCase()}
+        {format(today, "MMM", { locale: ptBR }).toUpperCase()}
       </motion.span>
       <motion.span
         className="text-lg font-bold"

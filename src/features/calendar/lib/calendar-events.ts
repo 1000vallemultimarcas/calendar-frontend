@@ -16,6 +16,34 @@ export function replaceEvent(events: IEvent[], updatedEvent: IEvent): IEvent[] {
   );
 }
 
-export function removeEventById(events: IEvent[], eventId: number): IEvent[] {
+export function softDeleteEventById(
+  events: IEvent[],
+  eventId: number,
+  deletedBy?: string,
+): IEvent[] {
+  return events.map((event) =>
+    event.id === eventId
+      ? {
+          ...event,
+          deletedAt: new Date().toISOString(),
+          deletedBy,
+        }
+      : event,
+  );
+}
+
+export function restoreEventById(events: IEvent[], eventId: number): IEvent[] {
+  return events.map((event) =>
+    event.id === eventId
+      ? {
+          ...event,
+          deletedAt: undefined,
+          deletedBy: undefined,
+        }
+      : event,
+  );
+}
+
+export function purgeEventById(events: IEvent[], eventId: number): IEvent[] {
   return events.filter((event) => event.id !== eventId);
 }

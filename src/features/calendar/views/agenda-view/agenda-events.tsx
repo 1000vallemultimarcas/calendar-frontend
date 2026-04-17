@@ -1,4 +1,5 @@
 import { format, parseISO } from "date-fns";
+import { ptBR } from "date-fns/locale";
 import type { FC } from "react";
 import {
   Command,
@@ -49,7 +50,11 @@ export const AgendaEvents: FC = () => {
             key={date}
             heading={
               agendaModeGroupBy === "date"
-                ? format(parseISO(date), "EEEE, MMMM d, yyyy")
+                ? toCapitalize(
+                    format(parseISO(date), "EEEE, d 'de' MMMM 'de' yyyy", {
+                      locale: ptBR,
+                    }).replace("-feira", ""),
+                  )
                 : toCapitalize(groupedEvents![0].color)
             }
           >

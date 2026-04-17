@@ -23,15 +23,23 @@ export function AddEditEventDialog({
   startDate,
   startTime,
 }: AddEditEventDialogProps) {
-  const { form, isOpen, onToggle, onSubmit, isEditing, users } =
-    useEventDialogForm({
-      event,
-      startDate,
-      startTime,
-    });
+  const {
+    form,
+    isOpen,
+    setIsOpen,
+    onSubmit,
+    isEditing,
+    users,
+    isUserSelectionDisabled,
+    currentUserId,
+  } = useEventDialogForm({
+    event,
+    startDate,
+    startTime,
+  });
 
   return (
-    <Modal open={isOpen} onOpenChange={onToggle} modal={false}>
+    <Modal open={isOpen} onOpenChange={setIsOpen}>
       <ModalTrigger asChild>{children}</ModalTrigger>
 
       <ModalContent className="max-w-[95vw] sm:max-w-175">
@@ -56,7 +64,12 @@ export function AddEditEventDialog({
           >
             <EventBasicFields form={form} />
             <EventScheduleFields form={form} />
-            <EventMetaFields form={form} users={users} />
+            <EventMetaFields
+              form={form}
+              users={users}
+              isUserSelectionDisabled={isUserSelectionDisabled}
+              currentUserId={currentUserId}
+            />
           </form>
         </Form>
 
@@ -67,7 +80,11 @@ export function AddEditEventDialog({
             </Button>
           </ModalClose>
 
-          <Button form="event-form" type="submit">
+          <Button
+            form="event-form"
+            type="submit"
+            className="bg-orange-600 text-white hover:bg-orange-700"
+          >
             {isEditing
               ? EVENT_FORM_TEXTS_PT_BR.editButton
               : EVENT_FORM_TEXTS_PT_BR.createButton}

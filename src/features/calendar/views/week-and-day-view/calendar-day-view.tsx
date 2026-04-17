@@ -1,4 +1,5 @@
 import { format, isWithinInterval, parseISO } from "date-fns";
+import { ptBR } from "date-fns/locale";
 import { Calendar, Clock, User } from "lucide-react";
 import { useEffect, useRef } from "react";
 import { DayPicker } from "@/components/ui/day-picker";
@@ -7,11 +8,12 @@ import { useCalendar } from "@/features/calendar/contexts/calendar-context";
 
 import { AddEditEventDialog } from "@/features/calendar/dialogs/add-edit-event-dialog";
 import { DroppableArea } from "@/features/calendar/dnd/droppable-area";
-import { groupEvents } from "@/features/calendar/helpers";
+import { groupEvents, toCapitalize } from "@/features/calendar/helpers";
 import type { IEvent } from "@/features/calendar/interfaces";
 import { CalendarTimeline } from "@/features/calendar/views/week-and-day-view/calendar-time-line";
 import { DayViewMultiDayEventsRow } from "@/features/calendar/views/week-and-day-view/day-view-multi-day-events-row";
 import { RenderGroupedEvents } from "@/features/calendar/views/week-and-day-view/render-grouped-events";
+import { useAuth } from "@/features/calendar/contexts/authContext";
 
 interface IProps {
   singleDayEvents: IEvent[];
@@ -21,6 +23,7 @@ interface IProps {
 export function CalendarDayView({ singleDayEvents, multiDayEvents }: IProps) {
   const { selectedDate, setSelectedDate, users, use24HourFormat } =
     useCalendar();
+  const { canManageCalendar } = useAuth();
   const scrollAreaRef = useRef<HTMLDivElement>(null);
 
   const hours = Array.from({ length: 24 }, (_, i) => i);
@@ -91,7 +94,12 @@ export function CalendarDayView({ singleDayEvents, multiDayEvents }: IProps) {
           <div className="relative z-20 flex border-b">
             <div className="w-18"></div>
             <span className="flex-1 border-l py-2 text-center text-xs font-medium text-t-quaternary">
-              {format(selectedDate, "EE")}{" "}
+              {toCapitalize(
+                format(selectedDate, "EEEE", { locale: ptBR }).replace(
+                  "-feira",
+                  "",
+                ),
+              )}{" "}
               <span className="font-semibold text-t-secondary">
                 {format(selectedDate, "d")}
               </span>
@@ -120,7 +128,7 @@ export function CalendarDayView({ singleDayEvents, multiDayEvents }: IProps) {
             </div>
 
             {/* Day grid */}
-            <div className="relative flex-1 border-l">
+            <div className="relative isolate flex-1 border-l">
               <div className="relative">
                 {hours.map((hour, index) => (
                   <div
@@ -136,14 +144,18 @@ export function CalendarDayView({ singleDayEvents, multiDayEvents }: IProps) {
                       date={selectedDate}
                       hour={hour}
                       minute={0}
-                      className="absolute inset-x-0 top-0 h-[48px]"
+                      className="absolute inset-x-0 top-0 z-0 h-[48px]"
                     >
-                      <AddEditEventDialog
-                        startDate={selectedDate}
-                        startTime={{ hour, minute: 0 }}
-                      >
-                        <div className="absolute inset-0 cursor-pointer transition-colors hover:bg-secondary" />
-                      </AddEditEventDialog>
+                      {canManageCalendar ? (
+                        <AddEditEventDialog
+                          startDate={selectedDate}
+                          startTime={{ hour, minute: 0 }}
+                        >
+                          <div className="absolute inset-0 z-0 cursor-pointer transition-colors hover:bg-secondary" />
+                        </AddEditEventDialog>
+                      ) : (
+                        <div className="absolute inset-0 z-0" />
+                      )}
                     </DroppableArea>
 
                     <div className="pointer-events-none absolute inset-x-0 top-1/2 border-b border-dashed border-b-tertiary"></div>
@@ -152,14 +164,18 @@ export function CalendarDayView({ singleDayEvents, multiDayEvents }: IProps) {
                       date={selectedDate}
                       hour={hour}
                       minute={30}
-                      className="absolute inset-x-0 bottom-0 h-[48px]"
+                      className="absolute inset-x-0 bottom-0 z-0 h-[48px]"
                     >
-                      <AddEditEventDialog
-                        startDate={selectedDate}
-                        startTime={{ hour, minute: 30 }}
-                      >
-                        <div className="absolute inset-0 cursor-pointer transition-colors hover:bg-secondary" />
-                      </AddEditEventDialog>
+                      {canManageCalendar ? (
+                        <AddEditEventDialog
+                          startDate={selectedDate}
+                          startTime={{ hour, minute: 30 }}
+                        >
+                          <div className="absolute inset-0 z-0 cursor-pointer transition-colors hover:bg-secondary" />
+                        </AddEditEventDialog>
+                      ) : (
+                        <div className="absolute inset-0 z-0" />
+                      )}
                     </DroppableArea>
                   </div>
                 ))}
@@ -194,12 +210,12 @@ export function CalendarDayView({ singleDayEvents, multiDayEvents }: IProps) {
               </span>
 
               <p className="text-sm font-semibold text-t-secondary">
-                Happening now
+                Acontecendo agora
               </p>
             </div>
           ) : (
             <p className="p-4 text-center text-sm italic text-t-tertiary">
-              No appointments or consultations at the moment
+              Nenhum agendamento ou consulta no momento
             </p>
           )}
 
@@ -227,7 +243,13 @@ export function CalendarDayView({ singleDayEvents, multiDayEvents }: IProps) {
                       <div className="flex items-center gap-1.5">
                         <Calendar className="size-4 text-t-quinary" />
                         <span className="text-sm text-t-tertiary">
-                          {format(new Date(event.startDate), "MMM d, yyyy")}
+                          {toCapitalize(
+                            format(
+                              new Date(event.startDate),
+                              "d 'de' MMMM 'de' yyyy",
+                              { locale: ptBR },
+                            ),
+                          )}
                         </span>
                       </div>
 

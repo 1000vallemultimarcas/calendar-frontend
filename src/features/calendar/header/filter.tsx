@@ -3,25 +3,50 @@ import {
 	DropdownMenu,
 	DropdownMenuContent,
 	DropdownMenuItem,
+	DropdownMenuLabel,
+	DropdownMenuSeparator,
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Separator } from "@/components/ui/separator";
 import { Toggle } from "@/components/ui/toggle";
+import {
+	EVENT_PRIORITIES,
+	EVENT_STATUSES,
+	EVENT_TYPES,
+} from "@/features/calendar/constants";
+import {
+	PRIORITY_LABELS_PT_BR,
+	STATUS_LABELS_PT_BR,
+	TYPE_LABELS_PT_BR,
+} from "@/features/calendar/constants/event-form.constants";
 import { useCalendar } from "@/features/calendar/contexts/calendar-context";
-import type { TEventColor } from "@/features/calendar/types";
+import type {
+	TEventPriority,
+	TEventStatus,
+	TEventType,
+} from "@/features/calendar/types";
 
 export default function FilterEvents() {
-	const { selectedColors, filterEventsBySelectedColors, clearFilter } =
-		useCalendar();
+	const {
+		selectedStatuses,
+		selectedTypes,
+		selectedPriorities,
+		filterEventsBySelectedStatus,
+		filterEventsBySelectedType,
+		filterEventsBySelectedPriority,
+		clearFilter,
+	} = useCalendar();
 
-	const colors: TEventColor[] = [
-		"blue",
-		"green",
-		"red",
-		"yellow",
-		"purple",
-		"orange",
-	];
+	const hasActiveFilters =
+		selectedStatuses.length > 0 ||
+		selectedTypes.length > 0 ||
+		selectedPriorities.length > 0;
+
+	const renderSelectedCheck = (isSelected: boolean) =>
+		isSelected ? (
+			<span className="text-blue-500">
+				<CheckIcon className="size-4" />
+			</span>
+		) : null;
 
 	return (
 		<DropdownMenu>
@@ -30,34 +55,57 @@ export default function FilterEvents() {
 					<Filter className="h-4 w-4" />
 				</Toggle>
 			</DropdownMenuTrigger>
-			<DropdownMenuContent align="end" className="w-[150px]">
-				{colors.map((color) => (
+			<DropdownMenuContent align="end" className="w-[240px]">
+				<DropdownMenuLabel>Status</DropdownMenuLabel>
+				{EVENT_STATUSES.map((status: TEventStatus) => (
 					<DropdownMenuItem
-						key={color}
-						className="flex items-center gap-2 cursor-pointer"
+						key={status}
+						className="flex items-center justify-between gap-2 cursor-pointer"
 						onClick={(e) => {
 							e.preventDefault();
-							filterEventsBySelectedColors(color);
+							filterEventsBySelectedStatus(status);
 						}}
 					>
-						<div
-							className={`size-3.5 rounded-full bg-${color}-600 dark:bg-${color}-700`}
-						/>
-						<span className="capitalize flex justify-center items-center gap-2">
-							{color}
-							<span>
-								{selectedColors.includes(color) && (
-									<span className="text-blue-500">
-										<CheckIcon className="size-4" />
-									</span>
-								)}
-							</span>
-						</span>
+						<span>{STATUS_LABELS_PT_BR[status]}</span>
+						{renderSelectedCheck(selectedStatuses.includes(status))}
 					</DropdownMenuItem>
 				))}
-				<Separator className="my-2" />
+
+				<DropdownMenuSeparator />
+				<DropdownMenuLabel>Tipo</DropdownMenuLabel>
+				{EVENT_TYPES.map((type: TEventType) => (
+					<DropdownMenuItem
+						key={type}
+						className="flex items-center justify-between gap-2 cursor-pointer"
+						onClick={(e) => {
+							e.preventDefault();
+							filterEventsBySelectedType(type);
+						}}
+					>
+						<span>{TYPE_LABELS_PT_BR[type]}</span>
+						{renderSelectedCheck(selectedTypes.includes(type))}
+					</DropdownMenuItem>
+				))}
+
+				<DropdownMenuSeparator />
+				<DropdownMenuLabel>Prioridade</DropdownMenuLabel>
+				{EVENT_PRIORITIES.map((priority: TEventPriority) => (
+					<DropdownMenuItem
+						key={priority}
+						className="flex items-center justify-between gap-2 cursor-pointer"
+						onClick={(e) => {
+							e.preventDefault();
+							filterEventsBySelectedPriority(priority);
+						}}
+					>
+						<span>{PRIORITY_LABELS_PT_BR[priority]}</span>
+						{renderSelectedCheck(selectedPriorities.includes(priority))}
+					</DropdownMenuItem>
+				))}
+
+				<DropdownMenuSeparator />
 				<DropdownMenuItem
-					disabled={selectedColors.length === 0}
+					disabled={!hasActiveFilters}
 					className="flex gap-2 cursor-pointer"
 					onClick={(e) => {
 						e.preventDefault();

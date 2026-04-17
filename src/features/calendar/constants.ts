@@ -21,8 +21,8 @@ export const EVENT_STATUSES: TEventStatus[] = [
 export const EVENT_TYPES: TEventType[] = [
 	"meeting",
 	"appointment",
-	"personal",
 	"work",
+	"visit",
 	"test_drive",
 ];
 

@@ -1,21 +1,46 @@
+"use client";
+
+import { useEffect } from "react";
+import { usePathname, useRouter } from "next/navigation";
 import { CalendarBody } from "@/features/calendar/calendar-body";
+import { useAuth } from "@/features/calendar/contexts/authContext";
+import { isSeniorManager } from "@/features/calendar/lib/permissions";
 import { CalendarProvider } from "@/features/calendar/contexts/calendar-context";
 import { DndProvider } from "@/features/calendar/contexts/dnd-context";
 import { CalendarHeader } from "@/features/calendar/header/calendar-header";
-import { getEvents, getUsers } from "@/features/calendar/requests";
-import { Image } from "@radix-ui/react-avatar";
-async function getCalendarData() {
-  return {
-    events: await getEvents(),
-    users: await getUsers(),
-  };
-}
 
-export async function Calendar() {
-  const { events, users } = await getCalendarData();
+export function Calendar() {
+  const router = useRouter();
+  const pathname = usePathname();
+  const { user, isEmployee, isManager } = useAuth();
+
+  useEffect(() => {
+    if (!user) return;
+
+    const isSeniorManagerUser = isSeniorManager(user.permissionLevel);
+
+    if (isEmployee && pathname !== "/calendar/atendente") {
+      router.replace("/calendar/atendente");
+      return;
+    }
+
+    if (isSeniorManagerUser && pathname !== "/calendar/gerente") {
+      router.replace("/calendar/gerente");
+      return;
+    }
+
+    if (isManager && pathname === "/calendar/atendente") {
+      router.replace("/calendar");
+      return;
+    }
+
+    if (isManager && pathname === "/calendar/gerente" && !isSeniorManagerUser) {
+      router.replace("/calendar");
+    }
+  }, [isEmployee, isManager, pathname, router, user]);
 
   return (
-    <CalendarProvider events={events} users={users} view="month">
+    <CalendarProvider events={[]} users={[]} view="month">
       <DndProvider>
         <section className="relative w-full overflow-hidden rounded-3xl bg-background">
           <div className="pointer-events-none absolute inset-0 flex items-center justify-center">

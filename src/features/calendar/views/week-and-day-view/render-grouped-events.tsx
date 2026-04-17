@@ -40,7 +40,7 @@ export function RenderGroupedEvents({
       if (!hasOverlap) style = { ...style, width: "100%", left: "0%" };
 
       return (
-        <div key={event.id} className="absolute p-1" style={style}>
+        <div key={event.id} className="absolute z-10 p-1" style={style}>
           <EventBlock event={event} />
         </div>
       );

@@ -1,5 +1,5 @@
-import type { ReactNode } from "react";
-import type { IUser, IEvent } from "@/features/calendar/interfaces";
+﻿import type { ReactNode } from "react";
+import type { ICustomer, IUser, IEvent } from "@/features/calendar/interfaces";
 import type { UseFormReturn } from "react-hook-form";
 import type { TEventFormData } from "@/features/calendar/schemas";
 
@@ -13,4 +13,8 @@ export interface AddEditEventDialogProps {
 export interface EventDialogFormSectionsProps {
   form: UseFormReturn<TEventFormData>;
   users?: IUser[];
+  customers?: ICustomer[];
+  isLoadingCustomers?: boolean;
+  isUserSelectionDisabled?: boolean;
+  currentUserId?: IUser["id"];
 }

@@ -10,8 +10,10 @@ import React, {
   useMemo,
 } from "react";
 import { toast } from "sonner";
+import { useAuth } from "@/features/calendar/contexts/authContext";
 import { useCalendar } from "@/features/calendar/contexts/calendar-context";
 import type { IEvent } from "@/features/calendar/interfaces";
+import { canManageEvent } from "@/features/calendar/lib/permissions";
 
 interface DragDropContextType {
   draggedEvent: IEvent | null;
@@ -31,6 +33,7 @@ const DragDropContext = createContext<DragDropContextType | undefined>(
 
 export function DndProvider({ children }: DndProviderProps) {
   const { updateEvent } = useCalendar();
+  const { user, isManager } = useAuth();
   const [dragState, setDragState] = useState<{
     draggedEvent: IEvent | null;
     isDragging: boolean;
@@ -82,6 +85,11 @@ export function DndProvider({ children }: DndProviderProps) {
     (targetDate: Date, hour?: number, minute?: number) => {
       const { draggedEvent } = dragState;
       if (!draggedEvent) return;
+      if (!canManageEvent(draggedEvent.user?.id, user?.userId, isManager)) {
+        toast.error("Perfil atendente possui acesso somente leitura.");
+        endDrag();
+        return;
+      }
 
       const { newStart, newEnd } = calculateNewDates(
         draggedEvent,
@@ -104,7 +112,7 @@ export function DndProvider({ children }: DndProviderProps) {
       }
       endDrag();
     },
-    [dragState, calculateNewDates, isSamePosition, endDrag],
+    [dragState, calculateNewDates, isSamePosition, endDrag, user, isManager],
   );
 
   // Default event update handler
@@ -155,3 +163,4 @@ export function useDragDrop() {
   }
   return context;
 }
+
