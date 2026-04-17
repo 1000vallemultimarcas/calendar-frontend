@@ -35,7 +35,7 @@ export function HeroBannerActions() {
           {mounted ? (isDarkMode ? "Claro" : "Escuro") : "Tema"}
         </Button>
 
-        <Link href="https://turboflow.com.br/" target="_blank">
+        <Link href="https://turboflow.com.br/gerenciadorleads" target="_blank">
           <Button
             type="button"
             size="sm"

@@ -15,6 +15,7 @@ import { EventBullet } from "@/features/calendar/views/month-view/event-bullet";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import { AddEditEventDialog } from "@/features/calendar/dialogs/add-edit-event-dialog";
+import { useAuth } from "@/features/calendar/contexts/authContext";
 
 interface IProps {
   cell: ICalendarCell;
@@ -48,6 +49,7 @@ const MAX_VISIBLE_EVENTS = 3;
 export function DayCell({ cell, events, eventPositions }: IProps) {
   const { day, currentMonth, date } = cell;
   const isMobile = useMediaQuery("(max-width: 768px)");
+  const { canManageCalendar } = useAuth();
 
   // Memoize cellEvents and currentCellMonth for performance
   const { cellEvents, currentCellMonth } = useMemo(() => {
@@ -134,12 +136,16 @@ export function DayCell({ cell, events, eventPositions }: IProps) {
           >
             {cellEvents.length === 0 && !isMobile ? (
               <div className="w-full h-full flex justify-center items-center group">
-                <Button
-                  className="bg-orange-600 text-white opacity-0 transition-opacity duration-200 hover:bg-orange-700 group-hover:opacity-100"
-                >
-                  <Plus className="h-4 w-4" />
-                  <span className="max-sm:hidden">Adicionar Evento</span>
-                </Button>
+                {canManageCalendar ? (
+                  <Button className="bg-orange-600 text-white opacity-0 transition-opacity duration-200 hover:bg-orange-700 group-hover:opacity-100">
+                    <Plus className="h-4 w-4" />
+                    <span className="max-sm:hidden">Adicionar Evento</span>
+                  </Button>
+                ) : (
+                  <span className="text-xs text-muted-foreground">
+                    Sem eventos
+                  </span>
+                )}
               </div>
             ) : (
               [0, 1, 2].map(renderEventAtPosition)
@@ -160,6 +166,7 @@ export function DayCell({ cell, events, eventPositions }: IProps) {
       date,
       day,
       currentMonth,
+      canManageCalendar,
       cellEvents,
       showMore,
       showMoreCount,
@@ -169,7 +176,10 @@ export function DayCell({ cell, events, eventPositions }: IProps) {
   );
 
   if (currentMonth && cellEvents.length === 0) {
-    return <AddEditEventDialog startDate={date}>{cellContent}</AddEditEventDialog>;
+    if (canManageCalendar) {
+      return <AddEditEventDialog startDate={date}>{cellContent}</AddEditEventDialog>;
+    }
+    return cellContent;
   }
 
   return <EventListDialog date={date} events={cellEvents}>{cellContent}</EventListDialog>;

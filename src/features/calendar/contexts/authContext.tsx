@@ -9,6 +9,7 @@ import {
 } from "react";
 import { jwtDecode } from "jwt-decode";
 import {
+  canManageCalendar as checkCanManageCalendar,
   isEmployee as checkIsEmployee,
   isManager as checkIsManager,
 } from "../lib/permissions";
@@ -16,6 +17,7 @@ import {
 interface AuthContextType {
   token: string | null;
   user: DecodedToken | null;
+  canManageCalendar: boolean;
   isManager: boolean;
   isEmployee: boolean;
   login: (token: string) => void;
@@ -115,6 +117,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       value={{
         token,
         user,
+        canManageCalendar: user
+          ? checkCanManageCalendar(user.permissionLevel)
+          : false,
         isManager: user ? checkIsManager(user.permissionLevel) : false,
         isEmployee: user ? checkIsEmployee(user.permissionLevel) : false,
         login,

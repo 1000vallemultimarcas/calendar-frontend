@@ -86,7 +86,7 @@ export function DndProvider({ children }: DndProviderProps) {
       const { draggedEvent } = dragState;
       if (!draggedEvent) return;
       if (!canManageEvent(draggedEvent.user?.id, user?.userId, isManager)) {
-        toast.error("Atendente só pode editar eventos próprios.");
+        toast.error("Perfil atendente possui acesso somente leitura.");
         endDrag();
         return;
       }
@@ -163,3 +163,4 @@ export function useDragDrop() {
   }
   return context;
 }
+

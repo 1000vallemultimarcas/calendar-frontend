@@ -30,6 +30,8 @@ export function AddEditEventDialog({
     onSubmit,
     isEditing,
     users,
+    customers,
+    isLoadingCustomers,
     isUserSelectionDisabled,
     currentUserId,
   } = useEventDialogForm({
@@ -67,6 +69,8 @@ export function AddEditEventDialog({
             <EventMetaFields
               form={form}
               users={users}
+              customers={customers}
+              isLoadingCustomers={isLoadingCustomers}
               isUserSelectionDisabled={isUserSelectionDisabled}
               currentUserId={currentUserId}
             />

@@ -1,4 +1,4 @@
-﻿import { format } from "date-fns";
+import { format, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import type { ReactNode } from "react";
 import {
@@ -33,9 +33,7 @@ export function EventListDialog({
   const cellEvents = events;
   const hiddenEventsCount = Math.max(cellEvents.length - maxVisibleEvents, 0);
   const { use24HourFormat, removeEvent } = useCalendar();
-  const { user, isManager } = useAuth();
-
-  const currentUserId = user?.userId;
+  const { user, canManageCalendar } = useAuth();
 
   const defaultTrigger = (
     <span className="cursor-pointer text-slate-900">
@@ -67,8 +65,6 @@ export function EventListDialog({
         <div className="max-h-[60vh] space-y-3 overflow-y-auto px-2 pb-4">
           {cellEvents.length > 0 ? (
             cellEvents.map((event) => {
-              const canModify = isManager || currentUserId === event.user.id;
-
               return (
                 <div
                   key={event.id}
@@ -88,8 +84,18 @@ export function EventListDialog({
                     />
                   </EventDetailsDialog>
 
+                  <div className="rounded-lg border border-orange-200 bg-orange-50 px-3 py-2 text-xs text-orange-800">
+                    <p>Agendado por: {event.scheduledBy?.name ?? "Nao informado"}</p>
+                    <p>
+                      Criado em:{" "}
+                      {event.createdAt
+                        ? format(parseISO(event.createdAt), "dd/MM/yyyy HH:mm")
+                        : "Nao informado"}
+                    </p>
+                  </div>
+
                   <div className="flex flex-wrap gap-2">
-                    {canModify && (
+                    {canManageCalendar && (
                       <AddEditEventDialog event={event}>
                         <Button
                           size="sm"
@@ -101,7 +107,7 @@ export function EventListDialog({
                       </AddEditEventDialog>
                     )}
 
-                    {canModify && (
+                    {canManageCalendar && (
                       <Button
                         size="sm"
                         variant="destructive"

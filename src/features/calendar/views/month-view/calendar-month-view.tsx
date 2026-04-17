@@ -3,6 +3,7 @@
 import { motion } from "framer-motion";
 import { useMemo } from "react";
 import { staggerContainer, transition } from "@/features/calendar/animations";
+import { Button } from "@/components/ui/button";
 import { useCalendar } from "@/features/calendar/contexts/calendar-context";
 import { useAuth } from "@/features/calendar/contexts/authContext";
 import {
@@ -11,23 +12,23 @@ import {
 } from "@/features/calendar/helpers";
 import type { IEvent } from "@/features/calendar/interfaces";
 import { DayCell } from "@/features/calendar/views/month-view/day-cell";
-import { Button } from "@/components/ui/button";
+
 interface IProps {
   singleDayEvents: IEvent[];
   multiDayEvents: IEvent[];
 }
 
-const WEEK_DAYS = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
+const WEEK_DAYS = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sab"];
 
 export function CalendarMonthView({ singleDayEvents, multiDayEvents }: IProps) {
   const { selectedDate } = useCalendar();
-  const { switchRole, isManager, isEmployee, user } = useAuth();
+  const { isManager, isEmployee, switchRole, user } = useAuth();
 
   const roleLabel = isManager
     ? "Gerente"
     : isEmployee
-    ? "Funcionário"
-    : "Sem permissão";
+      ? "Funcionario"
+      : "Sem permissao";
 
   const allEvents = [...multiDayEvents, ...singleDayEvents];
 
@@ -71,27 +72,27 @@ export function CalendarMonthView({ singleDayEvents, multiDayEvents }: IProps) {
       </div>
 
       <div className="mt-4 rounded-lg border border-slate-200 bg-slate-50 p-4 text-sm text-slate-800">
-        <p className="font-medium">Permissão atual</p>
+        <p className="font-medium">Permissao atual</p>
         <p className="mt-1 text-base font-semibold">{roleLabel}</p>
 
         <div className="mt-2 flex gap-4 text-xs text-slate-600">
-          <span>Gerente: {isManager ? "Sim" : "Não"}</span>
-          <span>Funcionário: {isEmployee ? "Sim" : "Não"}</span>
+          <span>Gerente: {isManager ? "Sim" : "Nao"}</span>
+          <span>Funcionario: {isEmployee ? "Sim" : "Nao"}</span>
         </div>
       </div>
 
       <nav className="mt-4">
         <ul className="space-y-1 text-sm">
-          <li>Calendário</li>
+          <li>Calendario</li>
           <li>Meus compromissos</li>
-          <Button onClick={switchRole}>
-            Trocar para {isManager ? "Funcionário" : "Gerente"}
-			<p>Perfil atual: {user?.name}</p>
-          </Button>
-
-          {isManager && <li>Gestão da equipe</li>}
-          {isManager && <li>Relatórios</li>}
-
+          <li>
+            <Button onClick={switchRole} size="sm" variant="outline">
+              Trocar para {isManager ? "Funcionario" : "Gerente"}
+            </Button>
+          </li>
+          <li>Perfil atual: {user?.name ?? "Nao identificado"}</li>
+          {isManager && <li>Gestao da equipe</li>}
+          {isManager && <li>Relatorios</li>}
           {isEmployee && <li>Minhas tarefas</li>}
         </ul>
       </nav>

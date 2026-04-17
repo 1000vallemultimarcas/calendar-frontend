@@ -10,6 +10,8 @@ import type { EventDialogFormSectionsProps } from "../event-dialog.types";
 export function EventMetaFields({
   form,
   users,
+  customers,
+  isLoadingCustomers,
   isUserSelectionDisabled,
   currentUserId,
 }: EventDialogFormSectionsProps) {
@@ -93,6 +95,58 @@ export function EventMetaFields({
                   </SelectContent>
                 </Select>
               )}
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+
+      <FormField
+        control={form.control}
+        name="customerId"
+        render={({ field, fieldState }) => (
+          <FormItem>
+            <FormLabel>{EVENT_FORM_TEXTS_PT_BR.customerLabel}</FormLabel>
+            <FormControl>
+              <Select value={field.value || undefined} onValueChange={field.onChange}>
+                <SelectTrigger
+                  className={`w-full ${fieldState.invalid ? "border-red-500" : ""}`}
+                >
+                  <SelectValue
+                    placeholder={
+                      isLoadingCustomers
+                        ? "Carregando clientes..."
+                        : EVENT_FORM_TEXTS_PT_BR.customerPlaceholder
+                    }
+                  />
+                </SelectTrigger>
+                <SelectContent align="end">
+                  {customers?.map((customer) => (
+                    <SelectItem value={String(customer.id)} key={customer.id}>
+                      {customer.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+
+      <FormField
+        control={form.control}
+        name="customerPhone"
+        render={({ field, fieldState }) => (
+          <FormItem>
+            <FormLabel>{EVENT_FORM_TEXTS_PT_BR.customerPhoneLabel}</FormLabel>
+            <FormControl>
+              <Input
+                {...field}
+                value={field.value ?? ""}
+                placeholder={EVENT_FORM_TEXTS_PT_BR.customerPhonePlaceholder}
+                className={fieldState.invalid ? "border-red-500" : ""}
+              />
             </FormControl>
             <FormMessage />
           </FormItem>

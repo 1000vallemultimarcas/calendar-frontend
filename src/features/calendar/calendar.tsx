@@ -1,12 +1,44 @@
 "use client";
 
+import { useEffect } from "react";
+import { usePathname, useRouter } from "next/navigation";
 import { CalendarBody } from "@/features/calendar/calendar-body";
+import { useAuth } from "@/features/calendar/contexts/authContext";
+import { isSeniorManager } from "@/features/calendar/lib/permissions";
 import { CalendarProvider } from "@/features/calendar/contexts/calendar-context";
 import { DndProvider } from "@/features/calendar/contexts/dnd-context";
 import { CalendarHeader } from "@/features/calendar/header/calendar-header";
-import { Image } from "@radix-ui/react-avatar";
 
 export function Calendar() {
+  const router = useRouter();
+  const pathname = usePathname();
+  const { user, isEmployee, isManager } = useAuth();
+
+  useEffect(() => {
+    if (!user) return;
+
+    const isSeniorManagerUser = isSeniorManager(user.permissionLevel);
+
+    if (isEmployee && pathname !== "/calendar/atendente") {
+      router.replace("/calendar/atendente");
+      return;
+    }
+
+    if (isSeniorManagerUser && pathname !== "/calendar/gerente") {
+      router.replace("/calendar/gerente");
+      return;
+    }
+
+    if (isManager && pathname === "/calendar/atendente") {
+      router.replace("/calendar");
+      return;
+    }
+
+    if (isManager && pathname === "/calendar/gerente" && !isSeniorManagerUser) {
+      router.replace("/calendar");
+    }
+  }, [isEmployee, isManager, pathname, router, user]);
+
   return (
     <CalendarProvider events={[]} users={[]} view="month">
       <DndProvider>

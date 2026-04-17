@@ -23,6 +23,8 @@ export const eventSchema = z.object({
 	]),
 	priority: z.enum(["low", "normal", "high", "urgent"]),
 	userId: z.string().optional(),
+	customerId: z.string().optional(),
+	customerPhone: z.string().optional(),
 	color: z.enum(["blue", "green", "red", "yellow", "purple", "orange"]),
 });
 

@@ -19,6 +19,7 @@ import { useCalendarEventState } from "../hooks/use-calendar-event-state";
 import { useAuth } from "./authContext";
 import { canManageEvent } from "@/features/calendar/lib/permissions";
 import { getEvents, getUsers, mapViewToSchedulePeriod } from "../requests";
+
 const CalendarContext = createContext({} as ICalendarContext);
 
 type CalendarProviderProps = {
@@ -36,7 +37,7 @@ export function CalendarProvider({
   badge = "colored",
   view = "day",
 }: CalendarProviderProps) {
-  const { token, user, isManager } = useAuth();
+  const { token, user, isManager, canManageCalendar } = useAuth();
   const currentUserId = user?.userId;
   const [selectedDate, setSelectedDateState] = useState(new Date());
   const [isLoadingEvents, setIsLoadingEvents] = useState(false);
@@ -80,74 +81,99 @@ export function CalendarProvider({
 
   const addEvent = useCallback(
     (event: IEvent) => {
+      if (!canManageCalendar) {
+        toast.error("Perfil atendente possui acesso somente leitura.");
+        return;
+      }
+
       if (!canManageEvent(event.user?.id, currentUserId, isManager)) {
-        toast.error("Atendente só pode criar eventos próprios.");
+        toast.error("Somente perfis com permissao de gestao podem criar eventos.");
         return;
       }
 
       addEventRaw(event);
     },
-    [addEventRaw, currentUserId, isManager],
+    [addEventRaw, canManageCalendar, currentUserId, isManager],
   );
 
   const updateEvent = useCallback(
     (event: IEvent) => {
+      if (!canManageCalendar) {
+        toast.error("Perfil atendente possui acesso somente leitura.");
+        return;
+      }
+
       const existingEvent = allEvents.find((current) => current.id === event.id);
       const ownerId = existingEvent?.user?.id ?? event.user?.id;
 
       if (!canManageEvent(ownerId, currentUserId, isManager)) {
-        toast.error("Atendente só pode editar eventos próprios.");
+        toast.error("Somente perfis com permissao de gestao podem editar eventos.");
         return;
       }
 
       updateEventRaw(event);
     },
-    [allEvents, currentUserId, isManager, updateEventRaw],
+    [allEvents, canManageCalendar, currentUserId, isManager, updateEventRaw],
   );
 
   const removeEvent = useCallback(
     (eventId: number, deletedBy?: string) => {
+      if (!canManageCalendar) {
+        toast.error("Perfil atendente possui acesso somente leitura.");
+        return;
+      }
+
       const event = allEvents.find((current) => current.id === eventId);
       const ownerId = event?.user?.id;
 
       if (!canManageEvent(ownerId, currentUserId, isManager)) {
-        toast.error("Atendente só pode excluir eventos próprios.");
+        toast.error("Somente perfis com permissao de gestao podem excluir eventos.");
         return;
       }
 
       removeEventRaw(eventId, deletedBy);
     },
-    [allEvents, currentUserId, isManager, removeEventRaw],
+    [allEvents, canManageCalendar, currentUserId, isManager, removeEventRaw],
   );
 
   const restoreEvent = useCallback(
     (eventId: number) => {
+      if (!canManageCalendar) {
+        toast.error("Perfil atendente possui acesso somente leitura.");
+        return;
+      }
+
       const event = allEvents.find((current) => current.id === eventId);
       const ownerId = event?.user?.id;
 
       if (!canManageEvent(ownerId, currentUserId, isManager)) {
-        toast.error("Atendente só pode restaurar eventos próprios.");
+        toast.error("Somente perfis com permissao de gestao podem restaurar eventos.");
         return;
       }
 
       restoreEventRaw(eventId);
     },
-    [allEvents, currentUserId, isManager, restoreEventRaw],
+    [allEvents, canManageCalendar, currentUserId, isManager, restoreEventRaw],
   );
 
   const purgeEvent = useCallback(
     (eventId: number) => {
+      if (!canManageCalendar) {
+        toast.error("Perfil atendente possui acesso somente leitura.");
+        return;
+      }
+
       const event = allEvents.find((current) => current.id === eventId);
       const ownerId = event?.user?.id;
 
       if (!canManageEvent(ownerId, currentUserId, isManager)) {
-        toast.error("Atendente só pode remover eventos próprios.");
+        toast.error("Somente perfis com permissao de gestao podem remover eventos.");
         return;
       }
 
       purgeEventRaw(eventId);
     },
-    [allEvents, currentUserId, isManager, purgeEventRaw],
+    [allEvents, canManageCalendar, currentUserId, isManager, purgeEventRaw],
   );
 
   const {
@@ -200,6 +226,7 @@ export function CalendarProvider({
         }
       } catch (error) {
         console.error("Erro ao carregar agendamentos:", error);
+        toast.error("Sem conexao com o backend. Verifique se a API esta online.");
       } finally {
         if (isActive) {
           setIsLoadingEvents(false);
@@ -249,9 +276,7 @@ export function CalendarProvider({
   };
 
   return (
-    <CalendarContext.Provider value={value}>
-      {children}
-    </CalendarContext.Provider>
+    <CalendarContext.Provider value={value}>{children}</CalendarContext.Provider>
   );
 }
 

@@ -29,11 +29,14 @@ interface IProps {
 export function EventDetailsDialog({ event, children }: IProps) {
   const startDate = parseISO(event.startDate);
   const endDate = parseISO(event.endDate);
+  const scheduledAt = event.createdAt ? parseISO(event.createdAt) : null;
   const { use24HourFormat, removeEvent } = useCalendar();
-  const { user, isManager } = useAuth();
-
-  const currentUserId = user?.userId;
-  const canModify = isManager || currentUserId === event.user.id;
+  const { user, canManageCalendar } = useAuth();
+  const schedulerRoleLabel =
+    typeof event.scheduledBy?.permissionLevel === "number" &&
+    event.scheduledBy.permissionLevel >= 2
+      ? "Gerente"
+      : "Usuario";
 
   const deleteEvent = (eventId: number) => {
     try {
@@ -58,8 +61,35 @@ export function EventDetailsDialog({ event, children }: IProps) {
               <User className="mt-1 size-4 shrink-0 text-muted-foreground" />
               <div>
                 <p className="text-sm font-medium">Responsible</p>
+                <p className="text-sm text-muted-foreground">{event.user.name}</p>
+              </div>
+            </div>
+
+            <div className="flex items-start gap-2">
+              <User className="mt-1 size-4 shrink-0 text-muted-foreground" />
+              <div>
+                <p className="text-sm font-medium">Agendado por ({schedulerRoleLabel})</p>
                 <p className="text-sm text-muted-foreground">
-                  {event.user.name}
+                  {event.scheduledBy?.name ?? "Nao informado"}
+                </p>
+                {event.scheduledBy?.mail && (
+                  <p className="text-xs text-muted-foreground">
+                    {event.scheduledBy.mail}
+                  </p>
+                )}
+                {typeof event.scheduledBy?.permissionLevel === "number" && (
+                  <p className="text-xs text-muted-foreground">
+                    Nivel de permissao: {event.scheduledBy.permissionLevel}
+                  </p>
+                )}
+                <p className="text-xs text-muted-foreground">
+                  Agendado em:{" "}
+                  {scheduledAt
+                    ? format(
+                        scheduledAt,
+                        use24HourFormat ? "dd/MM/yyyy HH:mm" : "dd/MM/yyyy hh:mm a",
+                      )
+                    : "Nao informado"}
                 </p>
               </div>
             </div>
@@ -102,15 +132,33 @@ export function EventDetailsDialog({ event, children }: IProps) {
               <Text className="mt-1 size-4 shrink-0 text-muted-foreground" />
               <div>
                 <p className="text-sm font-medium">Description</p>
-                <p className="text-sm text-muted-foreground">
-                  {event.description}
-                </p>
+                <p className="text-sm text-muted-foreground">{event.description}</p>
               </div>
             </div>
+
+            {(event.customerId || event.customerPhone) && (
+              <div className="flex items-start gap-2">
+                <Text className="mt-1 size-4 shrink-0 text-muted-foreground" />
+                <div>
+                  <p className="text-sm font-medium">Cliente</p>
+                  {event.customerId && (
+                    <p className="text-sm text-muted-foreground">
+                      ID: {event.customerId}
+                    </p>
+                  )}
+                  {event.customerPhone && (
+                    <p className="text-sm text-muted-foreground">
+                      Telefone: {event.customerPhone}
+                    </p>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
         </ScrollArea>
+
         <div className="flex justify-end gap-2">
-          {canModify ? (
+          {canManageCalendar ? (
             <>
               <AddEditEventDialog event={event}>
                 <Button variant="outline">Edit</Button>
@@ -126,7 +174,7 @@ export function EventDetailsDialog({ event, children }: IProps) {
             </>
           ) : (
             <div className="rounded-md border border-orange-200 bg-orange-50 px-4 py-3 text-sm text-orange-700">
-              Você só pode editar e excluir seus próprios eventos.
+              Perfil atendente possui acesso somente leitura.
             </div>
           )}
         </div>

@@ -37,6 +37,8 @@ export function getDefaultFormValues({
     type: event?.type ?? "visit",
     priority: event?.priority ?? "normal",
     userId: defaultUserId,
+    customerId: event?.customerId ? String(event.customerId) : undefined,
+    customerPhone: event?.customerPhone ?? "",
     color: event?.color ?? getColorByType(event?.type ?? "visit"),
   };
 }
@@ -67,7 +69,9 @@ export function buildFormattedEvent({
     priority: values.priority,
     user: eventUser,
     attendantId: selectedUser?.id ?? event?.attendantId ?? eventUser.id,
-    customerId: event?.customerId,
+    customerId: values.customerId ? Number(values.customerId) : event?.customerId,
+    customerPhone: values.customerPhone ?? event?.customerPhone,
+    scheduledBy: event?.scheduledBy,
     color: getColorByType(values.type),
   };
 }

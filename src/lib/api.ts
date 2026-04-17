@@ -23,7 +23,9 @@ export async function fetcher<T>(path: string, init?: RequestInit): Promise<T> {
 			? API_PREFIX
 			: `/${API_PREFIX}`
 		: "";
-	const url = `${API_BASE_URL.replace(/\/$/, "")}${normalizedPrefix}${normalizedPath}`;
+	const backendUrl = `${API_BASE_URL.replace(/\/$/, "")}${normalizedPrefix}${normalizedPath}`;
+	const proxyUrl = `/api/proxy${normalizedPath}`;
+	const url = typeof window === "undefined" ? backendUrl : proxyUrl;
 	const token = getClientAuthToken();
 	const headers = new Headers(init?.headers);
 

@@ -21,11 +21,11 @@ import type { IEvent } from "@/features/calendar/interfaces";
 import { deleteEvent as deleteEventRequest } from "@/features/calendar/requests";
 
 function canModifyDeletedEvent(
-  event: IEvent,
-  userId: string | undefined,
+  _event: IEvent,
+  _userId: string | undefined,
   isManager: boolean,
 ) {
-  return isManager || event.user.id === userId;
+  return isManager;
 }
 
 export function DeletedEventsDialog() {

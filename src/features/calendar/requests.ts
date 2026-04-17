@@ -1,5 +1,5 @@
 import { format } from "date-fns";
-import type { IEvent, IUser } from "@/features/calendar/interfaces";
+import type { ICustomer, IEvent, IUser } from "@/features/calendar/interfaces";
 import { getColorByType } from "@/features/calendar/lib/event-form.utils";
 import { withUniqueUserColors, withUserColor } from "@/features/calendar/lib/user-color.utils";
 import type {
@@ -16,11 +16,18 @@ type ScheduleApiItem = {
   title: string;
   startDate: string;
   endDate: string;
+  createdAt?: string;
+  updatedAt?: string;
   description: string;
   customerId: number;
+  customerPhone?: string | null;
   attendantId: string;
   status: string;
   type: string;
+  createdById?: string;
+  createdByName?: string;
+  createdByMail?: string;
+  createdByPermissionLevel?: number;
 };
 
 type UserApiItem = {
@@ -32,6 +39,14 @@ type UserApiItem = {
 
 type UsersApiResponse = UserApiItem[] | { users: UserApiItem[] };
 
+type CustomerApiItem = {
+  id: number;
+  name: string;
+  phone?: string | null;
+};
+
+type CustomersApiResponse = CustomerApiItem[] | { customers: CustomerApiItem[] };
+
 type GetEventsParams = {
   period?: SchedulePeriod;
   referenceDate?: Date;
@@ -42,6 +57,8 @@ const DEFAULT_CUSTOMER_ID = Number(
   process.env.NEXT_PUBLIC_DEFAULT_CUSTOMER_ID ?? "1342",
 );
 const USERS_ENDPOINT = process.env.NEXT_PUBLIC_USERS_ENDPOINT ?? "/users";
+const CUSTOMERS_ENDPOINT =
+  process.env.NEXT_PUBLIC_CUSTOMERS_ENDPOINT ?? "/customers";
 const SCHEDULES_ENDPOINT =
   process.env.NEXT_PUBLIC_SCHEDULES_ENDPOINT ?? "/schedules";
 
@@ -56,6 +73,16 @@ function normalizeUsersResponse(payload: UsersApiResponse): IUser[] {
       userColor: user.userColor,
     })),
   );
+}
+
+function normalizeCustomersResponse(payload: CustomersApiResponse): ICustomer[] {
+  const items = Array.isArray(payload) ? payload : payload.customers;
+
+  return items.map((customer) => ({
+    id: customer.id,
+    name: customer.name,
+    phone: customer.phone ?? null,
+  }));
 }
 
 function normalizeStatus(status: string): TEventStatus {
@@ -121,12 +148,23 @@ function mapScheduleToEvent(schedule: ScheduleApiItem, users: IUser[]): IEvent {
     description: schedule.description,
     startDate: schedule.startDate,
     endDate: schedule.endDate,
+    createdAt: schedule.createdAt,
+    updatedAt: schedule.updatedAt,
     status: normalizeStatus(schedule.status),
     type,
     priority: "normal",
     color: getColorByType(type),
     customerId: schedule.customerId,
+    customerPhone: schedule.customerPhone ?? undefined,
     attendantId: schedule.attendantId,
+    scheduledBy: schedule.createdByName
+      ? {
+          id: schedule.createdById,
+          name: schedule.createdByName,
+          mail: schedule.createdByMail,
+          permissionLevel: schedule.createdByPermissionLevel,
+        }
+      : undefined,
     user:
       users.find((user) => user.id === schedule.attendantId) ??
       withUserColor({
@@ -191,6 +229,11 @@ export async function getEvents({
   return schedules.map((schedule) => mapScheduleToEvent(schedule, users));
 }
 
+export async function getCustomers(): Promise<ICustomer[]> {
+  const payload = await fetcher<CustomersApiResponse>(CUSTOMERS_ENDPOINT);
+  return normalizeCustomersResponse(payload);
+}
+
 export async function createEvent(event: Omit<IEvent, "id">): Promise<IEvent> {
   const createdSchedule = await fetcher<ScheduleApiItem>(SCHEDULES_ENDPOINT, {
     method: "POST",
@@ -200,13 +243,20 @@ export async function createEvent(event: Omit<IEvent, "id">): Promise<IEvent> {
       endDate: new Date(event.endDate).toISOString(),
       description: event.description,
       customerId: event.customerId ?? DEFAULT_CUSTOMER_ID,
+      customerPhone: event.customerPhone,
       attendantId: event.attendantId ?? event.user.id,
       status: mapEventStatusToApi(event.status),
       type: mapEventTypeToApi(event.type),
+      createdById: event.scheduledBy?.id,
     }),
   });
 
-  return mapScheduleToEvent(createdSchedule, [event.user]);
+  const mappedEvent = mapScheduleToEvent(createdSchedule, [event.user]);
+  return {
+    ...mappedEvent,
+    scheduledBy: mappedEvent.scheduledBy ?? event.scheduledBy,
+    customerPhone: mappedEvent.customerPhone ?? event.customerPhone,
+  };
 }
 
 export async function deleteEvent(eventId: number): Promise<void> {
