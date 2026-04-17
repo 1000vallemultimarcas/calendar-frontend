@@ -53,9 +53,6 @@ type GetEventsParams = {
   users?: IUser[];
 };
 
-const DEFAULT_CUSTOMER_ID = Number(
-  process.env.NEXT_PUBLIC_DEFAULT_CUSTOMER_ID ?? "1342",
-);
 const USERS_ENDPOINT = process.env.NEXT_PUBLIC_USERS_ENDPOINT ?? "/users";
 const CUSTOMERS_ENDPOINT =
   process.env.NEXT_PUBLIC_CUSTOMERS_ENDPOINT ?? "/customers";
@@ -235,20 +232,20 @@ export async function getCustomers(): Promise<ICustomer[]> {
 }
 
 export async function createEvent(event: Omit<IEvent, "id">): Promise<IEvent> {
+  const payload = {
+    title: event.title,
+    startDate: new Date(event.startDate).toISOString(),
+    endDate: new Date(event.endDate).toISOString(),
+    description: event.description,
+    attendantId: event.attendantId ?? event.user.id,
+    status: mapEventStatusToApi(event.status),
+    type: mapEventTypeToApi(event.type),
+    createdById: event.scheduledBy?.id,
+  };
+
   const createdSchedule = await fetcher<ScheduleApiItem>(SCHEDULES_ENDPOINT, {
     method: "POST",
-    body: JSON.stringify({
-      title: event.title,
-      startDate: new Date(event.startDate).toISOString(),
-      endDate: new Date(event.endDate).toISOString(),
-      description: event.description,
-      customerId: event.customerId ?? DEFAULT_CUSTOMER_ID,
-      customerPhone: event.customerPhone,
-      attendantId: event.attendantId ?? event.user.id,
-      status: mapEventStatusToApi(event.status),
-      type: mapEventTypeToApi(event.type),
-      createdById: event.scheduledBy?.id,
-    }),
+    body: JSON.stringify(payload),
   });
 
   const mappedEvent = mapScheduleToEvent(createdSchedule, [event.user]);

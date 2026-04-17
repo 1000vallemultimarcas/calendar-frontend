@@ -113,11 +113,14 @@ export function useEventDialogForm({
         `Erro ao ${isEditing ? "editar" : "criar"} agendamento:`,
         error,
       );
-      toast.error(
-        isEditing
-          ? EVENT_FORM_TEXTS_PT_BR.editError
-          : EVENT_FORM_TEXTS_PT_BR.createError,
-      );
+      const fallbackMessage = isEditing
+        ? EVENT_FORM_TEXTS_PT_BR.editError
+        : EVENT_FORM_TEXTS_PT_BR.createError;
+      const errorMessage =
+        error instanceof Error && error.message
+          ? `${fallbackMessage}: ${error.message}`
+          : fallbackMessage;
+      toast.error(errorMessage);
     }
   };
 
