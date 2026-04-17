@@ -1,11 +1,11 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { useCalendar } from "@/features/calendar/contexts/calendar-context";
 import { useAuth } from "@/features/calendar/contexts/authContext";
 import { useDisclosure } from "@/features/calendar/hooks";
-import { createEvent as createEventRequest, getCustomers } from "@/features/calendar/requests";
+import { createEvent as createEventRequest } from "@/features/calendar/requests";
 import { eventSchema, type TEventFormData } from "@/features/calendar/schemas";
 import { EVENT_FORM_TEXTS_PT_BR } from "@/features/calendar/constants/event-form.constants";
 import {
@@ -16,7 +16,6 @@ import {
 import { getInitialDates } from "@/features/calendar/lib/event-form.utils";
 import { canManageEvent } from "@/features/calendar/lib/permissions";
 import type { AddEditEventDialogProps } from "./event-dialog.types";
-import type { ICustomer } from "@/features/calendar/interfaces";
 
 export function useEventDialogForm({
   event,
@@ -27,8 +26,6 @@ export function useEventDialogForm({
   const { user, isManager, canManageCalendar } = useAuth();
   const { isOpen, onClose, onOpen, onToggle, setIsOpen } = useDisclosure();
   const isEditing = !!event;
-  const [customers, setCustomers] = useState<ICustomer[]>([]);
-  const [isLoadingCustomers, setIsLoadingCustomers] = useState(false);
 
   const currentUserId = user?.userId;
   const isUserSelectionDisabled = !isManager && !!currentUserId;
@@ -66,61 +63,6 @@ export function useEventDialogForm({
       }),
     );
   }, [event, form, initialDates, defaultUserId]);
-
-  useEffect(() => {
-    let isActive = true;
-
-    async function loadCustomers() {
-      setIsLoadingCustomers(true);
-
-      try {
-        const nextCustomers = await getCustomers();
-        if (isActive) {
-          setCustomers(nextCustomers);
-        }
-      } catch (error) {
-        if (isActive) {
-          setCustomers([]);
-        }
-
-        console.warn("Falha ao carregar clientes:", error);
-      } finally {
-        if (isActive) {
-          setIsLoadingCustomers(false);
-        }
-      }
-    }
-
-    void loadCustomers();
-
-    return () => {
-      isActive = false;
-    };
-  }, []);
-
-  useEffect(() => {
-    const subscription = form.watch((values, info) => {
-      if (info.name !== "customerId") {
-        return;
-      }
-
-      const selectedCustomer = customers.find(
-        (customer) => String(customer.id) === values.customerId,
-      );
-
-      if (!selectedCustomer) {
-        return;
-      }
-
-      if (selectedCustomer.phone) {
-        form.setValue("customerPhone", selectedCustomer.phone, {
-          shouldDirty: true,
-        });
-      }
-    });
-
-    return () => subscription.unsubscribe();
-  }, [customers, form]);
 
   const onSubmit = async (values: TEventFormData) => {
     try {
@@ -189,10 +131,7 @@ export function useEventDialogForm({
     isEditing,
     onSubmit,
     users,
-    customers,
-    isLoadingCustomers,
     isUserSelectionDisabled,
     currentUserId,
-    currentUserName: user?.name,
   };
 }

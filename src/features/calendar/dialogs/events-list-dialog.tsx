@@ -36,9 +36,9 @@ export function EventListDialog({
   const { user, canManageCalendar } = useAuth();
 
   const defaultTrigger = (
-    <span className="cursor-pointer text-slate-900">
+    <span className="cursor-pointer text-black">
       <span className="sm:hidden">+{hiddenEventsCount}</span>
-      <span className="hidden rounded-xl border border-slate-300 bg-slate-200 px-3 py-1 text-slate-900 shadow-sm sm:inline">
+      <span className="hidden rounded-xl border border-slate-400 bg-slate-300 px-3 py-1 text-black shadow-sm sm:inline">
         {hiddenEventsCount}
         <span className="mx-1">mais...</span>
       </span>
@@ -48,7 +48,7 @@ export function EventListDialog({
   return (
     <Modal>
       <ModalTrigger asChild>{children || defaultTrigger}</ModalTrigger>
-      <ModalContent className="bg-slate-100 text-foreground dark:bg-background sm:max-w-106.25">
+      <ModalContent className="bg-slate-200 text-slate-950 dark:bg-background sm:max-w-106.25">
         <ModalHeader>
           <ModalTitle className="my-2">
             <div className="flex items-center gap-2">
@@ -56,8 +56,9 @@ export function EventListDialog({
                 color={cellEvents[0]?.color ?? "blue"}
                 className="shadow-sm"
               />
-              <p className="text-sm font-semibold italic text-foreground">
-                Eventos em {format(date, "EEEE, d 'de' MMMM 'de' yyyy", { locale: ptBR })}
+              <p className="text-sm font-semibold italic text-slate-950 dark:text-foreground">
+                Eventos em{" "}
+                {format(date, "EEEE, d 'de' MMMM 'de' yyyy", { locale: ptBR })}
               </p>
             </div>
           </ModalTitle>
@@ -68,7 +69,7 @@ export function EventListDialog({
               return (
                 <div
                   key={event.id}
-                  className="space-y-2 rounded-2xl border border-slate-300 bg-slate-50 p-3 text-slate-900 shadow-lg dark:border-border dark:bg-card dark:text-card-foreground"
+                  className="space-y-2 rounded-2xl border border-slate-400 bg-white p-3 text-slate-950 shadow-lg dark:border-border dark:bg-card dark:text-card-foreground"
                 >
                   <EventDetailsDialog event={event}>
                     <EventItem
@@ -84,8 +85,10 @@ export function EventListDialog({
                     />
                   </EventDetailsDialog>
 
-                  <div className="rounded-lg border border-orange-200 bg-orange-50 px-3 py-2 text-xs text-orange-800">
-                    <p>Agendado por: {event.scheduledBy?.name ?? "Nao informado"}</p>
+                  <div className="rounded-lg border border-slate-200 dark:border-white/20 px-3 py-2 text-xs font-semibold text-black dark:text-orange-100">
+                    <p>
+                      Agendado por: {event.scheduledBy?.name ?? "Nao informado"}
+                    </p>
                     <p>
                       Criado em:{" "}
                       {event.createdAt
@@ -122,7 +125,9 @@ export function EventListDialog({
               );
             })
           ) : (
-            <p className="text-sm text-muted-foreground">Nenhum evento nesta data.</p>
+            <p className="text-sm text-muted-foreground">
+              Nenhum evento nesta data.
+            </p>
           )}
         </div>
       </ModalContent>
