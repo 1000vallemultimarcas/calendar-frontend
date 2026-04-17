@@ -7,11 +7,23 @@ import { EVENT_PRIORITIES } from "@/features/calendar/constants";
 import { PRIORITY_LABELS_PT_BR } from "@/features/calendar/constants/event-form.constants";
 import type { EventDialogFormSectionsProps } from "../event-dialog.types";
 
+function formatPhone(value: string) {
+  const digits = value.replace(/\D/g, "").slice(0, 11);
+
+  if (digits.length <= 2) {
+    return digits.length ? `(${digits}` : "";
+  }
+
+  if (digits.length <= 7) {
+    return `(${digits.slice(0, 2)}) ${digits.slice(2)}`;
+  }
+
+  return `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7)}`;
+}
+
 export function EventMetaFields({
   form,
   users,
-  customers,
-  isLoadingCustomers,
   isUserSelectionDisabled,
   currentUserId,
 }: EventDialogFormSectionsProps) {
@@ -103,39 +115,6 @@ export function EventMetaFields({
 
       <FormField
         control={form.control}
-        name="customerId"
-        render={({ field, fieldState }) => (
-          <FormItem>
-            <FormLabel>{EVENT_FORM_TEXTS_PT_BR.customerLabel}</FormLabel>
-            <FormControl>
-              <Select value={field.value || undefined} onValueChange={field.onChange}>
-                <SelectTrigger
-                  className={`w-full ${fieldState.invalid ? "border-red-500" : ""}`}
-                >
-                  <SelectValue
-                    placeholder={
-                      isLoadingCustomers
-                        ? "Carregando clientes..."
-                        : EVENT_FORM_TEXTS_PT_BR.customerPlaceholder
-                    }
-                  />
-                </SelectTrigger>
-                <SelectContent align="end">
-                  {customers?.map((customer) => (
-                    <SelectItem value={String(customer.id)} key={customer.id}>
-                      {customer.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </FormControl>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
-
-      <FormField
-        control={form.control}
         name="customerPhone"
         render={({ field, fieldState }) => (
           <FormItem>
@@ -144,8 +123,13 @@ export function EventMetaFields({
               <Input
                 {...field}
                 value={field.value ?? ""}
+                onChange={(event) =>
+                  field.onChange(formatPhone(event.target.value))
+                }
                 placeholder={EVENT_FORM_TEXTS_PT_BR.customerPhonePlaceholder}
                 className={fieldState.invalid ? "border-red-500" : ""}
+                inputMode="numeric"
+                maxLength={15}
               />
             </FormControl>
             <FormMessage />
