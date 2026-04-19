@@ -13,12 +13,12 @@ export function getColorByType(type: TEventType): TEventColor {
   switch (type) {
     case "meeting":
       return "blue";
-    case "appointment":
+    case "follow_up":
       return "green";
+    case "delivery":
+      return "orange";
     case "personal":
       return "purple";
-    case "work":
-      return "orange";
     case "visit":
       return "yellow";
     case "test_drive":

@@ -15,9 +15,9 @@ export const eventSchema = z.object({
 	]),
 	type: z.enum([
 		"meeting",
-		"appointment",
+		"follow_up",
+		"delivery",
 		"personal",
-		"work",
 		"visit",
 		"test_drive",
 	]),

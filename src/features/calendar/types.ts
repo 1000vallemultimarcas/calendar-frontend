@@ -15,9 +15,9 @@ export type TEventStatus =
 	| "not_attended";
 export type TEventType =
 	| "meeting"
-	| "appointment"
+	| "follow_up"
+	| "delivery"
 	| "personal"
-	| "work"
 	| "visit"
 	| "test_drive";
 export type TEventPriority = "low" | "normal" | "high" | "urgent";

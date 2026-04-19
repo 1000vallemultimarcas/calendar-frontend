@@ -19,11 +19,12 @@ export const EVENT_STATUSES: TEventStatus[] = [
 ];
 
 export const EVENT_TYPES: TEventType[] = [
-	"meeting",
-	"appointment",
-	"work",
 	"visit",
 	"test_drive",
+	"meeting",
+	"follow_up",
+	"delivery",
+	"personal",
 ];
 
 export const EVENT_PRIORITIES: TEventPriority[] = [
