@@ -17,34 +17,37 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Full Calendar",
+  title: "TurboFlow Agenda",
   description:
-    "A full-featured calendar component built with Next.js and Shadcn UI that supports multiple views, event management, and responsive design.",
+    "Agenda TurboFlow para gestao de compromissos, com multiplas visualizacoes e controle de eventos.",
   keywords: [
     "calendar",
     "nextjs",
     "shadcn",
     "react",
     "typescript",
-    "full calendar",
+    "turboflow agenda",
   ],
   authors: [{ name: "Jeraidi Yassir", url: "https://jeraidi.tech" }],
   creator: "Jeraidi Yassir",
-  applicationName: "Full Calendar",
+  applicationName: "TurboFlow Agenda",
+  icons: {
+    icon: "/icon.png",
+    apple: "/icon.png",
+    shortcut: "/icon.png",
+  },
   openGraph: {
-    title: "Full Calendar",
-    description:
-      "A full-featured calendar component built with Next.js and Shadcn UI.",
+    title: "TurboFlow Agenda",
+    description: "Agenda TurboFlow para organizacao de compromissos.",
     url: "https://calendar.jeraidi.tech/",
     type: "website",
-    siteName: "Full calendar",
+    siteName: "TurboFlow Agenda",
     images: [{ url: hero_img.src }],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Full Calendar",
-    description:
-      "A full-featured calendar component built with Next.js and Shadcn UI.",
+    title: "TurboFlow Agenda",
+    description: "Agenda TurboFlow para organizacao de compromissos.",
   },
   robots: {
     index: true,

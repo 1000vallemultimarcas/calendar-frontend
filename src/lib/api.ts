@@ -48,5 +48,18 @@ export async function fetcher<T>(path: string, init?: RequestInit): Promise<T> {
 		throw new Error(`Request failed ${response.status} ${response.statusText}: ${bodyText}`);
 	}
 
-	return response.json();
+	if (response.status === 204 || response.status === 205) {
+		return undefined as T;
+	}
+
+	const bodyText = await response.text();
+	if (!bodyText) {
+		return undefined as T;
+	}
+
+	try {
+		return JSON.parse(bodyText) as T;
+	} catch {
+		return bodyText as T;
+	}
 }

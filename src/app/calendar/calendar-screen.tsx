@@ -1,4 +1,5 @@
 import { Suspense } from "react";
+import { CalendarDays } from "lucide-react";
 import { Calendar } from "@/features/calendar/calendar";
 import { CalendarSkeleton } from "@/features/calendar/skeletons/calendar-skeleton";
 import { HeroBannerActions } from "./hero-banner-actions";

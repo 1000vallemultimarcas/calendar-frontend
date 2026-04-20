@@ -40,7 +40,7 @@ export function Calendar() {
   }, [isEmployee, isManager, pathname, router, user]);
 
   return (
-    <CalendarProvider events={[]} users={[]} view="month">
+    <CalendarProvider events={[]} users={[]} view="agenda">
       <DndProvider>
         <section className="relative w-full overflow-hidden rounded-3xl bg-background">
           <div className="pointer-events-none absolute inset-0 flex items-center justify-center">

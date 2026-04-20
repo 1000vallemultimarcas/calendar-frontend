@@ -42,7 +42,9 @@ export function useEventDialogForm({
   );
 
   const defaultUserId = isUserSelectionDisabled
-    ? currentUserId ?? getDefaultUserId(users, event)
+    ? users.some((current) => current.id === currentUserId)
+      ? currentUserId ?? getDefaultUserId(users, event)
+      : getDefaultUserId(users, event)
     : getDefaultUserId(users, event);
 
   const form = useForm<TEventFormData>({

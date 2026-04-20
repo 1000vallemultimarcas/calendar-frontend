@@ -14,12 +14,12 @@ export const STATUS_LABELS_PT_BR: Record<TEventStatus, string> = {
 };
 
 export const TYPE_LABELS_PT_BR: Record<TEventType, string> = {
-  meeting: "Reuniao",
-  appointment: "Compromisso",
-  personal: "Pessoal",
-  work: "Trabalho",
-  visit: "Visita",
+  visit: "Visita à loja",
   test_drive: "Test drive",
+  meeting: "Reunião",
+  follow_up: "Retorno / Follow-up",
+  delivery: "Entrega de veículo",
+  personal: "Pessoal",
 };
 
 export const PRIORITY_LABELS_PT_BR: Record<TEventPriority, string> = {

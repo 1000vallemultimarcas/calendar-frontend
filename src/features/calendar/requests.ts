@@ -108,13 +108,18 @@ function normalizeType(type: string): TEventType {
       return "visit";
     case "MEETING":
       return "meeting";
+    case "FOLLOW_UP":
+      return "follow_up";
+    case "DELIVERY":
+      return "delivery";
     case "PERSONAL":
       return "personal";
     case "WORK":
-      return "work";
+      return "follow_up";
     case "APPOINTMENT":
+      return "follow_up";
     default:
-      return "appointment";
+      return "visit";
   }
 }
 
@@ -176,11 +181,15 @@ function mapEventTypeToApi(type: TEventType): string {
   switch (type) {
     case "test_drive":
       return "TEST_DRIVE";
+    case "follow_up":
+    case "delivery":
+      return "VISIT";
     case "visit":
+      return "VISIT";
     case "meeting":
-    case "appointment":
+      return "MEETING";
     case "personal":
-    case "work":
+      return "PERSONAL";
     default:
       return "VISIT";
   }
@@ -232,11 +241,18 @@ export async function getCustomers(): Promise<ICustomer[]> {
 }
 
 export async function createEvent(event: Omit<IEvent, "id">): Promise<IEvent> {
+  const customerPhone = (event.customerPhone ?? "").replace(/\D/g, "");
+
+  if (!customerPhone) {
+    throw new Error("Informe o telefone do cliente.");
+  }
+
   const payload = {
     title: event.title,
     startDate: new Date(event.startDate).toISOString(),
     endDate: new Date(event.endDate).toISOString(),
     description: event.description,
+    customerPhone,
     attendantId: event.attendantId ?? event.user.id,
     status: mapEventStatusToApi(event.status),
     type: mapEventTypeToApi(event.type),
