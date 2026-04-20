@@ -1,10 +1,10 @@
 ﻿import { z } from "zod/v4";
 
 export const eventSchema = z.object({
-	title: z.string().min(1, "Title is required"),
-	description: z.string().min(1, "Description is required"),
-	startDate: z.date("Start date is required"),
-	endDate: z.date("End date is required"),
+	title: z.string().min(1, "Escreva um titulo para o agendamento"),
+	description: z.string().min(1, "Escreva uma descrição para o agendamento"),
+	startDate: z.date("Escreva a data de início do agendamento"),
+	endDate: z.date("Escreva a data de término do agendamento"),
 	status: z.enum([
 		"scheduled",
 		"confirmed",

@@ -37,22 +37,60 @@ export async function fetcher<T>(path: string, init?: RequestInit): Promise<T> {
 		headers.set("Authorization", `Bearer ${token}`);
 	}
 
-	const response = await fetch(url, {
-		headers,
-		cache: "no-store",
-		...init,
-	});
+	let response: Response;
+	try {
+		response = await fetch(url, {
+			headers,
+			cache: "no-store",
+			...init,
+		});
+	} catch (error) {
+		const message =
+			error instanceof Error ? error.message : "Erro de rede desconhecido";
+		throw new Error(`Falha de conexao com a API: ${message}`);
+	}
 
 	if (!response.ok) {
-		const bodyText = await response.text();
-		throw new Error(`Request failed ${response.status} ${response.statusText}: ${bodyText}`);
+		let bodyText = "";
+		try {
+			bodyText = await response.text();
+			bodyText = bodyText.replace(
+				/Não é permitido criar agendamentos com data retroativa\.?/gi,
+				"Não é permitido criar agendamentos com data e hora retroativas.",
+			);
+		} catch {
+			bodyText = "";
+		}
+
+		let message = bodyText.trim();
+		if (message) {
+			try {
+				const parsed = JSON.parse(message) as { message?: string };
+				if (parsed?.message) {
+					message = parsed.message;
+				}
+			} catch {
+				// Keep raw message when response is not JSON.
+			}
+		}
+
+		if (!message) {
+			message = `Request failed ${response.status} ${response.statusText}`;
+		}
+
+		throw new Error(message);
 	}
 
 	if (response.status === 204 || response.status === 205) {
 		return undefined as T;
 	}
 
-	const bodyText = await response.text();
+	let bodyText = "";
+	try {
+		bodyText = await response.text();
+	} catch {
+		bodyText = "";
+	}
 	if (!bodyText) {
 		return undefined as T;
 	}
