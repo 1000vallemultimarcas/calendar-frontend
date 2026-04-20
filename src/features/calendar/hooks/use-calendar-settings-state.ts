@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useLocalStorage } from "@/features/calendar/hooks";
 import type { TCalendarView } from "@/features/calendar/types";
 import type { CalendarSettings } from "@/features/calendar/contexts/calendar-context.types";
@@ -33,6 +33,14 @@ export function useCalendarSettingsState({
   const [agendaModeGroupBy, setAgendaModeGroupByState] = useState(
     settings.agendaModeGroupBy,
   );
+
+  // Sync internal states when settings from localStorage are loaded
+  useEffect(() => {
+    setBadgeVariantState(settings.badgeVariant);
+    setViewState(settings.view);
+    setUse24HourFormatState(settings.use24HourFormat);
+    setAgendaModeGroupByState(settings.agendaModeGroupBy);
+  }, [settings]);
 
   const updateSettings = (newPartialSettings: Partial<CalendarSettings>) => {
     setSettings(mergeCalendarSettings(settings, newPartialSettings));
