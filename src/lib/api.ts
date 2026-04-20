@@ -37,29 +37,43 @@ export async function fetcher<T>(path: string, init?: RequestInit): Promise<T> {
 		headers.set("Authorization", `Bearer ${token}`);
 	}
 
-	const response = await fetch(url, {
-		headers,
-		cache: "no-store",
-		...init,
-	});
-
-	if (!response.ok) {
-		const bodyText = await response.text();
-		throw new Error(`Request failed ${response.status} ${response.statusText}: ${bodyText}`);
-	}
-
-	if (response.status === 204 || response.status === 205) {
-		return undefined as T;
-	}
-
-	const bodyText = await response.text();
-	if (!bodyText) {
-		return undefined as T;
-	}
+	const controller = new AbortController();
+	const timeoutId = setTimeout(() => controller.abort(), 15000);
 
 	try {
-		return JSON.parse(bodyText) as T;
-	} catch {
-		return bodyText as T;
+		const response = await fetch(url, {
+			headers,
+			cache: "no-store",
+			signal: controller.signal,
+			...init,
+		});
+
+		clearTimeout(timeoutId);
+
+		if (!response.ok) {
+			const bodyText = await response.text();
+			throw new Error(`Request failed ${response.status} ${response.statusText}: ${bodyText}`);
+		}
+
+		if (response.status === 204 || response.status === 205) {
+			return undefined as T;
+		}
+
+		const bodyText = await response.text();
+		if (!bodyText) {
+			return undefined as T;
+		}
+
+		try {
+			return JSON.parse(bodyText) as T;
+		} catch {
+			return bodyText as T;
+		}
+	} catch (error: any) {
+		clearTimeout(timeoutId);
+		if (error.name === "AbortError") {
+			throw new Error("A requisicao demorou muito para responder (timeout). Verifique sua conexao.");
+		}
+		throw error;
 	}
 }
