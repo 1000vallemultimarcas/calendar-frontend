@@ -6,6 +6,7 @@ import { staggerContainer, transition } from "@/features/calendar/animations";
 import { Button } from "@/components/ui/button";
 import { useCalendar } from "@/features/calendar/contexts/calendar-context";
 import { useAuth } from "@/features/calendar/contexts/authContext";
+import { useHasMounted } from "@/hooks/use-has-mounted";
 import {
   calculateMonthEventPositions,
   getCalendarCells,
@@ -23,12 +24,15 @@ const WEEK_DAYS = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sab"];
 export function CalendarMonthView({ singleDayEvents, multiDayEvents }: IProps) {
   const { selectedDate } = useCalendar();
   const { isManager, isEmployee, switchRole, user } = useAuth();
+  const hasMounted = useHasMounted();
 
-  const roleLabel = isManager
-    ? "Gerente"
-    : isEmployee
-      ? "Funcionario"
-      : "Sem permissao";
+  const roleLabel = !hasMounted
+    ? "Carregando..."
+    : isManager
+      ? "Gerente"
+      : isEmployee
+        ? "Funcionario"
+        : "Sem permissao";
 
   const allEvents = [...multiDayEvents, ...singleDayEvents];
 
@@ -76,8 +80,8 @@ export function CalendarMonthView({ singleDayEvents, multiDayEvents }: IProps) {
         <p className="mt-1 text-base font-semibold">{roleLabel}</p>
 
         <div className="mt-2 flex gap-4 text-xs text-slate-600">
-          <span>Gerente: {isManager ? "Sim" : "Nao"}</span>
-          <span>Funcionario: {isEmployee ? "Sim" : "Nao"}</span>
+          <span>Gerente: {hasMounted && isManager ? "Sim" : "Nao"}</span>
+          <span>Funcionario: {hasMounted && isEmployee ? "Sim" : "Nao"}</span>
         </div>
       </div>
 
@@ -87,13 +91,13 @@ export function CalendarMonthView({ singleDayEvents, multiDayEvents }: IProps) {
           <li>Meus compromissos</li>
           <li>
             <Button onClick={switchRole} size="sm" variant="outline">
-              Trocar para {isManager ? "Funcionario" : "Gerente"}
+              Trocar para {hasMounted && isManager ? "Funcionario" : "Gerente"}
             </Button>
           </li>
-          <li>Perfil atual: {user?.name ?? "Nao identificado"}</li>
-          {isManager && <li>Gestao da equipe</li>}
-          {isManager && <li>Relatorios</li>}
-          {isEmployee && <li>Minhas tarefas</li>}
+          <li>Perfil atual: {hasMounted ? (user?.name ?? "Nao identificado") : "..."}</li>
+          {hasMounted && isManager && <li>Gestao da equipe</li>}
+          {hasMounted && isManager && <li>Relatorios</li>}
+          {hasMounted && isEmployee && <li>Minhas tarefas</li>}
         </ul>
       </nav>
     </motion.div>

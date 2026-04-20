@@ -14,6 +14,7 @@ import { CalendarTimeline } from "@/features/calendar/views/week-and-day-view/ca
 import { DayViewMultiDayEventsRow } from "@/features/calendar/views/week-and-day-view/day-view-multi-day-events-row";
 import { RenderGroupedEvents } from "@/features/calendar/views/week-and-day-view/render-grouped-events";
 import { useAuth } from "@/features/calendar/contexts/authContext";
+import { useHasMounted } from "@/hooks/use-has-mounted";
 
 interface IProps {
   singleDayEvents: IEvent[];
@@ -24,6 +25,8 @@ export function CalendarDayView({ singleDayEvents, multiDayEvents }: IProps) {
   const { selectedDate, setSelectedDate, users, use24HourFormat } =
     useCalendar();
   const { canManageCalendar } = useAuth();
+  const hasMounted = useHasMounted();
+  const canManage = hasMounted && canManageCalendar;
   const scrollAreaRef = useRef<HTMLDivElement>(null);
 
   const hours = Array.from({ length: 24 }, (_, i) => i);
@@ -146,7 +149,7 @@ export function CalendarDayView({ singleDayEvents, multiDayEvents }: IProps) {
                       minute={0}
                       className="absolute inset-x-0 top-0 z-0 h-[48px]"
                     >
-                      {canManageCalendar ? (
+                      {canManage ? (
                         <AddEditEventDialog
                           startDate={selectedDate}
                           startTime={{ hour, minute: 0 }}
@@ -166,7 +169,7 @@ export function CalendarDayView({ singleDayEvents, multiDayEvents }: IProps) {
                       minute={30}
                       className="absolute inset-x-0 bottom-0 z-0 h-[48px]"
                     >
-                      {canManageCalendar ? (
+                      {canManage ? (
                         <AddEditEventDialog
                           startDate={selectedDate}
                           startTime={{ hour, minute: 30 }}
