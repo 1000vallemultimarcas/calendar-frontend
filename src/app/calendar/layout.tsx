@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-	title: "Full Calendar",
-	description: "Calendar page",
+	title: "TurboFlow Agenda",
+	description: "Pagina da agenda TurboFlow",
 	authors: [
 		{
 			name: "Jeraidi Yassir",
@@ -12,7 +12,7 @@ export const metadata: Metadata = {
 	keywords: [
 		"calendar",
 		"big calendar",
-		"full calendar",
+		"turboflow agenda",
 		"next.js",
 		"tailwind css",
 		"shadcn ui",

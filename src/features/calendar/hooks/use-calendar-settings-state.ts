@@ -17,7 +17,7 @@ export function useCalendarSettingsState({
   initialView = "day",
 }: UseCalendarSettingsStateParams) {
   const [settings, setSettings] = useLocalStorage<CalendarSettings>(
-    "calendar-settings",
+    "turboflow-calendar-settings",
     {
       ...DEFAULT_CALENDAR_SETTINGS,
       badgeVariant: initialBadge,
