@@ -32,7 +32,11 @@ export const useLocalStorage = <T>(
 		}
 	};
 
-	const [storedValue, setStoredValue] = useState<T>(readValue);
+	const [storedValue, setStoredValue] = useState<T>(initialValue);
+
+	useEffect(() => {
+		setStoredValue(readValue());
+	}, [key]);
 
 	const setValue = (value: T) => {
 		try {
