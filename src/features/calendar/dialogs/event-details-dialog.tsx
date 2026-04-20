@@ -18,7 +18,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { useCalendar } from "@/features/calendar/contexts/calendar-context";
 import { useAuth } from "@/features/calendar/contexts/authContext";
 import { AddEditEventDialog } from "@/features/calendar/dialogs/add-edit-event-dialog";
-import { formatTime, toCapitalize } from "@/features/calendar/helpers";
+import { toCapitalize } from "@/features/calendar/helpers";
 import type { IEvent } from "@/features/calendar/interfaces";
 
 interface IProps {
@@ -32,18 +32,14 @@ export function EventDetailsDialog({ event, children }: IProps) {
   const scheduledAt = event.createdAt ? parseISO(event.createdAt) : null;
   const { use24HourFormat, removeEvent } = useCalendar();
   const { user, canManageCalendar } = useAuth();
-  const schedulerRoleLabel =
-    typeof event.scheduledBy?.permissionLevel === "number" &&
-    event.scheduledBy.permissionLevel >= 2
-      ? "Gerente"
-      : "Usuario";
+  const schedulerName = event.scheduledBy?.name ?? "Nao informado";
 
   const deleteEvent = (eventId: number) => {
     try {
       removeEvent(eventId, user?.name);
-      toast.success("Event deleted successfully.");
+      toast.success("Evento excluido com sucesso.");
     } catch {
-      toast.error("Error deleting event.");
+      toast.error("Erro ao excluir evento.");
     }
   };
 
@@ -58,9 +54,9 @@ export function EventDetailsDialog({ event, children }: IProps) {
         <ScrollArea className="max-h-[80vh]">
           <div className="space-y-4 p-4">
             <div className="flex items-start gap-2">
-              <User className="mt-1 size-4 shrink-0 text-muted-foreground" />
+                <User className="mt-1 size-4 shrink-0 text-muted-foreground" />
               <div>
-                <p className="text-sm font-medium">Responsible</p>
+                <p className="text-sm font-medium">Responsavel</p>
                 <p className="text-sm text-muted-foreground">{event.user.name}</p>
               </div>
             </div>
@@ -68,9 +64,9 @@ export function EventDetailsDialog({ event, children }: IProps) {
             <div className="flex items-start gap-2">
               <User className="mt-1 size-4 shrink-0 text-muted-foreground" />
               <div>
-                <p className="text-sm font-medium">Agendado por ({schedulerRoleLabel})</p>
+                <p className="text-sm font-medium">Agendado por ({schedulerName})</p>
                 <p className="text-sm text-muted-foreground">
-                  {event.scheduledBy?.name ?? "Nao informado"}
+                  {schedulerName}
                 </p>
                 {event.scheduledBy?.mail && (
                   <p className="text-xs text-muted-foreground">
@@ -97,16 +93,17 @@ export function EventDetailsDialog({ event, children }: IProps) {
             <div className="flex items-start gap-2">
               <Calendar className="mt-1 size-4 shrink-0 text-muted-foreground" />
               <div>
-                <p className="text-sm font-medium">Start Date</p>
+                <p className="text-sm font-medium">Data de inicio</p>
                 <p className="text-sm text-muted-foreground">
                   {toCapitalize(
-                    format(startDate, "EEEE dd MMMM", { locale: ptBR }).replace(
-                      "-feira",
-                      "",
-                    ),
+                    format(
+                      startDate,
+                      use24HourFormat
+                        ? "EEEE dd 'de' MMMM 'as' HH:mm"
+                        : "EEEE dd 'de' MMMM 'as' hh:mm a",
+                      { locale: ptBR },
+                    ).replace("-feira", ""),
                   )}
-                  <span className="mx-1">as</span>
-                  {formatTime(parseISO(event.startDate), use24HourFormat)}
                 </p>
               </div>
             </div>
@@ -114,16 +111,17 @@ export function EventDetailsDialog({ event, children }: IProps) {
             <div className="flex items-start gap-2">
               <Clock className="mt-1 size-4 shrink-0 text-muted-foreground" />
               <div>
-                <p className="text-sm font-medium">End Date</p>
+                <p className="text-sm font-medium">Data de termino</p>
                 <p className="text-sm text-muted-foreground">
                   {toCapitalize(
-                    format(endDate, "EEEE dd MMMM", { locale: ptBR }).replace(
-                      "-feira",
-                      "",
-                    ),
+                    format(
+                      endDate,
+                      use24HourFormat
+                        ? "EEEE dd 'de' MMMM 'as' HH:mm"
+                        : "EEEE dd 'de' MMMM 'as' hh:mm a",
+                      { locale: ptBR },
+                    ).replace("-feira", ""),
                   )}
-                  <span className="mx-1">as</span>
-                  {formatTime(parseISO(event.endDate), use24HourFormat)}
                 </p>
               </div>
             </div>
@@ -131,7 +129,7 @@ export function EventDetailsDialog({ event, children }: IProps) {
             <div className="flex items-start gap-2">
               <Text className="mt-1 size-4 shrink-0 text-muted-foreground" />
               <div>
-                <p className="text-sm font-medium">Description</p>
+                <p className="text-sm font-medium">Descricao</p>
                 <p className="text-sm text-muted-foreground">{event.description}</p>
               </div>
             </div>
@@ -161,7 +159,7 @@ export function EventDetailsDialog({ event, children }: IProps) {
           {canManageCalendar ? (
             <>
               <AddEditEventDialog event={event}>
-                <Button variant="outline">Edit</Button>
+                <Button variant="outline">Editar</Button>
               </AddEditEventDialog>
               <Button
                 variant="destructive"
@@ -169,7 +167,7 @@ export function EventDetailsDialog({ event, children }: IProps) {
                   deleteEvent(event.id);
                 }}
               >
-                Delete
+                Excluir
               </Button>
             </>
           ) : (

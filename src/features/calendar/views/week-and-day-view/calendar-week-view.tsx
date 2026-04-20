@@ -1,4 +1,11 @@
-import {addDays, format, isSameDay, parseISO, startOfWeek} from "date-fns";
+import {
+    addDays,
+    differenceInMinutes,
+    format,
+    isSameDay,
+    parseISO,
+    startOfWeek
+} from "date-fns";
 import { ptBR } from "date-fns/locale";
 import {motion} from "framer-motion";
 import {ScrollArea} from "@/components/ui/scroll-area";
@@ -135,10 +142,18 @@ export function CalendarWeekView({singleDayEvents, multiDayEvents}: IProps) {
                         >
                             <div className="grid grid-cols-7 divide-x">
                                 {weekDays.map((day, dayIndex) => {
-                                    const dayEvents = singleDayEvents.filter(
-                                        (event) =>
-                                            isSameDay(parseISO(event.startDate), day) ||
-                                            isSameDay(parseISO(event.endDate), day),
+                                    const dayEvents = [...singleDayEvents, ...multiDayEvents].filter(
+                                        (event) => {
+                                            const startDate = parseISO(event.startDate);
+                                            const endDate = parseISO(event.endDate);
+                                            const durationInMinutes = differenceInMinutes(endDate, startDate);
+
+                                            return (
+                                                (isSameDay(startDate, day) || isSameDay(endDate, day)) &&
+                                                durationInMinutes > 0 &&
+                                                durationInMinutes <= 24 * 60
+                                            );
+                                        },
                                     );
                                     const groupedEvents = groupEvents(dayEvents);
 

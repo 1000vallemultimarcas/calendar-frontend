@@ -1,4 +1,10 @@
-import { format, isWithinInterval, parseISO } from "date-fns";
+import {
+  differenceInMinutes,
+  format,
+  isSameDay,
+  isWithinInterval,
+  parseISO,
+} from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { Calendar, Clock, User } from "lucide-react";
 import { useEffect, useRef } from "react";
@@ -68,14 +74,17 @@ export function CalendarDayView({ singleDayEvents, multiDayEvents }: IProps) {
     );
   };
 
-  const currentEvents = getCurrentEvents(singleDayEvents);
+  const currentEvents = getCurrentEvents([...singleDayEvents, ...multiDayEvents]);
 
-  const dayEvents = singleDayEvents.filter((event) => {
-    const eventDate = parseISO(event.startDate);
+  const dayEvents = [...singleDayEvents, ...multiDayEvents].filter((event) => {
+    const startDate = parseISO(event.startDate);
+    const endDate = parseISO(event.endDate);
+    const durationInMinutes = differenceInMinutes(endDate, startDate);
+
     return (
-      eventDate.getDate() === selectedDate.getDate() &&
-      eventDate.getMonth() === selectedDate.getMonth() &&
-      eventDate.getFullYear() === selectedDate.getFullYear()
+      (isSameDay(startDate, selectedDate) || isSameDay(endDate, selectedDate)) &&
+      durationInMinutes > 0 &&
+      durationInMinutes <= 24 * 60
     );
   });
 

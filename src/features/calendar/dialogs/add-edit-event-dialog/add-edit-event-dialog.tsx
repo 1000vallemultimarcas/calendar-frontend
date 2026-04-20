@@ -42,7 +42,7 @@ export function AddEditEventDialog({
     <Modal open={isOpen} onOpenChange={setIsOpen}>
       <ModalTrigger asChild>{children}</ModalTrigger>
 
-      <ModalContent className="max-w-[95vw] sm:max-w-175">
+      <ModalContent className="max-w-[95vw] bg-[#ededed] dark:bg-background sm:max-w-175">
         <ModalHeader>
           <ModalTitle>
             {isEditing

@@ -126,9 +126,8 @@ function normalizeType(type: string): TEventType {
 export function mapViewToSchedulePeriod(view: TCalendarView): SchedulePeriod {
   switch (view) {
     case "day":
-      return "day";
     case "week":
-      return "week";
+      return "month";
     case "year":
       return "year";
     case "agenda":
