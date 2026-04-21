@@ -37,6 +37,7 @@ export function getDefaultFormValues({
     type: event?.type ?? "visit",
     priority: event?.priority ?? "normal",
     userId: defaultUserId,
+    managerId: event?.scheduledBy?.id,
     customerId: event?.customerId ? String(event.customerId) : undefined,
     customerPhone: event?.customerPhone ?? "",
     color: event?.color ?? getColorByType(event?.type ?? "visit"),
@@ -51,6 +52,9 @@ export function buildFormattedEvent({
 }: BuildFormattedEventParams): IEvent {
   const selectedUser = values.userId
     ? users.find((user) => user.id === values.userId)
+    : undefined;
+  const selectedManager = values.managerId
+    ? users.find((user) => user.id === values.managerId)
     : undefined;
   const eventUser = selectedUser ?? event?.user ?? users[0];
 
@@ -71,7 +75,12 @@ export function buildFormattedEvent({
     attendantId: selectedUser?.id ?? event?.attendantId ?? eventUser.id,
     customerId: values.customerId ? Number(values.customerId) : event?.customerId,
     customerPhone: values.customerPhone ?? event?.customerPhone,
-    scheduledBy: event?.scheduledBy,
+    scheduledBy: selectedManager
+      ? {
+          id: selectedManager.id,
+          name: selectedManager.name,
+        }
+      : event?.scheduledBy,
     color: getColorByType(values.type),
   };
 }

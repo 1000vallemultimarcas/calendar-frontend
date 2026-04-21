@@ -44,6 +44,8 @@ export const EVENT_FORM_TEXTS_PT_BR = {
   priorityPlaceholder: "Selecione uma prioridade",
   responsibleLabel: "Responsavel",
   responsiblePlaceholder: "Selecione um responsavel",
+  managerLabel: "Gerente",
+  managerPlaceholder: "Selecione um gerente",
   customerLabel: "Cliente (telefone)",
   customerPlaceholder: "Selecione pelo telefone",
   customerPhoneLabel: "Telefone",

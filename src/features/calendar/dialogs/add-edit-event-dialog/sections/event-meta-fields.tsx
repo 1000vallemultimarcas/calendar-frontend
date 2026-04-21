@@ -115,6 +115,49 @@ export function EventMetaFields({
 
       <FormField
         control={form.control}
+        name="managerId"
+        render={({ field, fieldState }) => (
+          <FormItem>
+            <FormLabel>{EVENT_FORM_TEXTS_PT_BR.managerLabel}</FormLabel>
+            <FormControl>
+              <Select value={field.value || undefined} onValueChange={field.onChange}>
+                <SelectTrigger
+                  className={`w-full ${fieldState.invalid ? "border-red-500" : ""}`}
+                >
+                  <SelectValue
+                    placeholder={EVENT_FORM_TEXTS_PT_BR.managerPlaceholder}
+                  />
+                </SelectTrigger>
+                <SelectContent align="end">
+                  {users?.map((user) => (
+                    <SelectItem value={user.id} key={user.id}>
+                      <div className="flex items-center gap-2">
+                        <Avatar className="size-6">
+                          <AvatarImage
+                            src={user.picturePath ?? undefined}
+                            alt={user.name}
+                          />
+                          <AvatarFallback
+                            className="text-xxs text-white"
+                            style={{ backgroundColor: user.userColor }}
+                          >
+                            {user.name[0]}
+                          </AvatarFallback>
+                        </Avatar>
+                        <span>{user.name}</span>
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+
+      <FormField
+        control={form.control}
         name="customerPhone"
         render={({ field, fieldState }) => (
           <FormItem>
