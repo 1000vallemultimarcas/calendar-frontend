@@ -188,7 +188,8 @@ function mapEventTypeToApi(type: TEventType): string {
     case "meeting":
       return "MEETING";
     case "personal":
-      return "PERSONAL";
+      // Backend enum does not accept PERSONAL; fallback to VISIT.
+      return "VISIT";
     default:
       return "VISIT";
   }
