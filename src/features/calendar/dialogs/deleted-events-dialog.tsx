@@ -1,5 +1,6 @@
-﻿"use client";
+"use client";
 
+import { useState } from "react";
 import { format, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { toast } from "sonner";
@@ -32,6 +33,7 @@ export function DeletedEventsDialog() {
   const { deletedEvents, restoreEvent, purgeEvent } = useCalendar();
   const { user, isManager } = useAuth();
   const currentUserId = user?.userId;
+  const [isBatchLoading, setIsBatchLoading] = useState(false);
 
   const restore = (eventId: number) => {
     restoreEvent(eventId);
@@ -48,6 +50,59 @@ export function DeletedEventsDialog() {
     }
   };
 
+  const restoreAll = () => {
+    if (!isManager || deletedEvents.length === 0) return;
+
+    setIsBatchLoading(true);
+
+    try {
+      for (const event of deletedEvents) {
+        restoreEvent(event.id);
+      }
+
+      toast.success("Todos os eventos foram restaurados.");
+    } finally {
+      setIsBatchLoading(false);
+    }
+  };
+
+  const purgeAll = async () => {
+    if (!isManager || deletedEvents.length === 0) return;
+
+    setIsBatchLoading(true);
+
+    try {
+      const purgeResults = await Promise.allSettled(
+        deletedEvents.map((event) => deleteEventRequest(event.id)),
+      );
+
+      let successCount = 0;
+
+      for (let i = 0; i < purgeResults.length; i += 1) {
+        if (purgeResults[i].status === "fulfilled") {
+          purgeEvent(deletedEvents[i].id);
+          successCount += 1;
+        }
+      }
+
+      if (successCount === deletedEvents.length) {
+        toast.success("Todos os eventos foram apagados permanentemente.");
+        return;
+      }
+
+      if (successCount > 0) {
+        toast.error(
+          `${successCount} evento(s) removido(s). Alguns nao puderam ser excluidos.`,
+        );
+        return;
+      }
+
+      toast.error("Falha ao remover eventos permanentemente.");
+    } finally {
+      setIsBatchLoading(false);
+    }
+  };
+
   return (
     <Modal modal={false}>
       <ModalTrigger asChild>
@@ -61,6 +116,25 @@ export function DeletedEventsDialog() {
             permanentemente.
           </ModalDescription>
         </ModalHeader>
+
+        <div className="flex flex-wrap justify-end gap-2">
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={restoreAll}
+            disabled={!isManager || deletedEvents.length === 0 || isBatchLoading}
+          >
+            Restaurar todos
+          </Button>
+          <Button
+            size="sm"
+            variant="destructive"
+            onClick={() => void purgeAll()}
+            disabled={!isManager || deletedEvents.length === 0 || isBatchLoading}
+          >
+            Deletar todos
+          </Button>
+        </div>
 
         <ScrollArea className="max-h-[70vh] py-2">
           <div className="space-y-4">
@@ -104,7 +178,7 @@ export function DeletedEventsDialog() {
                           size="sm"
                           variant="outline"
                           onClick={() => restore(event.id)}
-                          disabled={!canModify}
+                          disabled={!canModify || isBatchLoading}
                         >
                           Restaurar
                         </Button>
@@ -112,7 +186,7 @@ export function DeletedEventsDialog() {
                           size="sm"
                           variant="destructive"
                           onClick={() => void purge(event.id)}
-                          disabled={!canModify}
+                          disabled={!canModify || isBatchLoading}
                         >
                           Apagar permanentemente
                         </Button>
