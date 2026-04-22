@@ -1,8 +1,17 @@
 "use client";
 
-import { useMemo } from "react";
-import { parseISO } from "date-fns";
-import { BarChart3, CalendarCheck2, TrendingUp, Users } from "lucide-react";
+import { useCallback, useMemo } from "react";
+import { format, parseISO } from "date-fns";
+import { ptBR } from "date-fns/locale";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
+import {
+  BarChart3,
+  CalendarCheck2,
+  FileDown,
+  TrendingUp,
+  Users,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Modal,
@@ -227,6 +236,72 @@ export function HeroReportsButton() {
     },
   ];
 
+  const generatedAt = format(new Date(), "dd/MM/yyyy HH:mm", { locale: ptBR });
+
+  const handleExportPdf = useCallback(() => {
+    const doc = new jsPDF({ unit: "pt", format: "a4" });
+    const marginX = 40;
+    const marginYTitle = 225;
+    const marginYGenerated = 250;
+
+
+    doc.setFont("Times New Roman", "bold");
+    doc.setFontSize(18);
+    doc.text("Relatorios do Calendario", marginYTitle, 44);
+    doc.setFont("Times New Roman", "normal");
+    doc.setFontSize(11);
+    doc.text(`Gerado em: ${generatedAt}`, marginYGenerated, 62);
+
+    autoTable(doc, {
+      startY: 80,
+      margin: { left: marginX, right: marginX },
+      head: [["Resumo", "Valor"]],
+      body: reportSummary.map((item) => [item.label, String(item.value)]),
+      theme: "grid",
+      headStyles: { fillColor: [37, 99, 235] },
+      styles: { fontSize: 10 },
+      columnStyles: { 1: { halign: "right" } },
+    });
+
+    autoTable(doc, {
+      startY: (doc as jsPDF & { lastAutoTable: { finalY: number } }).lastAutoTable.finalY + 16,
+      margin: { left: marginX, right: marginX },
+      head: [["Filtros aplicados", "Selecao"]],
+      body: filterGroups.map((group) => [
+        group.title,
+        group.values.length > 0 ? group.values.join(", ") : group.emptyLabel,
+      ]),
+      theme: "grid",
+      headStyles: { fillColor: [15, 23, 42] },
+      styles: { fontSize: 10 },
+    });
+
+    autoTable(doc, {
+      startY: (doc as jsPDF & { lastAutoTable: { finalY: number } }).lastAutoTable.finalY + 16,
+      margin: { left: marginX, right: marginX },
+      head: [["Agendamentos por dia", "Total"]],
+      body: meetingsPerDay.map((item) => [item.day, String(item.meetings)]),
+      theme: "grid",
+      headStyles: { fillColor: [59, 130, 246] },
+      styles: { fontSize: 10 },
+      columnStyles: { 1: { halign: "right" } },
+    });
+
+    autoTable(doc, {
+      startY: (doc as jsPDF & { lastAutoTable: { finalY: number } }).lastAutoTable.finalY + 16,
+      margin: { left: marginX, right: marginX },
+      head: [["Distribuicao de status", "Percentual"]],
+      body: pieData.map((item) => [item.label, `${item.value}%`]),
+      theme: "grid",
+      headStyles: { fillColor: [14, 165, 233] },
+      styles: { fontSize: 10 },
+      columnStyles: { 1: { halign: "right" } },
+    });
+
+    const generatedAtFile = format(new Date(), "yyyyMMdd-HHmm");
+    doc.save(`relatorio-calendario-${generatedAtFile}.pdf`);
+  }, [filterGroups, generatedAt, meetingsPerDay, pieData, reportSummary]);
+
   return (
     <Modal>
       <ModalTrigger asChild>
@@ -245,7 +320,19 @@ export function HeroReportsButton() {
       >
         <div className="flex h-full min-h-0 flex-col">
           <ModalHeader className="shrink-0 border-b border-slate-200 px-6 py-5">
-            <ModalTitle>Relatorios do Calendario</ModalTitle>
+            <div className="flex items-start justify-between gap-3">
+              <ModalTitle>Relatorios do Calendario</ModalTitle>
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                className="mr-10 border-blue-600 bg-white text-blue-800 hover:border-orange-400 hover:bg-orange-100 hover:text-orange-800"
+                onClick={handleExportPdf}
+              >
+                <FileDown className="size-4" />
+                Exportar PDF
+              </Button>
+            </div>
             <ModalDescription id="responsive-modal-description">
               Dados simulados para acompanhamento de reunioes, comparecimento e
               produtividade da equipe. Visao expandida para leitura gerencial.
@@ -349,7 +436,7 @@ export function HeroReportsButton() {
                     Distribuicao de status
                   </h3>
                   <p className="text-xs text-slate-500">
-                    Grafico em pizza com amostra mockada.
+                    Grafico em pizza com base na agenda filtrada atual.
                   </p>
                 </div>
 
