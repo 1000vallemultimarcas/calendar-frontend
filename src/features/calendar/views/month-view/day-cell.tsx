@@ -16,7 +16,6 @@ import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import { AddEditEventDialog } from "@/features/calendar/dialogs/add-edit-event-dialog";
 import { useAuth } from "@/features/calendar/contexts/authContext";
-import { useHasMounted } from "@/hooks/use-has-mounted";
 
 interface IProps {
   cell: ICalendarCell;
@@ -51,9 +50,6 @@ export function DayCell({ cell, events, eventPositions }: IProps) {
   const { day, currentMonth, date } = cell;
   const isMobile = useMediaQuery("(max-width: 768px)");
   const { canManageCalendar } = useAuth();
-  const hasMounted = useHasMounted();
-
-  const canManage = hasMounted && canManageCalendar;
 
   // Memoize cellEvents and currentCellMonth for performance
   const { cellEvents, currentCellMonth } = useMemo(() => {
@@ -140,7 +136,7 @@ export function DayCell({ cell, events, eventPositions }: IProps) {
           >
             {cellEvents.length === 0 && !isMobile ? (
               <div className="w-full h-full flex justify-center items-center group">
-                {canManage ? (
+                {canManageCalendar ? (
                   <Button className="bg-orange-600 text-white opacity-0 transition-opacity duration-200 hover:bg-orange-700 group-hover:opacity-100">
                     <Plus className="h-4 w-4" />
                     <span className="max-sm:hidden">Adicionar Evento</span>
@@ -170,7 +166,7 @@ export function DayCell({ cell, events, eventPositions }: IProps) {
       date,
       day,
       currentMonth,
-      canManage,
+      canManageCalendar,
       cellEvents,
       showMore,
       showMoreCount,
@@ -180,7 +176,7 @@ export function DayCell({ cell, events, eventPositions }: IProps) {
   );
 
   if (currentMonth && cellEvents.length === 0) {
-    if (canManage) {
+    if (canManageCalendar) {
       return <AddEditEventDialog startDate={date}>{cellContent}</AddEditEventDialog>;
     }
     return cellContent;
