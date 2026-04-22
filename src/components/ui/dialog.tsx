@@ -65,7 +65,7 @@ function DialogContent({
 				{children}
 				<DialogPrimitive.Close className="ring-offset-background absolute top-4 right-4 rounded-xs bg-orange-600 p-1 text-white opacity-100 transition-colors hover:bg-orange-700 focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 focus:outline-hidden disabled:pointer-events-none [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4">
 					<XIcon />
-					<span className="sr-only">Close</span>
+					<span className="sr-only">Fechar</span>
 				</DialogPrimitive.Close>
 			</DialogPrimitive.Content>
 		</DialogPortal>
