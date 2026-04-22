@@ -24,9 +24,9 @@ export default function DeleteEventDialog({ eventId }: DeleteEventDialogProps) {
   const deleteEvent = () => {
     try {
       removeEvent(eventId);
-      toast.success("Event deleted successfully.");
+      toast.success("Eventos deletados com sucesso.");
     } catch {
-      toast.error("Error deleting event.");
+      toast.error("Erro ao deletar evento.");
     }
   };
 
@@ -39,7 +39,7 @@ export default function DeleteEventDialog({ eventId }: DeleteEventDialogProps) {
       <AlertDialogTrigger asChild>
         <Button variant="destructive">
           <TrashIcon />
-          Delete
+          Deletar
         </Button>
       </AlertDialogTrigger>
       <AlertDialogContent>
