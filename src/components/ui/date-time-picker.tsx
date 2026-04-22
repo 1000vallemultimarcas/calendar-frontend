@@ -25,9 +25,10 @@ import type { TEventFormData } from "@/features/calendar/schemas";
 interface DatePickerProps {
 	form: UseFormReturn<TEventFormData>;
 	field: ControllerRenderProps<TEventFormData, "endDate" | "startDate">;
+	minDate?: Date;
 }
 
-export function DateTimePicker({ form, field }: DatePickerProps) {
+export function DateTimePicker({ form, field, minDate }: DatePickerProps) {
 	const { use24HourFormat } = useCalendar();
 
 	const displayFormat = useMemo(
@@ -45,6 +46,17 @@ export function DateTimePicker({ form, field }: DatePickerProps) {
 	}, [field.value, displayFormat]);
 
 	function syncDateValue(nextDate: Date) {
+		if (minDate && nextDate.getTime() < minDate.getTime()) {
+			form.setError(field.name, {
+				type: "manual",
+				message:
+					field.name === "startDate"
+						? "Data e hora inicial nao podem ser retroativas ao momento atual"
+						: "Data final nao pode ser anterior a data inicial",
+			});
+			return;
+		}
+
 		form.setValue(field.name, nextDate, {
 			shouldValidate: true,
 			shouldDirty: true,
@@ -243,6 +255,17 @@ export function DateTimePicker({ form, field }: DatePickerProps) {
 								mode="single"
 								selected={field.value}
 								onSelect={handleDateSelect}
+								disabled={
+									minDate
+										? {
+												before: new Date(
+													minDate.getFullYear(),
+													minDate.getMonth(),
+													minDate.getDate(),
+												),
+											}
+										: undefined
+								}
 								locale={ptBR}
 								initialFocus
 								className="mx-auto w-fit p-0"

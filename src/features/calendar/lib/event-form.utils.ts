@@ -35,18 +35,21 @@ export function getInitialDates({
   isEditing,
 }: GetInitialDatesParams) {
   if (!isEditing && !event) {
+    const now = new Date();
+
     if (!startDate) {
-      const now = new Date();
       return { startDate: now, endDate: addMinutes(now, 30) };
     }
 
-    const start = startTime
+    const suggestedStart = startTime
       ? set(new Date(startDate), {
           hours: startTime.hour,
           minutes: startTime.minute,
           seconds: 0,
         })
       : new Date(startDate);
+    const start =
+      suggestedStart.getTime() < now.getTime() ? now : suggestedStart;
 
     return {
       startDate: start,

@@ -7,19 +7,25 @@ import { STATUS_LABELS_PT_BR, TYPE_LABELS_PT_BR } from "@/features/calendar/cons
 import type { EventDialogFormSectionsProps } from "../event-dialog.types";
 
 export function EventScheduleFields({ form }: EventDialogFormSectionsProps) {
+  const startDate = form.watch("startDate");
+
   return (
     <div className="grid gap-4">
       <div className="grid gap-4 lg:grid-cols-2">
         <FormField
           control={form.control}
           name="startDate"
-          render={({ field }) => <DateTimePicker form={form} field={field} />}
+          render={({ field }) => (
+            <DateTimePicker form={form} field={field} minDate={new Date()} />
+          )}
         />
 
         <FormField
           control={form.control}
           name="endDate"
-          render={({ field }) => <DateTimePicker form={form} field={field} />}
+          render={({ field }) => (
+            <DateTimePicker form={form} field={field} minDate={startDate} />
+          )}
         />
       </div>
 

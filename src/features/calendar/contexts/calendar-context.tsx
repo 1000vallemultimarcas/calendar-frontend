@@ -81,6 +81,27 @@ export function CalendarProvider({
 
   const addEvent = useCallback(
     (event: IEvent) => {
+      const now = Date.now();
+      const start = new Date(event.startDate).getTime();
+      const end = new Date(event.endDate).getTime();
+
+      if (Number.isNaN(start) || Number.isNaN(end)) {
+        toast.error("Data invalida para o agendamento.");
+        return;
+      }
+
+      if (start < now) {
+        toast.error(
+          "Data e hora inicial nao podem ser retroativas ao momento atual.",
+        );
+        return;
+      }
+
+      if (end <= start) {
+        toast.error("Data final deve ser maior que a data inicial.");
+        return;
+      }
+
       if (!canManageCalendar) {
         toast.error("Perfil atendente possui acesso somente leitura.");
         return;
@@ -98,6 +119,27 @@ export function CalendarProvider({
 
   const updateEvent = useCallback(
     (event: IEvent) => {
+      const now = Date.now();
+      const start = new Date(event.startDate).getTime();
+      const end = new Date(event.endDate).getTime();
+
+      if (Number.isNaN(start) || Number.isNaN(end)) {
+        toast.error("Data invalida para o agendamento.");
+        return;
+      }
+
+      if (start < now) {
+        toast.error(
+          "Data e hora inicial nao podem ser retroativas ao momento atual.",
+        );
+        return;
+      }
+
+      if (end <= start) {
+        toast.error("Data final deve ser maior que a data inicial.");
+        return;
+      }
+
       if (!canManageCalendar) {
         toast.error("Perfil atendente possui acesso somente leitura.");
         return;

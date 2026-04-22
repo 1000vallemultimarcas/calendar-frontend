@@ -68,6 +68,29 @@ export function useEventDialogForm({
 
   const onSubmit = async (values: TEventFormData) => {
     try {
+      const now = new Date();
+
+      if (values.startDate.getTime() < now.getTime()) {
+        form.setError("startDate", {
+          type: "manual",
+          message:
+            "Data e hora inicial nao podem ser retroativas ao momento atual",
+        });
+        toast.error(
+          "Data e hora inicial nao podem ser retroativas ao momento atual",
+        );
+        return;
+      }
+
+      if (values.endDate.getTime() <= values.startDate.getTime()) {
+        form.setError("endDate", {
+          type: "manual",
+          message: "Data final deve ser maior que a data inicial",
+        });
+        toast.error("Data final deve ser maior que a data inicial");
+        return;
+      }
+
       if (!canManageCalendar) {
         toast.error("Perfil atendente possui acesso somente leitura.");
         return;
