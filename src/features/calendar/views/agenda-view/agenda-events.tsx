@@ -29,11 +29,18 @@ export const AgendaEvents: FC = () => {
 
   const monthEvents = getEventsForMonth(events, selectedDate);
 
-  const agendaEvents = Object.groupBy(monthEvents, (event) => {
-    return agendaModeGroupBy === "date"
-      ? format(parseISO(event.startDate), "yyyy-MM-dd")
-      : event.color;
-  });
+  const agendaEvents = monthEvents.reduce<Record<string, typeof monthEvents>>(
+    (acc, event) => {
+      const key =
+        agendaModeGroupBy === "date"
+          ? format(parseISO(event.startDate), "yyyy-MM-dd")
+          : event.color;
+      if (!acc[key]) acc[key] = [];
+      acc[key].push(event);
+      return acc;
+    },
+    {},
+  );
 
   const groupedAndSortedEvents = Object.entries(agendaEvents).sort(
     (a, b) => new Date(a[0]).getTime() - new Date(b[0]).getTime(),

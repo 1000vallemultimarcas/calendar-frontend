@@ -54,7 +54,12 @@ export const metadata: Metadata = {
     follow: true,
   },
   generator: "Next.js",
-  viewport: "width=device-width, initial-scale=1",
+  metadataBase: new URL("https://calendar.jeraidi.tech/"),
+};
+
+export const viewport = {
+  width: "device-width",
+  initialScale: 1,
 };
 
 export default function RootLayout({

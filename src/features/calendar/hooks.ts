@@ -17,20 +17,21 @@ export function useDisclosure({
 export const useLocalStorage = <T>(
 	key: string,
 	initialValue: T,
-): [T, (value: T) => void] => {
-	const readValue = (): T => {
-		if (typeof window === "undefined") {
-			return initialValue;
-		}
+): [T, (value: T | ((val: T) => T)) => void] => {
+	const [storedValue, setStoredValue] = useState<T>(initialValue);
+
+	useEffect(() => {
+		if (typeof window === "undefined") return;
 
 		try {
 			const item = window.localStorage.getItem(key);
-			return item ? (JSON.parse(item) as T) : initialValue;
+			if (item) {
+				setStoredValue(JSON.parse(item) as T);
+			}
 		} catch (error) {
 			console.warn(`Error reading localStorage key "${key}":`, error);
-			return initialValue;
 		}
-	};
+	}, [key]);
 
 	const [storedValue, setStoredValue] = useState<T>(initialValue);
 

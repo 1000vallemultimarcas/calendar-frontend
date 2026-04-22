@@ -18,6 +18,7 @@ import FilterEvents from "@/features/calendar/header/filter";
 import { TodayButton } from "@/features/calendar/header/today-button";
 import { UserSelect } from "@/features/calendar/header/user-select";
 import { useAuth } from "@/features/calendar/contexts/authContext";
+import { useHasMounted } from "@/hooks/use-has-mounted";
 import Views from "./view-tabs";
 
 export function CalendarHeader() {
