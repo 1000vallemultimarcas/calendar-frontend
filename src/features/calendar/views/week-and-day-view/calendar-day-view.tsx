@@ -1,4 +1,10 @@
-import { format, isWithinInterval, parseISO } from "date-fns";
+import {
+  differenceInMinutes,
+  format,
+  isSameDay,
+  isWithinInterval,
+  parseISO,
+} from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { Calendar, Clock, User } from "lucide-react";
 import { useEffect, useRef } from "react";
@@ -14,7 +20,6 @@ import { CalendarTimeline } from "@/features/calendar/views/week-and-day-view/ca
 import { DayViewMultiDayEventsRow } from "@/features/calendar/views/week-and-day-view/day-view-multi-day-events-row";
 import { RenderGroupedEvents } from "@/features/calendar/views/week-and-day-view/render-grouped-events";
 import { useAuth } from "@/features/calendar/contexts/authContext";
-import { useHasMounted } from "@/hooks/use-has-mounted";
 
 interface IProps {
   singleDayEvents: IEvent[];
@@ -25,8 +30,6 @@ export function CalendarDayView({ singleDayEvents, multiDayEvents }: IProps) {
   const { selectedDate, setSelectedDate, users, use24HourFormat } =
     useCalendar();
   const { canManageCalendar } = useAuth();
-  const hasMounted = useHasMounted();
-  const canManage = hasMounted && canManageCalendar;
   const scrollAreaRef = useRef<HTMLDivElement>(null);
 
   const hours = Array.from({ length: 24 }, (_, i) => i);
@@ -71,14 +74,17 @@ export function CalendarDayView({ singleDayEvents, multiDayEvents }: IProps) {
     );
   };
 
-  const currentEvents = getCurrentEvents(singleDayEvents);
+  const currentEvents = getCurrentEvents([...singleDayEvents, ...multiDayEvents]);
 
-  const dayEvents = singleDayEvents.filter((event) => {
-    const eventDate = parseISO(event.startDate);
+  const dayEvents = [...singleDayEvents, ...multiDayEvents].filter((event) => {
+    const startDate = parseISO(event.startDate);
+    const endDate = parseISO(event.endDate);
+    const durationInMinutes = differenceInMinutes(endDate, startDate);
+
     return (
-      eventDate.getDate() === selectedDate.getDate() &&
-      eventDate.getMonth() === selectedDate.getMonth() &&
-      eventDate.getFullYear() === selectedDate.getFullYear()
+      (isSameDay(startDate, selectedDate) || isSameDay(endDate, selectedDate)) &&
+      durationInMinutes > 0 &&
+      durationInMinutes <= 24 * 60
     );
   });
 
@@ -149,7 +155,7 @@ export function CalendarDayView({ singleDayEvents, multiDayEvents }: IProps) {
                       minute={0}
                       className="absolute inset-x-0 top-0 z-0 h-[48px]"
                     >
-                      {canManage ? (
+                      {canManageCalendar ? (
                         <AddEditEventDialog
                           startDate={selectedDate}
                           startTime={{ hour, minute: 0 }}
@@ -169,7 +175,7 @@ export function CalendarDayView({ singleDayEvents, multiDayEvents }: IProps) {
                       minute={30}
                       className="absolute inset-x-0 bottom-0 z-0 h-[48px]"
                     >
-                      {canManage ? (
+                      {canManageCalendar ? (
                         <AddEditEventDialog
                           startDate={selectedDate}
                           startTime={{ hour, minute: 30 }}

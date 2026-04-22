@@ -42,43 +42,67 @@ export async function fetcher<T>(path: string, init?: RequestInit): Promise<T> {
 		headers.set("Authorization", `Bearer ${token}`);
 	}
 
-	const controller = new AbortController();
-	const timeoutId = setTimeout(() => controller.abort(), 15000);
-
+	let response: Response;
 	try {
-		const response = await fetch(url, {
+		response = await fetch(url, {
 			headers,
 			cache: "no-store",
-			signal: controller.signal,
 			...init,
 		});
+	} catch (error) {
+		const message =
+			error instanceof Error ? error.message : "Erro de rede desconhecido";
+		throw new Error(`Falha de conexao com a API: ${message}`);
+	}
 
-		clearTimeout(timeoutId);
-
-		if (!response.ok) {
-			const bodyText = await response.text();
-			throw new Error(`Request failed ${response.status} ${response.statusText}: ${bodyText}`);
-		}
-
-		if (response.status === 204 || response.status === 205) {
-			return undefined as T;
-		}
-
-		const bodyText = await response.text();
-		if (!bodyText) {
-			return undefined as T;
-		}
-
+	if (!response.ok) {
+		let bodyText = "";
 		try {
-			return JSON.parse(bodyText) as T;
+			bodyText = await response.text();
+			bodyText = bodyText.replace(
+				/Não é permitido criar agendamentos com data retroativa\.?/gi,
+				"Não é permitido criar agendamentos com data e hora retroativas.",
+			);
 		} catch {
-			return bodyText as T;
+			bodyText = "";
 		}
-	} catch (error: any) {
-		clearTimeout(timeoutId);
-		if (error.name === "AbortError") {
-			throw new Error("A requisicao demorou muito para responder (timeout). Verifique sua conexao.");
+
+		let message = bodyText.trim();
+		if (message) {
+			try {
+				const parsed = JSON.parse(message) as { message?: string };
+				if (parsed?.message) {
+					message = parsed.message;
+				}
+			} catch {
+				// Keep raw message when response is not JSON.
+			}
 		}
-		throw error;
+
+		if (!message) {
+			message = `Request failed ${response.status} ${response.statusText}`;
+		}
+
+		throw new Error(message);
+	}
+
+	if (response.status === 204 || response.status === 205) {
+		return undefined as T;
+	}
+
+	let bodyText = "";
+	try {
+		bodyText = await response.text();
+	} catch {
+		bodyText = "";
+	}
+	if (!bodyText) {
+		return undefined as T;
+	}
+
+	try {
+		return JSON.parse(bodyText) as T;
+	} catch {
+		return bodyText as T;
 	}
 }

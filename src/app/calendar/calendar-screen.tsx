@@ -13,7 +13,7 @@ export function CalendarScreen({ badgeLabel }: CalendarScreenProps) {
     <main className="my-10 flex max-h-screen flex-col">
       <div className="container p-4 md:mx-auto">
         <div className="flex items-center justify-between">
-          <div className="relative h-[240px] w-full overflow-hidden rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+          <div className="relative h-[210px] w-full overflow-hidden rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
             <img
               src="/images/turboflow.png"
               alt="TurboFlow"
@@ -22,13 +22,15 @@ export function CalendarScreen({ badgeLabel }: CalendarScreenProps) {
             <HeroBannerActions />
             <div className="absolute inset-0 bg-gradient-to-r from-slate-950/85 via-slate-900/55 to-transparent"></div>
             <div className="absolute inset-x-0 top-0 p-6 md:p-8">
-              <div className="inline-flex items-center rounded-full border border-orange-300/40 bg-orange-500 px-3 py-1 text-xs font-bold tracking-wide text-white">
+              <div className="inline-flex items-center rounded-full border border-orange-300/40 bg-orange-500 px-3 py-1 text-[11px] font-bold tracking-wide text-white">
                 {badgeLabel}
               </div>
-              <p className="mt-3 max-w-2xl text-xl font-extrabold leading-tight text-white md:text-3xl">
-                Organize e planeje suas vendas com nosso calendario
+              <p className="mt-2 max-w-2xl text-lg font-extrabold leading-tight text-white md:text-2xl">
+                Organize e planeje suas vendas
+                <br />
+                com nosso calendario
               </p>
-              <p className="mt-2 max-w-xl text-sm text-slate-100 md:text-base">
+              <p className="mt-1.5 max-w-xl text-xs text-slate-100 md:text-sm">
                 Controle sua operacao com mais previsibilidade, foco e
                 produtividade.
               </p>

@@ -1,4 +1,11 @@
-import {addDays, format, isSameDay, parseISO, startOfWeek} from "date-fns";
+import {
+    addDays,
+    differenceInMinutes,
+    format,
+    isSameDay,
+    parseISO,
+    startOfWeek
+} from "date-fns";
 import { ptBR } from "date-fns/locale";
 import {motion} from "framer-motion";
 import {ScrollArea} from "@/components/ui/scroll-area";
@@ -18,7 +25,6 @@ import {
     WeekViewMultiDayEventsRow
 } from "@/features/calendar/views/week-and-day-view/week-view-multi-day-events-row";
 import { useAuth } from "@/features/calendar/contexts/authContext";
-import { useHasMounted } from "@/hooks/use-has-mounted";
 
 interface IProps {
     singleDayEvents: IEvent[];
@@ -28,8 +34,6 @@ interface IProps {
 export function CalendarWeekView({singleDayEvents, multiDayEvents}: IProps) {
     const {selectedDate, use24HourFormat} = useCalendar();
     const { canManageCalendar } = useAuth();
-    const hasMounted = useHasMounted();
-    const canManage = hasMounted && canManageCalendar;
 
     const weekStart = startOfWeek(selectedDate);
     const weekDays = Array.from({length: 7}, (_, i) => addDays(weekStart, i));
@@ -138,10 +142,18 @@ export function CalendarWeekView({singleDayEvents, multiDayEvents}: IProps) {
                         >
                             <div className="grid grid-cols-7 divide-x">
                                 {weekDays.map((day, dayIndex) => {
-                                    const dayEvents = singleDayEvents.filter(
-                                        (event) =>
-                                            isSameDay(parseISO(event.startDate), day) ||
-                                            isSameDay(parseISO(event.endDate), day),
+                                    const dayEvents = [...singleDayEvents, ...multiDayEvents].filter(
+                                        (event) => {
+                                            const startDate = parseISO(event.startDate);
+                                            const endDate = parseISO(event.endDate);
+                                            const durationInMinutes = differenceInMinutes(endDate, startDate);
+
+                                            return (
+                                                (isSameDay(startDate, day) || isSameDay(endDate, day)) &&
+                                                durationInMinutes > 0 &&
+                                                durationInMinutes <= 24 * 60
+                                            );
+                                        },
                                     );
                                     const groupedEvents = groupEvents(dayEvents);
 
@@ -173,7 +185,7 @@ export function CalendarWeekView({singleDayEvents, multiDayEvents}: IProps) {
                                                         minute={0}
                                                         className="absolute inset-x-0 top-0 z-0 h-[48px]"
                                                     >
-                                                        {canManage ? (
+                                                        {canManageCalendar ? (
                                                             <AddEditEventDialog
                                                                 startDate={day}
                                                                 startTime={{hour, minute: 0}}
@@ -195,7 +207,7 @@ export function CalendarWeekView({singleDayEvents, multiDayEvents}: IProps) {
                                                         minute={30}
                                                         className="absolute inset-x-0 bottom-0 z-0 h-[48px]"
                                                     >
-                                                        {canManage ? (
+                                                        {canManageCalendar ? (
                                                             <AddEditEventDialog
                                                                 startDate={day}
                                                                 startTime={{hour, minute: 30}}

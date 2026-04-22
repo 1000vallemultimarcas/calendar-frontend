@@ -86,12 +86,21 @@ export function useEventDialogForm({
       });
 
       if (!isEditing) {
-        formattedEvent.scheduledBy = {
-          id: user?.userId,
-          name: user?.name ?? "Usuario do sistema",
-          mail: user?.mail,
-          permissionLevel: user?.permissionLevel,
-        };
+        const selectedManager = values.managerId
+          ? users.find((current) => current.id === values.managerId)
+          : undefined;
+
+        formattedEvent.scheduledBy = selectedManager
+          ? {
+              id: selectedManager.id,
+              name: selectedManager.name,
+            }
+          : {
+              id: user?.userId,
+              name: user?.name ?? "Usuario do sistema",
+              mail: user?.mail,
+              permissionLevel: user?.permissionLevel,
+            };
       }
 
       if (isEditing) {

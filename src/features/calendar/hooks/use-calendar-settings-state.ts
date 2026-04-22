@@ -34,7 +34,6 @@ export function useCalendarSettingsState({
     settings.agendaModeGroupBy,
   );
 
-  // Sync internal states when settings from localStorage are loaded
   useEffect(() => {
     setBadgeVariantState(settings.badgeVariant);
     setViewState(settings.view);

@@ -2,6 +2,7 @@
 
 import { motion } from "framer-motion";
 import { Plus } from "lucide-react";
+import { useEffect, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -17,13 +18,16 @@ import FilterEvents from "@/features/calendar/header/filter";
 import { TodayButton } from "@/features/calendar/header/today-button";
 import { UserSelect } from "@/features/calendar/header/user-select";
 import { useAuth } from "@/features/calendar/contexts/authContext";
-import { useHasMounted } from "@/hooks/use-has-mounted";
 import Views from "./view-tabs";
 
 export function CalendarHeader() {
   const { view, events } = useCalendar();
   const { canManageCalendar } = useAuth();
-  const hasMounted = useHasMounted();
+  const [isHydrated, setIsHydrated] = useState(false);
+
+  useEffect(() => {
+    setIsHydrated(true);
+  }, []);
 
   return (
     <div className="flex flex-col gap-4 border-b p-4 lg:flex-row lg:items-center lg:justify-between">
@@ -52,9 +56,9 @@ export function CalendarHeader() {
 
         <div className="flex flex-col gap-3 lg:flex-row lg:flex-wrap lg:items-center lg:gap-1">
           <UserSelect />
-          {hasMounted && canManageCalendar && <DeletedEventsDialog />}
+          {isHydrated && canManageCalendar && <DeletedEventsDialog />}
 
-          {hasMounted && canManageCalendar && (
+          {isHydrated && canManageCalendar && (
             <AddEditEventDialog>
               <Button className="bg-orange-600 text-white hover:bg-orange-700">
                 <Plus className="h-4 w-4" />
