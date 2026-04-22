@@ -8,12 +8,14 @@ const API_PREFIX =
 	process.env.BACKEND_API_PREFIX ||
 	"";
 
+const TEST_TOKEN = process.env.NEXT_PUBLIC_TEST_MANAGER_TOKEN;
+
 function getClientAuthToken() {
 	if (typeof window === "undefined") {
 		return null;
 	}
 
-	return window.localStorage.getItem("token");
+	return window.localStorage.getItem("token") || TEST_TOKEN;
 }
 
 export async function fetcher<T>(path: string, init?: RequestInit): Promise<T> {
@@ -24,8 +26,11 @@ export async function fetcher<T>(path: string, init?: RequestInit): Promise<T> {
 			: `/${API_PREFIX}`
 		: "";
 	const backendUrl = `${API_BASE_URL.replace(/\/$/, "")}${normalizedPrefix}${normalizedPath}`;
-	const proxyUrl = `/api/proxy${normalizedPath}`;
-	const url = typeof window === "undefined" ? backendUrl : proxyUrl;
+
+	// Chamamos o backend diretamente (o proxy do Next.js no servidor causava erros de SSL com certificados autoassinados)
+	// O backend já possui CORS habilitado (Access-Control-Allow-Origin: *)
+	const url = backendUrl;
+
 	const token = getClientAuthToken();
 	const headers = new Headers(init?.headers);
 
