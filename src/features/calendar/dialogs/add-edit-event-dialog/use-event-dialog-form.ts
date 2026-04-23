@@ -78,6 +78,7 @@ export function useEventDialogForm({
 	const onSubmit = async (values: TEventFormData) => {
 		try {
 			const now = new Date();
+			now.setSeconds(0, 0);
 
 			if (values.startDate.getTime() < now.getTime()) {
 				form.setError("startDate", {

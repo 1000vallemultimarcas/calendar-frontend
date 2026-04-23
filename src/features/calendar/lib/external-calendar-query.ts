@@ -130,13 +130,15 @@ function formatPhone(value?: string) {
 }
 
 function parseStartDate(value?: string) {
+	const currentMinute = new Date();
+	currentMinute.setSeconds(0, 0);
+
 	if (!value) return undefined;
 
 	const parsedDate = new Date(value);
 	if (Number.isNaN(parsedDate.getTime())) return undefined;
 
-	const now = new Date();
-	if (parsedDate.getTime() < now.getTime()) return undefined;
+	if (parsedDate.getTime() < currentMinute.getTime()) return currentMinute;
 
 	return parsedDate;
 }
