@@ -92,6 +92,14 @@ function normalizeCustomersResponse(
 
 function normalizeStatus(status: string): TEventStatus {
 	switch (status.toUpperCase()) {
+		case "CONFIRMED":
+		case "RESCHEDULED":
+			return "in_negotiation";
+		case "CANCELLED":
+		case "NOT_ATTENDED":
+			return "finished_not_sold";
+		case "ATTENDED":
+			return "finished_sold";
 		case "NOT_CONTACTED":
 			return "not_contacted";
 		case "IN_NEGOTIATION":
@@ -194,35 +202,29 @@ function mapScheduleToEvent(schedule: ScheduleApiItem, users: IUser[]): IEvent {
 
 function mapEventTypeToApi(type: TEventType): string {
 	switch (type) {
-		case "initial_contact":
-			return "INITIAL_CONTACT";
-		case "proposal_sent":
-			return "PROPOSAL_SENT";
 		case "test_drive":
 			return "TEST_DRIVE";
+		case "initial_contact":
+		case "proposal_sent":
 		case "waiting_response":
-			return "WAITING_RESPONSE";
 		case "closing":
-			return "CLOSING";
 		case "completed":
-			return "COMPLETED";
+			return "VISIT";
 		default:
-			return "INITIAL_CONTACT";
+			return "VISIT";
 	}
 }
 
 function mapEventStatusToApi(status: TEventStatus): string {
 	switch (status) {
 		case "not_contacted":
-			return "NOT_CONTACTED";
 		case "in_negotiation":
-			return "IN_NEGOTIATION";
 		case "not_read":
-			return "NOT_READ";
+			return "SCHEDULED";
 		case "finished_sold":
-			return "FINISHED_SOLD";
+			return "ATTENDED";
 		case "finished_not_sold":
-			return "FINISHED_NOT_SOLD";
+			return "CANCELLED";
 		default:
 			return "SCHEDULED";
 	}
