@@ -18,6 +18,60 @@ import { TodayButton } from "@/features/calendar/header/today-button";
 import { parseExternalCalendarQuery } from "@/features/calendar/lib/external-calendar-query";
 import Views from "./view-tabs";
 
+const EXTERNAL_SCHEDULE_QUERY_KEYS = [
+	"agendar",
+	"status",
+	"negotiationStatus",
+	"negotiation_status",
+	"statusNegociacao",
+	"tipo",
+	"type",
+	"stage",
+	"etapa",
+	"negotiationStage",
+	"negotiation_stage",
+	"etapaNegociacao",
+	"prioridade",
+	"priority",
+	"importance",
+	"importancia",
+	"leadImportance",
+	"lead_importance",
+	"telefone",
+	"customerPhone",
+	"phone",
+	"customerId",
+	"idCliente",
+	"titulo",
+	"title",
+	"descricao",
+	"description",
+	"dataInicial",
+	"startDate",
+	"start_date",
+] as const;
+
+function normalizeQueryKey(value: string) {
+	return value
+		.trim()
+		.toLowerCase()
+		.normalize("NFD")
+		.replace(/[\u0300-\u036f]/g, "")
+		.replace(/[\s_-]+/g, "");
+}
+
+function removeExternalScheduleParams(searchParams: URLSearchParams) {
+	const allowedKeys = new Set(
+		EXTERNAL_SCHEDULE_QUERY_KEYS.map((key) => normalizeQueryKey(key)),
+	);
+
+	for (const key of Array.from(searchParams.keys())) {
+		if (allowedKeys.has(normalizeQueryKey(key))) {
+			searchParams.delete(key);
+		}
+	}
+}
+
 export function CalendarHeader() {
 	const {
 		view,
@@ -55,7 +109,7 @@ export function CalendarHeader() {
 
 		if (shouldOpenByUrl && !canOpenFromUrl) {
 			const nextParams = new URLSearchParams(searchParams.toString());
-			nextParams.delete("agendar");
+			removeExternalScheduleParams(nextParams);
 			const nextQuery = nextParams.toString();
 			const nextUrl = nextQuery ? `${pathname}?${nextQuery}` : pathname;
 			router.replace(nextUrl, { scroll: false });
@@ -114,7 +168,7 @@ export function CalendarHeader() {
 		if (nextOpen) {
 			nextParams.set("agendar", "1");
 		} else {
-			nextParams.delete("agendar");
+			removeExternalScheduleParams(nextParams);
 		}
 
 		const nextQuery = nextParams.toString();

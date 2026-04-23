@@ -37,11 +37,25 @@ function compact(value: string | null) {
 		.replace(/[\s-]+/g, "_");
 }
 
+function normalizeKey(value: string) {
+	return compact(value).replace(/_/g, "");
+}
+
 function pickParam(searchParams: QuerySource, keys: string[]) {
+	const normalizedKeyMap = new Map<string, string>();
 	for (const key of keys) {
-		const value = searchParams.get(key);
-		if (value !== null && value.trim() !== "") {
-			return value.trim();
+		normalizedKeyMap.set(normalizeKey(key), key);
+	}
+
+	for (const [queryKey, rawValue] of searchParams.entries()) {
+		const normalizedQueryKey = normalizeKey(queryKey);
+		if (!normalizedKeyMap.has(normalizedQueryKey)) {
+			continue;
+		}
+
+		const value = rawValue.trim();
+		if (value !== "") {
+			return value;
 		}
 	}
 
@@ -134,7 +148,7 @@ function normalizePriority(input?: string): TEventPriority | undefined {
 		return "cold";
 	}
 
-	if (matches(value, ["warm", "morno", "normal"])) {
+	if (matches(value, ["warm", "morno", "normal", "medium", "medio"])) {
 		return "warm";
 	}
 
@@ -225,11 +239,18 @@ export function parseExternalCalendarQuery(
 	);
 
 	const hasLeadPayload = Boolean(
-		status || type || priority || phone || customerId,
+		status ||
+			type ||
+			priority ||
+			phone ||
+			customerId ||
+			title ||
+			description ||
+			startDate,
 	);
 
 	return {
-		shouldOpenScheduleDialog,
+		shouldOpenScheduleDialog: shouldOpenScheduleDialog || hasLeadPayload,
 		filterStatus: status,
 		filterType: type,
 		filterPriority: priority,
