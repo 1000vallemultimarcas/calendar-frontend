@@ -53,18 +53,21 @@ function normalizeStatus(input?: string): TEventStatus | undefined {
 	if (!value) return undefined;
 
 	if (value === "scheduled" || value === "agendado") return "scheduled";
-	if (value === "confirmed" || value === "confirmado") return "confirmed";
-	if (value === "cancelled" || value === "cancelado" || value === "canceled") {
-		return "cancelled";
+	if (value === "not_contacted" || value === "nao_atendido") {
+		return "not_contacted";
 	}
-	if (value === "attended" || value === "atendido") return "attended";
-	if (value === "rescheduled" || value === "reagendado") return "rescheduled";
+	if (value === "in_negotiation" || value === "em_negociacao") {
+		return "in_negotiation";
+	}
+	if (value === "not_read" || value === "nao_lido") return "not_read";
+	if (value === "finished_sold" || value === "finalizado_vendido") {
+		return "finished_sold";
+	}
 	if (
-		value === "not_attended" ||
-		value === "nao_atendido" ||
-		value === "naoatendido"
+		value === "finished_not_sold" ||
+		value === "finalizado_nao_vendido"
 	) {
-		return "not_attended";
+		return "finished_not_sold";
 	}
 
 	return undefined;
@@ -74,28 +77,20 @@ function normalizeType(input?: string): TEventType | undefined {
 	const value = compact(input ?? null);
 	if (!value) return undefined;
 
-	if (value === "visit" || value === "visita" || value === "visita_a_loja") {
-		return "visit";
+	if (value === "initial_contact" || value === "contato_inicial") {
+		return "initial_contact";
 	}
-
+	if (value === "proposal_sent" || value === "proposta_enviada") {
+		return "proposal_sent";
+	}
 	if (value === "test_drive" || value === "testdrive") {
 		return "test_drive";
 	}
-
-	if (value === "meeting" || value === "reuniao") return "meeting";
-
-	if (
-		value === "follow_up" ||
-		value === "followup" ||
-		value === "retorno" ||
-		value === "work" ||
-		value === "appointment"
-	) {
-		return "follow_up";
+	if (value === "waiting_response" || value === "aguardando_resposta") {
+		return "waiting_response";
 	}
-
-	if (value === "delivery" || value === "entrega") return "delivery";
-	if (value === "personal" || value === "pessoal") return "personal";
+	if (value === "closing" || value === "fechamento") return "closing";
+	if (value === "completed" || value === "concluido") return "completed";
 
 	return undefined;
 }
@@ -104,10 +99,9 @@ function normalizePriority(input?: string): TEventPriority | undefined {
 	const value = compact(input ?? null);
 	if (!value) return undefined;
 
-	if (value === "low" || value === "baixa") return "low";
-	if (value === "normal") return "normal";
-	if (value === "high" || value === "alta") return "high";
-	if (value === "urgent" || value === "urgente") return "urgent";
+	if (value === "cold" || value === "frio") return "cold";
+	if (value === "warm" || value === "morno") return "warm";
+	if (value === "hot" || value === "quente") return "hot";
 
 	return undefined;
 }

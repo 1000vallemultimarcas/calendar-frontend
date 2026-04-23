@@ -1,4 +1,6 @@
-import { Suspense } from "react";
+"use client";
+
+import { Suspense, useEffect, useState } from "react";
 import { Calendar } from "@/features/calendar/calendar";
 import { CalendarProvider } from "@/features/calendar/contexts/calendar-context";
 import { DndProvider } from "@/features/calendar/contexts/dnd-context";
@@ -11,6 +13,12 @@ interface CalendarScreenProps {
 }
 
 export function CalendarScreen({ badgeLabel }: CalendarScreenProps) {
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   return (
     <CalendarProvider events={[]} users={[]} view="agenda">
       <DndProvider>
@@ -40,14 +48,16 @@ export function CalendarScreen({ badgeLabel }: CalendarScreenProps) {
                   </p>
                 </div>
 
-                <HeroBannerActions />
-                <div className="absolute right-4 top-[5.75rem] z-20">
-                  <HeroReportsButton />
-                </div>
+                {mounted && <HeroBannerActions />}
+                {mounted && (
+                  <div className="absolute right-4 top-[5.75rem] z-20">
+                    <HeroReportsButton />
+                  </div>
+                )}
               </div>
             </div>
             <Suspense fallback={<CalendarSkeleton />}>
-              <Calendar />
+              {mounted ? <Calendar /> : <CalendarSkeleton />}
             </Suspense>
           </div>
         </main>

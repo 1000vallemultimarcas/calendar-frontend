@@ -50,9 +50,11 @@ export function HeroReportsButton() {
   } = useCalendar();
 
   const totalEvents = events.length;
-  const attendedEvents = events.filter((event) => event.status === "attended").length;
+  const attendedEvents = events.filter(
+    (event) => event.status === "finished_sold",
+  ).length;
   const notAttendedEvents = events.filter(
-    (event) => event.status === "not_attended",
+    (event) => event.status === "finished_not_sold",
   ).length;
   const attendanceBase = attendedEvents + notAttendedEvents;
   const attendanceRate =
@@ -80,26 +82,26 @@ export function HeroReportsButton() {
 
     const categories = [
       {
-        label: "Concluidos/confirmados",
+        label: "Finalizado - vendido",
         count: events.filter(
-          (event) => event.status === "attended" || event.status === "confirmed",
+          (event) => event.status === "finished_sold",
         ).length,
         color: "#2563eb",
       },
       {
-        label: "Reagendados",
-        count: events.filter((event) => event.status === "rescheduled").length,
+        label: "Em negociação",
+        count: events.filter((event) => event.status === "in_negotiation").length,
         color: "#06b6d4",
       },
       {
-        label: "Cancelados/nao atendidos",
+        label: "Finalizado - não vendido",
         count: events.filter(
-          (event) => event.status === "cancelled" || event.status === "not_attended",
+          (event) => event.status === "finished_not_sold",
         ).length,
         color: "#f97316",
       },
       {
-        label: "Agendados",
+        label: "Agendado",
         count: events.filter((event) => event.status === "scheduled").length,
         color: "#64748b",
       },

@@ -11,15 +11,15 @@ type GetInitialDatesParams = {
 
 export function getColorByType(type: TEventType): TEventColor {
   switch (type) {
-    case "meeting":
+    case "initial_contact":
       return "blue";
-    case "follow_up":
+    case "proposal_sent":
       return "green";
-    case "delivery":
+    case "waiting_response":
       return "orange";
-    case "personal":
+    case "closing":
       return "purple";
-    case "visit":
+    case "completed":
       return "yellow";
     case "test_drive":
       return "red";

@@ -84,16 +84,16 @@ function normalizeCustomersResponse(payload: CustomersApiResponse): ICustomer[] 
 
 function normalizeStatus(status: string): TEventStatus {
   switch (status.toUpperCase()) {
-    case "CONFIRMED":
-      return "confirmed";
-    case "CANCELLED":
-      return "cancelled";
-    case "ATTENDED":
-      return "attended";
-    case "RESCHEDULED":
-      return "rescheduled";
-    case "NOT_ATTENDED":
-      return "not_attended";
+    case "NOT_CONTACTED":
+      return "not_contacted";
+    case "IN_NEGOTIATION":
+      return "in_negotiation";
+    case "NOT_READ":
+      return "not_read";
+    case "FINISHED_SOLD":
+      return "finished_sold";
+    case "FINISHED_NOT_SOLD":
+      return "finished_not_sold";
     case "SCHEDULED":
     default:
       return "scheduled";
@@ -102,24 +102,28 @@ function normalizeStatus(status: string): TEventStatus {
 
 function normalizeType(type: string): TEventType {
   switch (type.toUpperCase()) {
+    case "INITIAL_CONTACT":
+      return "initial_contact";
+    case "PROPOSAL_SENT":
+      return "proposal_sent";
     case "TEST_DRIVE":
       return "test_drive";
+    case "WAITING_RESPONSE":
+      return "waiting_response";
+    case "CLOSING":
+      return "closing";
+    case "COMPLETED":
+      return "completed";
     case "VISIT":
-      return "visit";
     case "MEETING":
-      return "meeting";
     case "FOLLOW_UP":
-      return "follow_up";
     case "DELIVERY":
-      return "delivery";
     case "PERSONAL":
-      return "personal";
     case "WORK":
-      return "follow_up";
     case "APPOINTMENT":
-      return "follow_up";
+      return "initial_contact";
     default:
-      return "visit";
+      return "initial_contact";
   }
 }
 
@@ -153,7 +157,7 @@ function mapScheduleToEvent(schedule: ScheduleApiItem, users: IUser[]): IEvent {
     updatedAt: schedule.updatedAt,
     status: normalizeStatus(schedule.status),
     type,
-    priority: "normal",
+    priority: "warm",
     color: getColorByType(type),
     customerId: schedule.customerId,
     customerPhone: schedule.customerPhone ?? undefined,
@@ -178,35 +182,35 @@ function mapScheduleToEvent(schedule: ScheduleApiItem, users: IUser[]): IEvent {
 
 function mapEventTypeToApi(type: TEventType): string {
   switch (type) {
+    case "initial_contact":
+      return "INITIAL_CONTACT";
+    case "proposal_sent":
+      return "PROPOSAL_SENT";
     case "test_drive":
       return "TEST_DRIVE";
-    case "follow_up":
-    case "delivery":
-      return "VISIT";
-    case "visit":
-      return "VISIT";
-    case "meeting":
-      return "MEETING";
-    case "personal":
-      // Backend enum does not accept PERSONAL; fallback to VISIT.
-      return "VISIT";
+    case "waiting_response":
+      return "WAITING_RESPONSE";
+    case "closing":
+      return "CLOSING";
+    case "completed":
+      return "COMPLETED";
     default:
-      return "VISIT";
+      return "INITIAL_CONTACT";
   }
 }
 
 function mapEventStatusToApi(status: TEventStatus): string {
   switch (status) {
-    case "confirmed":
-      return "CONFIRMED";
-    case "cancelled":
-      return "CANCELLED";
-    case "attended":
-      return "ATTENDED";
-    case "rescheduled":
-      return "RESCHEDULED";
-    case "not_attended":
-      return "NOT_ATTENDED";
+    case "not_contacted":
+      return "NOT_CONTACTED";
+    case "in_negotiation":
+      return "IN_NEGOTIATION";
+    case "not_read":
+      return "NOT_READ";
+    case "finished_sold":
+      return "FINISHED_SOLD";
+    case "finished_not_sold":
+      return "FINISHED_NOT_SOLD";
     case "scheduled":
     default:
       return "SCHEDULED";

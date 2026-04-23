@@ -34,13 +34,13 @@ export function getDefaultFormValues({
 		startDate: initialDates.startDate,
 		endDate: initialDates.endDate,
 		status: event?.status ?? "scheduled",
-		type: event?.type ?? "visit",
-		priority: event?.priority ?? "normal",
+		type: event?.type ?? "initial_contact",
+		priority: event?.priority ?? "warm",
 		userId: defaultUserId,
 		managerId: event?.scheduledBy?.id ?? defaultUserId,
 		customerId: event?.customerId ? String(event.customerId) : undefined,
 		customerPhone: event?.customerPhone ?? "",
-		color: event?.color ?? getColorByType(event?.type ?? "visit"),
+		color: event?.color ?? getColorByType(event?.type ?? "initial_contact"),
 	};
 }
 

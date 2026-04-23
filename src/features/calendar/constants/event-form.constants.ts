@@ -5,28 +5,27 @@
 } from "@/features/calendar/types";
 
 export const STATUS_LABELS_PT_BR: Record<TEventStatus, string> = {
-  scheduled: "Agendado",
-  confirmed: "Confirmado",
-  cancelled: "Cancelado",
-  attended: "Atendido",
-  rescheduled: "Reagendado",
-  not_attended: "Nao atendido",
+  not_contacted: "não atendido",
+  in_negotiation: "em negociação",
+  not_read: "não lido",
+  scheduled: "agendado",
+  finished_sold: "finalizado - vendido",
+  finished_not_sold: "finalizado - não vendido",
 };
 
 export const TYPE_LABELS_PT_BR: Record<TEventType, string> = {
-  visit: "Visita à loja",
-  test_drive: "Test drive",
-  meeting: "Reunião",
-  follow_up: "Retorno / Follow-up",
-  delivery: "Entrega de veículo",
-  personal: "Pessoal",
+  initial_contact: "contato inicial",
+  proposal_sent: "proposta enviada",
+  test_drive: "test-drive",
+  waiting_response: "aguardando resposta",
+  closing: "fechamento",
+  completed: "concluído",
 };
 
 export const PRIORITY_LABELS_PT_BR: Record<TEventPriority, string> = {
-  low: "Baixa",
-  normal: "Normal",
-  high: "Alta",
-  urgent: "Urgente",
+  cold: "frio",
+  warm: "morno",
+  hot: "quente",
 };
 
 export const EVENT_FORM_TEXTS_PT_BR = {
@@ -38,10 +37,10 @@ export const EVENT_FORM_TEXTS_PT_BR = {
   titlePlaceholder: "Digite o titulo",
   statusLabel: "Status",
   statusPlaceholder: "Selecione um status",
-  typeLabel: "Tipo",
-  typePlaceholder: "Selecione um tipo",
-  priorityLabel: "Prioridade",
-  priorityPlaceholder: "Selecione uma prioridade",
+  typeLabel: "Etapa da negociação",
+  typePlaceholder: "Selecione uma etapa",
+  priorityLabel: "Importância do lead",
+  priorityPlaceholder: "Selecione a importância",
   responsibleLabel: "Responsavel",
   responsiblePlaceholder: "Selecione um responsavel",
   managerLabel: "Gerente",

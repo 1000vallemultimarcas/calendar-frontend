@@ -10,26 +10,21 @@ export const COLORS: TEventColor[] = [
 ];
 
 export const EVENT_STATUSES: TEventStatus[] = [
+	"not_contacted",
+	"in_negotiation",
+	"not_read",
 	"scheduled",
-	"confirmed",
-	"cancelled",
-	"attended",
-	"rescheduled",
-	"not_attended",
+	"finished_sold",
+	"finished_not_sold",
 ];
 
 export const EVENT_TYPES: TEventType[] = [
-	"visit",
+	"initial_contact",
+	"proposal_sent",
 	"test_drive",
-	"meeting",
-	"follow_up",
-	"delivery",
-	"personal",
+	"waiting_response",
+	"closing",
+	"completed",
 ];
 
-export const EVENT_PRIORITIES: TEventPriority[] = [
-	"low",
-	"normal",
-	"high",
-	"urgent",
-];
+export const EVENT_PRIORITIES: TEventPriority[] = ["cold", "warm", "hot"];

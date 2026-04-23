@@ -6,18 +6,43 @@ export type TEventColor =
 	| "yellow"
 	| "purple"
 	| "orange";
+
+export enum NegotiationStatus {
+	NOT_CONTACTED = "não atendido",
+	IN_NEGOTIATION = "em negociação",
+	NOT_READ = "não lido",
+	SCHEDULED = "agendado",
+	FINISHED_SOLD = "finalizado - vendido",
+	FINISHED_NOT_SOLD = "finalizado - não vendido",
+}
+
+export enum NegotiationStage {
+	INITIAL_CONTACT = "contato inicial",
+	PROPOSAL_SENT = "proposta enviada",
+	TEST_DRIVE = "test-drive",
+	WAITING_RESPONSE = "aguardando resposta",
+	CLOSING = "fechamento",
+	COMPLETED = "concluído",
+}
+
+export enum LeadImportance {
+	COLD = "frio",
+	WARM = "morno",
+	HOT = "quente",
+}
+
 export type TEventStatus =
+	| "not_contacted"
+	| "in_negotiation"
+	| "not_read"
 	| "scheduled"
-	| "confirmed"
-	| "cancelled"
-	| "attended"
-	| "rescheduled"
-	| "not_attended";
+	| "finished_sold"
+	| "finished_not_sold";
 export type TEventType =
-	| "meeting"
-	| "follow_up"
-	| "delivery"
-	| "personal"
-	| "visit"
-	| "test_drive";
-export type TEventPriority = "low" | "normal" | "high" | "urgent";
+	| "initial_contact"
+	| "proposal_sent"
+	| "test_drive"
+	| "waiting_response"
+	| "closing"
+	| "completed";
+export type TEventPriority = "cold" | "warm" | "hot";
