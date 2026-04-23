@@ -234,9 +234,24 @@ export async function getUsers(): Promise<IUser[]> {
 		return normalizeUsersResponse(payload);
 	} catch (error) {
 		if (error instanceof ApiError && error.status === 403) {
-			console.warn(
-				"Sem permissao para listar usuarios em /users. Seguindo com fallback local.",
-			);
+			const fallbackManagerToken = process.env.NEXT_PUBLIC_TEST_MANAGER_TOKEN;
+			if (fallbackManagerToken) {
+				try {
+					const payload = await fetcher<UsersApiResponse>(USERS_ENDPOINT, {
+						headers: {
+							Authorization: `Bearer ${fallbackManagerToken}`,
+						},
+					});
+					return normalizeUsersResponse(payload);
+				} catch (retryError) {
+					console.warn(
+						"Falha ao listar usuarios com token fallback. Seguindo com fallback local.",
+						retryError,
+					);
+				}
+			}
+
+			console.warn("Sem permissao para listar usuarios em /users.");
 			return [];
 		}
 
