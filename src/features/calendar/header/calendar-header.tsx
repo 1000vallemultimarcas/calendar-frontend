@@ -91,7 +91,9 @@ export function CalendarHeader() {
 	const router = useRouter();
 	const normalizedPathname =
 		pathname.length > 1 ? pathname.replace(/\/+$/, "") : pathname;
-	const isManagerRoute = normalizedPathname === "/calendar/gerente";
+	const isManagerRoute =
+		normalizedPathname === "/calendar/gerente" ||
+		normalizedPathname === "/calendar";
 	const externalQuery = useMemo(
 		() => parseExternalCalendarQuery(searchParams),
 		[searchParams],

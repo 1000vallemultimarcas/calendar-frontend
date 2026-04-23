@@ -32,9 +32,6 @@ export function Calendar() {
       return;
     }
 
-    if (isManager && pathname === "/calendar/gerente" && !isSeniorManagerUser) {
-      router.replace("/calendar");
-    }
   }, [isEmployee, isManager, pathname, router, user]);
 
   return (
