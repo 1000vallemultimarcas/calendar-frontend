@@ -10,6 +10,25 @@ const API_PREFIX =
 
 const TEST_TOKEN = process.env.NEXT_PUBLIC_TEST_MANAGER_TOKEN;
 
+export class ApiError extends Error {
+	status: number;
+	statusText: string;
+	body: string;
+
+	constructor(
+		message: string,
+		status: number,
+		statusText: string,
+		body = "",
+	) {
+		super(message);
+		this.name = "ApiError";
+		this.status = status;
+		this.statusText = statusText;
+		this.body = body;
+	}
+}
+
 function getClientAuthToken() {
 	if (typeof window === "undefined") {
 		return null;
@@ -83,7 +102,12 @@ export async function fetcher<T>(path: string, init?: RequestInit): Promise<T> {
 			message = `Request failed ${response.status} ${response.statusText}`;
 		}
 
-		throw new Error(message);
+		throw new ApiError(
+			message,
+			response.status,
+			response.statusText,
+			bodyText,
+		);
 	}
 
 	if (response.status === 204 || response.status === 205) {

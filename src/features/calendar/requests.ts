@@ -7,7 +7,7 @@ import type {
   TEventStatus,
   TEventType,
 } from "@/features/calendar/types";
-import { fetcher } from "@/lib/api";
+import { ApiError, fetcher } from "@/lib/api";
 
 export type SchedulePeriod = "day" | "week" | "month" | "year";
 
@@ -218,8 +218,19 @@ function mapEventStatusToApi(status: TEventStatus): string {
 }
 
 export async function getUsers(): Promise<IUser[]> {
-  const payload = await fetcher<UsersApiResponse>(USERS_ENDPOINT);
-  return normalizeUsersResponse(payload);
+  try {
+    const payload = await fetcher<UsersApiResponse>(USERS_ENDPOINT);
+    return normalizeUsersResponse(payload);
+  } catch (error) {
+    if (error instanceof ApiError && error.status === 403) {
+      console.warn(
+        "Sem permissao para listar usuarios em /users. Seguindo com fallback local.",
+      );
+      return [];
+    }
+
+    throw error;
+  }
 }
 
 export async function getEvents({
