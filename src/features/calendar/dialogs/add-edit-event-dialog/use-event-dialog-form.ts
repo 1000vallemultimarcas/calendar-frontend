@@ -1,174 +1,248 @@
-import { useEffect, useMemo } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useEffect, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
-import { useCalendar } from "@/features/calendar/contexts/calendar-context";
+import { EVENT_FORM_TEXTS_PT_BR } from "@/features/calendar/constants/event-form.constants";
 import { useAuth } from "@/features/calendar/contexts/authContext";
+import { useCalendar } from "@/features/calendar/contexts/calendar-context";
 import { useDisclosure } from "@/features/calendar/hooks";
+import { getInitialDates } from "@/features/calendar/lib/event-form.utils";
+import type { ExternalCalendarPrefill } from "@/features/calendar/lib/external-calendar-query";
+import { canManageEvent } from "@/features/calendar/lib/permissions";
 import { createEvent as createEventRequest } from "@/features/calendar/requests";
 import { eventSchema, type TEventFormData } from "@/features/calendar/schemas";
-import { EVENT_FORM_TEXTS_PT_BR } from "@/features/calendar/constants/event-form.constants";
-import {
-  getDefaultFormValues,
-  getDefaultUserId,
-  buildFormattedEvent,
-} from "./event-dialog.utils";
-import { getInitialDates } from "@/features/calendar/lib/event-form.utils";
-import { canManageEvent } from "@/features/calendar/lib/permissions";
 import type { AddEditEventDialogProps } from "./event-dialog.types";
+import {
+	buildFormattedEvent,
+	getDefaultFormValues,
+	getDefaultUserId,
+} from "./event-dialog.utils";
 
 export function useEventDialogForm({
-  event,
-  startDate,
-  startTime,
-}: Pick<AddEditEventDialogProps, "event" | "startDate" | "startTime">) {
-  const { addEvent, updateEvent, users } = useCalendar();
-  const { user, isManager, canManageCalendar } = useAuth();
-  const { isOpen, onClose, onOpen, onToggle, setIsOpen } = useDisclosure();
-  const isEditing = !!event;
+	event,
+	startDate,
+	startTime,
+	prefill,
+}: Pick<
+	AddEditEventDialogProps,
+	"event" | "startDate" | "startTime" | "prefill"
+>) {
+	const { addEvent, updateEvent, users } = useCalendar();
+	const { user, isManager, canManageCalendar } = useAuth();
+	const { isOpen, onClose, onOpen, onToggle, setIsOpen } = useDisclosure();
+	const isEditing = !!event;
 
-  const currentUserId = user?.userId;
-  const isUserSelectionDisabled = !isManager && !!currentUserId;
+	const currentUserId = user?.userId;
+	const isUserSelectionDisabled = !isManager && !!currentUserId;
 
-  const initialDates = useMemo(
-    () =>
-      getInitialDates({
-        startDate,
-        startTime,
-        event,
-        isEditing,
-      }),
-    [event, isEditing, startDate, startTime],
-  );
+	const initialDates = useMemo(
+		() =>
+			getInitialDates({
+				startDate,
+				startTime,
+				event,
+				isEditing,
+			}),
+		[event, isEditing, startDate, startTime],
+	);
 
-  const defaultUserId = isUserSelectionDisabled
-    ? users.some((current) => current.id === currentUserId)
-      ? currentUserId ?? getDefaultUserId(users, event)
-      : getDefaultUserId(users, event)
-    : getDefaultUserId(users, event);
+	const defaultUserId = isUserSelectionDisabled
+		? users.some((current) => current.id === currentUserId)
+			? (currentUserId ?? getDefaultUserId(users, event))
+			: getDefaultUserId(users, event)
+		: getDefaultUserId(users, event);
 
-  const form = useForm<TEventFormData>({
-    resolver: zodResolver(eventSchema),
-    defaultValues: getDefaultFormValues({
-      event,
-      initialDates,
-      defaultUserId,
-    }),
-  });
+	const form = useForm<TEventFormData>({
+		resolver: zodResolver(eventSchema),
+		defaultValues: getDefaultFormValues({
+			event,
+			initialDates,
+			defaultUserId,
+		}),
+	});
 
-  useEffect(() => {
-    form.reset(
-      getDefaultFormValues({
-        event,
-        initialDates,
-        defaultUserId,
-      }),
-    );
-  }, [event, form, initialDates, defaultUserId]);
+	useEffect(() => {
+		const baseValues = getDefaultFormValues({
+			event,
+			initialDates,
+			defaultUserId,
+		});
 
-  const onSubmit = async (values: TEventFormData) => {
-    try {
-      const now = new Date();
+		form.reset(
+			applyExternalPrefill(baseValues, prefill, {
+				isEditing,
+			}),
+		);
+	}, [defaultUserId, event, form, initialDates, isEditing, prefill]);
 
-      if (values.startDate.getTime() < now.getTime()) {
-        form.setError("startDate", {
-          type: "manual",
-          message:
-            "Data e hora inicial nao podem ser retroativas ao momento atual",
-        });
-        toast.error(
-          "Data e hora inicial nao podem ser retroativas ao momento atual",
-        );
-        return;
-      }
+	const onSubmit = async (values: TEventFormData) => {
+		try {
+			const now = new Date();
 
-      if (values.endDate.getTime() <= values.startDate.getTime()) {
-        form.setError("endDate", {
-          type: "manual",
-          message: "Data final deve ser maior que a data inicial",
-        });
-        toast.error("Data final deve ser maior que a data inicial");
-        return;
-      }
+			if (values.startDate.getTime() < now.getTime()) {
+				form.setError("startDate", {
+					type: "manual",
+					message:
+						"Data e hora inicial nao podem ser retroativas ao momento atual",
+				});
+				toast.error(
+					"Data e hora inicial nao podem ser retroativas ao momento atual",
+				);
+				return;
+			}
 
-      if (!canManageCalendar) {
-        toast.error("Perfil atendente possui acesso somente leitura.");
-        return;
-      }
+			if (values.endDate.getTime() <= values.startDate.getTime()) {
+				form.setError("endDate", {
+					type: "manual",
+					message: "Data final deve ser maior que a data inicial",
+				});
+				toast.error("Data final deve ser maior que a data inicial");
+				return;
+			}
 
-      if (isEditing && !canManageEvent(event?.user?.id, currentUserId, isManager)) {
-        toast.error("Somente perfis com permissao de gestao podem editar eventos.");
-        return;
-      }
+			if (!canManageCalendar) {
+				toast.error("Perfil atendente possui acesso somente leitura.");
+				return;
+			}
 
-      const formattedEvent = buildFormattedEvent({
-        values,
-        event,
-        isEditing,
-        users,
-      });
+			if (
+				isEditing &&
+				!canManageEvent(event?.user?.id, currentUserId, isManager)
+			) {
+				toast.error(
+					"Somente perfis com permissao de gestao podem editar eventos.",
+				);
+				return;
+			}
 
-      if (!isEditing) {
-        const selectedManager = values.managerId
-          ? users.find((current) => current.id === values.managerId)
-          : undefined;
+			const formattedEvent = buildFormattedEvent({
+				values,
+				event,
+				isEditing,
+				users,
+			});
 
-        formattedEvent.scheduledBy = selectedManager
-          ? {
-              id: selectedManager.id,
-              name: selectedManager.name,
-            }
-          : {
-              id: user?.userId,
-              name: user?.name ?? "Usuario do sistema",
-              mail: user?.mail,
-              permissionLevel: user?.permissionLevel,
-            };
-      }
+			if (!isEditing) {
+				const selectedManager = values.managerId
+					? users.find((current) => current.id === values.managerId)
+					: undefined;
 
-      if (isEditing) {
-        updateEvent(formattedEvent);
-        toast.success(EVENT_FORM_TEXTS_PT_BR.editSuccess);
-      } else {
-        if (!canManageEvent(formattedEvent.user?.id, currentUserId, isManager)) {
-          toast.error("Somente perfis com permissao de gestao podem criar eventos.");
-          return;
-        }
+				formattedEvent.scheduledBy = selectedManager
+					? {
+							id: selectedManager.id,
+							name: selectedManager.name,
+						}
+					: {
+							id: user?.userId,
+							name: user?.name ?? "Usuario do sistema",
+							mail: user?.mail,
+							permissionLevel: user?.permissionLevel,
+						};
+			}
 
-        const createdEvent = await createEventRequest(formattedEvent);
-        addEvent(createdEvent);
-        toast.success(EVENT_FORM_TEXTS_PT_BR.createSuccess);
-      }
+			if (isEditing) {
+				updateEvent(formattedEvent);
+				toast.success(EVENT_FORM_TEXTS_PT_BR.editSuccess);
+			} else {
+				if (
+					!canManageEvent(formattedEvent.user?.id, currentUserId, isManager)
+				) {
+					toast.error(
+						"Somente perfis com permissao de gestao podem criar eventos.",
+					);
+					return;
+				}
 
-      onClose();
-      form.reset();
-    } catch (error) {
-      console.error(
-        `Erro ao ${isEditing ? "editar" : "criar"} agendamento:`,
-        error,
-      );
-      const fallbackMessage = isEditing
-        ? EVENT_FORM_TEXTS_PT_BR.editError
-        : EVENT_FORM_TEXTS_PT_BR.createError;
-      const errorMessage =
-        error instanceof Error && error.message
-          ? `${fallbackMessage}: ${error.message}`
-          : fallbackMessage;
-      toast.error(errorMessage);
-    }
-  };
+				const createdEvent = await createEventRequest(formattedEvent);
+				addEvent(createdEvent);
+				toast.success(EVENT_FORM_TEXTS_PT_BR.createSuccess);
+			}
 
-  return {
-    form,
-    isOpen,
-    setIsOpen,
-    onClose,
-    onOpen,
-    onToggle,
-    isEditing,
-    onSubmit,
-    users,
-    isUserSelectionDisabled,
-    currentUserId,
-  };
+			onClose();
+			form.reset();
+		} catch (error) {
+			console.error(
+				`Erro ao ${isEditing ? "editar" : "criar"} agendamento:`,
+				error,
+			);
+			const fallbackMessage = isEditing
+				? EVENT_FORM_TEXTS_PT_BR.editError
+				: EVENT_FORM_TEXTS_PT_BR.createError;
+			const errorMessage =
+				error instanceof Error && error.message
+					? `${fallbackMessage}: ${error.message}`
+					: fallbackMessage;
+			toast.error(errorMessage);
+		}
+	};
+
+	return {
+		form,
+		isOpen,
+		setIsOpen,
+		onClose,
+		onOpen,
+		onToggle,
+		isEditing,
+		onSubmit,
+		users,
+		isUserSelectionDisabled,
+		currentUserId,
+	};
+}
+
+function applyExternalPrefill(
+	baseValues: TEventFormData,
+	prefill: ExternalCalendarPrefill | undefined,
+	options: { isEditing: boolean },
+): TEventFormData {
+	if (!prefill || options.isEditing) {
+		return baseValues;
+	}
+
+	const nextValues: TEventFormData = {
+		...baseValues,
+	};
+
+	if (prefill.status) {
+		nextValues.status = prefill.status;
+	}
+
+	if (prefill.type) {
+		nextValues.type = prefill.type;
+	}
+
+	if (prefill.priority) {
+		nextValues.priority = prefill.priority;
+	}
+
+	if (prefill.customerPhone) {
+		nextValues.customerPhone = prefill.customerPhone;
+	}
+
+	if (prefill.customerId) {
+		nextValues.customerId = prefill.customerId;
+	}
+
+	if (prefill.title) {
+		nextValues.title = prefill.title;
+	}
+
+	if (prefill.description) {
+		nextValues.description = prefill.description;
+	}
+
+	if (prefill.startDate) {
+		const nextStartDate = prefill.startDate;
+		const oneHourInMs = 60 * 60 * 1000;
+		const defaultEndDate = new Date(nextStartDate.getTime() + oneHourInMs);
+
+		nextValues.startDate = nextStartDate;
+		nextValues.endDate =
+			baseValues.endDate.getTime() > nextStartDate.getTime()
+				? baseValues.endDate
+				: defaultEndDate;
+	}
+
+	return nextValues;
 }
