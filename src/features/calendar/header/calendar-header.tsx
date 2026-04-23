@@ -83,7 +83,7 @@ export function CalendarHeader() {
 		filterEventsBySelectedType,
 		filterEventsBySelectedPriority,
 	} = useCalendar();
-	const { canManageCalendar } = useAuth();
+	const { canManageCalendar, isAuthReady } = useAuth();
 	const [isHydrated, setIsHydrated] = useState(false);
 	const [isScheduleDialogOpen, setIsScheduleDialogOpen] = useState(false);
 	const pathname = usePathname();
@@ -102,7 +102,7 @@ export function CalendarHeader() {
 	}, []);
 
 	useEffect(() => {
-		if (!isHydrated) return;
+		if (!isHydrated || !isAuthReady) return;
 
 		const shouldOpenByUrl = externalQuery.shouldOpenScheduleDialog;
 		const canOpenFromUrl = canManageCalendar && isManagerRoute;
@@ -119,6 +119,7 @@ export function CalendarHeader() {
 	}, [
 		canManageCalendar,
 		externalQuery.shouldOpenScheduleDialog,
+		isAuthReady,
 		isHydrated,
 		isManagerRoute,
 		pathname,

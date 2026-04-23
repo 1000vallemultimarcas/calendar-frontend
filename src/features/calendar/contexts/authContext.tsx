@@ -12,6 +12,7 @@ import {
 interface AuthContextType {
 	token: string | null;
 	user: DecodedToken | null;
+	isAuthReady: boolean;
 	canManageCalendar: boolean;
 	isManager: boolean;
 	isEmployee: boolean;
@@ -86,6 +87,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 	const [token, setToken] = useState<string | null>(null);
 	const [_testRole, setTestRole] = useState<"manager" | "employee">("manager");
 	const [user, setUser] = useState<DecodedToken | null>(null);
+	const [isAuthReady, setIsAuthReady] = useState(false);
 
 	useEffect(() => {
 		const params = new URLSearchParams(window.location.search);
@@ -95,6 +97,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 		const tokenToUse = tokenFromQuery || storedToken || fallbackToken;
 
 		if (!tokenToUse) {
+			setIsAuthReady(true);
 			return;
 		}
 
@@ -118,6 +121,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 		} catch (error) {
 			console.error("Token invalido:", error);
 			localStorage.removeItem("token");
+		} finally {
+			setIsAuthReady(true);
 		}
 	}, []);
 
@@ -152,6 +157,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 			value={{
 				token,
 				user,
+				isAuthReady,
 				canManageCalendar: user
 					? checkCanManageCalendar(user.permissionLevel)
 					: false,
