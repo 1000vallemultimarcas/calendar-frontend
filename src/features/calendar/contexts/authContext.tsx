@@ -63,9 +63,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<DecodedToken | null>(null);
 
   useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const tokenFromQuery = params.get("token");
     const storedToken = localStorage.getItem("token");
     const fallbackToken = process.env.NEXT_PUBLIC_TEST_MANAGER_TOKEN;
-    const tokenToUse = storedToken || fallbackToken;
+    const tokenToUse = tokenFromQuery || storedToken || fallbackToken;
 
     if (!tokenToUse) {
       return;
@@ -74,7 +76,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     try {
       const decoded: DecodedToken = jwtDecode(tokenToUse);
 
-      if (!storedToken && fallbackToken) {
+      if (tokenFromQuery) {
+        localStorage.setItem("token", tokenFromQuery);
+
+        const nextParams = new URLSearchParams(window.location.search);
+        nextParams.delete("token");
+        const nextQuery = nextParams.toString();
+        const nextUrl = `${window.location.pathname}${nextQuery ? `?${nextQuery}` : ""}`;
+        window.history.replaceState(null, "", nextUrl);
+      } else if (!storedToken && fallbackToken) {
         localStorage.setItem("token", fallbackToken);
       }
 
