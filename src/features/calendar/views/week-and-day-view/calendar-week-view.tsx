@@ -15,7 +15,6 @@ import {
     transition,
 } from "@/features/calendar/animations";
 import {useCalendar} from "@/features/calendar/contexts/calendar-context";
-import {AddEditEventDialog} from "@/features/calendar/dialogs/add-edit-event-dialog";
 import {DroppableArea} from "@/features/calendar/dnd/droppable-area";
 import {groupEvents, toCapitalize} from "@/features/calendar/helpers";
 import type {IEvent} from "@/features/calendar/interfaces";
@@ -24,7 +23,6 @@ import {RenderGroupedEvents} from "@/features/calendar/views/week-and-day-view/r
 import {
     WeekViewMultiDayEventsRow
 } from "@/features/calendar/views/week-and-day-view/week-view-multi-day-events-row";
-import { useAuth } from "@/features/calendar/contexts/authContext";
 
 interface IProps {
     singleDayEvents: IEvent[];
@@ -33,7 +31,6 @@ interface IProps {
 
 export function CalendarWeekView({singleDayEvents, multiDayEvents}: IProps) {
     const {selectedDate, use24HourFormat} = useCalendar();
-    const { canManageCalendar } = useAuth();
 
     const weekStart = startOfWeek(selectedDate);
     const weekDays = Array.from({length: 7}, (_, i) => addDays(weekStart, i));
@@ -185,17 +182,7 @@ export function CalendarWeekView({singleDayEvents, multiDayEvents}: IProps) {
                                                         minute={0}
                                                         className="absolute inset-x-0 top-0 z-0 h-[48px]"
                                                     >
-                                                        {canManageCalendar ? (
-                                                            <AddEditEventDialog
-                                                                startDate={day}
-                                                                startTime={{hour, minute: 0}}
-                                                            >
-                                                                <div
-                                                                    className="absolute inset-0 z-0 cursor-pointer transition-colors hover:bg-secondary"/>
-                                                            </AddEditEventDialog>
-                                                        ) : (
-                                                            <div className="absolute inset-0 z-0" />
-                                                        )}
+                                                        <div className="absolute inset-0 z-0" />
                                                     </DroppableArea>
 
                                                     <div
@@ -207,17 +194,7 @@ export function CalendarWeekView({singleDayEvents, multiDayEvents}: IProps) {
                                                         minute={30}
                                                         className="absolute inset-x-0 bottom-0 z-0 h-[48px]"
                                                     >
-                                                        {canManageCalendar ? (
-                                                            <AddEditEventDialog
-                                                                startDate={day}
-                                                                startTime={{hour, minute: 30}}
-                                                            >
-                                                                <div
-                                                                    className="absolute inset-0 z-0 cursor-pointer transition-colors hover:bg-secondary"/>
-                                                            </AddEditEventDialog>
-                                                        ) : (
-                                                            <div className="absolute inset-0 z-0" />
-                                                        )}
+                                                        <div className="absolute inset-0 z-0" />
                                                     </DroppableArea>
                                                 </motion.div>
                                             ))}

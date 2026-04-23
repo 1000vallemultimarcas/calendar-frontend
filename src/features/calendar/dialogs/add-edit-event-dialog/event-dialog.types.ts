@@ -4,10 +4,12 @@ import type { UseFormReturn } from "react-hook-form";
 import type { TEventFormData } from "@/features/calendar/schemas";
 
 export interface AddEditEventDialogProps {
-  children: ReactNode;
+  children?: ReactNode;
   startDate?: Date;
   startTime?: { hour: number; minute: number };
   event?: IEvent;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 }
 
 export interface EventDialogFormSectionsProps {

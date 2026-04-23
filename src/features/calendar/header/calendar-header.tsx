@@ -1,22 +1,17 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Plus } from "lucide-react";
 import { useEffect, useState } from "react";
-
-import { Button } from "@/components/ui/button";
 import {
   slideFromLeft,
   slideFromRight,
   transition,
 } from "@/features/calendar/animations";
 import { useCalendar } from "@/features/calendar/contexts/calendar-context";
-import { AddEditEventDialog } from "@/features/calendar/dialogs/add-edit-event-dialog";
 import { DeletedEventsDialog } from "@/features/calendar/dialogs/deleted-events-dialog";
 import { DateNavigator } from "@/features/calendar/header/date-navigator";
 import FilterEvents from "@/features/calendar/header/filter";
 import { TodayButton } from "@/features/calendar/header/today-button";
-import { UserSelect } from "@/features/calendar/header/user-select";
 import { useAuth } from "@/features/calendar/contexts/authContext";
 import Views from "./view-tabs";
 
@@ -55,17 +50,7 @@ export function CalendarHeader() {
         </div>
 
         <div className="flex flex-col gap-3 lg:flex-row lg:flex-wrap lg:items-center lg:gap-1">
-          <UserSelect />
           {isHydrated && canManageCalendar && <DeletedEventsDialog />}
-
-          {isHydrated && canManageCalendar && (
-            <AddEditEventDialog>
-              <Button className="bg-orange-600 text-white hover:bg-orange-700">
-                <Plus className="h-4 w-4" />
-                Adicionar evento
-              </Button>
-            </AddEditEventDialog>
-          )}
         </div>
       </motion.div>
     </div>

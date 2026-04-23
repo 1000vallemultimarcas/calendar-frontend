@@ -12,14 +12,12 @@ import { DayPicker } from "@/components/ui/day-picker";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useCalendar } from "@/features/calendar/contexts/calendar-context";
 
-import { AddEditEventDialog } from "@/features/calendar/dialogs/add-edit-event-dialog";
 import { DroppableArea } from "@/features/calendar/dnd/droppable-area";
 import { groupEvents, toCapitalize } from "@/features/calendar/helpers";
 import type { IEvent } from "@/features/calendar/interfaces";
 import { CalendarTimeline } from "@/features/calendar/views/week-and-day-view/calendar-time-line";
 import { DayViewMultiDayEventsRow } from "@/features/calendar/views/week-and-day-view/day-view-multi-day-events-row";
 import { RenderGroupedEvents } from "@/features/calendar/views/week-and-day-view/render-grouped-events";
-import { useAuth } from "@/features/calendar/contexts/authContext";
 
 interface IProps {
   singleDayEvents: IEvent[];
@@ -29,7 +27,6 @@ interface IProps {
 export function CalendarDayView({ singleDayEvents, multiDayEvents }: IProps) {
   const { selectedDate, setSelectedDate, users, use24HourFormat } =
     useCalendar();
-  const { canManageCalendar } = useAuth();
   const scrollAreaRef = useRef<HTMLDivElement>(null);
 
   const hours = Array.from({ length: 24 }, (_, i) => i);
@@ -155,16 +152,7 @@ export function CalendarDayView({ singleDayEvents, multiDayEvents }: IProps) {
                       minute={0}
                       className="absolute inset-x-0 top-0 z-0 h-[48px]"
                     >
-                      {canManageCalendar ? (
-                        <AddEditEventDialog
-                          startDate={selectedDate}
-                          startTime={{ hour, minute: 0 }}
-                        >
-                          <div className="absolute inset-0 z-0 cursor-pointer transition-colors hover:bg-secondary" />
-                        </AddEditEventDialog>
-                      ) : (
-                        <div className="absolute inset-0 z-0" />
-                      )}
+                      <div className="absolute inset-0 z-0" />
                     </DroppableArea>
 
                     <div className="pointer-events-none absolute inset-x-0 top-1/2 border-b border-dashed border-b-tertiary"></div>
@@ -175,16 +163,7 @@ export function CalendarDayView({ singleDayEvents, multiDayEvents }: IProps) {
                       minute={30}
                       className="absolute inset-x-0 bottom-0 z-0 h-[48px]"
                     >
-                      {canManageCalendar ? (
-                        <AddEditEventDialog
-                          startDate={selectedDate}
-                          startTime={{ hour, minute: 30 }}
-                        >
-                          <div className="absolute inset-0 z-0 cursor-pointer transition-colors hover:bg-secondary" />
-                        </AddEditEventDialog>
-                      ) : (
-                        <div className="absolute inset-0 z-0" />
-                      )}
+                      <div className="absolute inset-0 z-0" />
                     </DroppableArea>
                   </div>
                 ))}

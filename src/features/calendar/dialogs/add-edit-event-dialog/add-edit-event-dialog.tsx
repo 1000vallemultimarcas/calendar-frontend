@@ -22,6 +22,8 @@ export function AddEditEventDialog({
   event,
   startDate,
   startTime,
+  open: controlledOpen,
+  onOpenChange,
 }: AddEditEventDialogProps) {
   const {
     form,
@@ -38,9 +40,12 @@ export function AddEditEventDialog({
     startTime,
   });
 
+  const isDialogOpen = controlledOpen ?? isOpen;
+  const handleOpenChange = onOpenChange ?? setIsOpen;
+
   return (
-    <Modal open={isOpen} onOpenChange={setIsOpen}>
-      <ModalTrigger asChild>{children}</ModalTrigger>
+    <Modal open={isDialogOpen} onOpenChange={handleOpenChange}>
+      {children ? <ModalTrigger asChild>{children}</ModalTrigger> : null}
 
       <ModalContent className="max-w-[95vw] bg-[#ededed] dark:bg-background sm:max-w-175">
         <ModalHeader>
