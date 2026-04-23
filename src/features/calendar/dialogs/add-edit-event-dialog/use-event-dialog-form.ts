@@ -1,5 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { EVENT_FORM_TEXTS_PT_BR } from "@/features/calendar/constants/event-form.constants";
@@ -9,6 +9,7 @@ import { useDisclosure } from "@/features/calendar/hooks";
 import { getInitialDates } from "@/features/calendar/lib/event-form.utils";
 import type { ExternalCalendarPrefill } from "@/features/calendar/lib/external-calendar-query";
 import { canManageEvent } from "@/features/calendar/lib/permissions";
+import { withUserColor } from "@/features/calendar/lib/user-color.utils";
 import { createEvent as createEventRequest } from "@/features/calendar/requests";
 import { eventSchema, type TEventFormData } from "@/features/calendar/schemas";
 import type { AddEditEventDialogProps } from "./event-dialog.types";
@@ -31,9 +32,27 @@ export function useEventDialogForm({
 	const { user, isManager, canManageCalendar } = useAuth();
 	const { isOpen, onClose, onOpen, onToggle, setIsOpen } = useDisclosure();
 	const isEditing = !!event;
+	const submitLockRef = useRef(false);
 
 	const currentUserId = user?.userId;
 	const isUserSelectionDisabled = !isManager && !!currentUserId;
+	const effectiveUsers = useMemo(() => {
+		if (!user?.userId) {
+			return users;
+		}
+
+		if (users.some((current) => current.id === user.userId)) {
+			return users;
+		}
+
+		const fallbackUser = withUserColor({
+			id: user.userId,
+			name: user.name ?? "Usuario do sistema",
+			picturePath: null,
+		});
+
+		return [fallbackUser, ...users];
+	}, [user?.name, user?.userId, users]);
 
 	const initialDates = useMemo(
 		() =>
@@ -47,10 +66,10 @@ export function useEventDialogForm({
 	);
 
 	const defaultUserId = isUserSelectionDisabled
-		? users.some((current) => current.id === currentUserId)
-			? (currentUserId ?? getDefaultUserId(users, event))
-			: getDefaultUserId(users, event)
-		: getDefaultUserId(users, event);
+		? effectiveUsers.some((current) => current.id === currentUserId)
+			? (currentUserId ?? getDefaultUserId(effectiveUsers, event))
+			: getDefaultUserId(effectiveUsers, event)
+		: getDefaultUserId(effectiveUsers, event);
 
 	const form = useForm<TEventFormData>({
 		resolver: zodResolver(eventSchema),
@@ -120,12 +139,12 @@ export function useEventDialogForm({
 				values,
 				event,
 				isEditing,
-				users,
+				users: effectiveUsers,
 			});
 
 			if (!isEditing) {
 				const selectedManager = values.managerId
-					? users.find((current) => current.id === values.managerId)
+					? effectiveUsers.find((current) => current.id === values.managerId)
 					: undefined;
 
 				formattedEvent.scheduledBy = selectedManager
@@ -154,9 +173,18 @@ export function useEventDialogForm({
 					return;
 				}
 
-				const createdEvent = await createEventRequest(formattedEvent);
-				addEvent(createdEvent);
-				toast.success(EVENT_FORM_TEXTS_PT_BR.createSuccess);
+				if (submitLockRef.current) {
+					return;
+				}
+
+				submitLockRef.current = true;
+				try {
+					const createdEvent = await createEventRequest(formattedEvent);
+					addEvent(createdEvent);
+					toast.success(EVENT_FORM_TEXTS_PT_BR.createSuccess);
+				} finally {
+					submitLockRef.current = false;
+				}
 			}
 
 			onClose();
@@ -186,7 +214,7 @@ export function useEventDialogForm({
 		onToggle,
 		isEditing,
 		onSubmit,
-		users,
+		users: effectiveUsers,
 		isUserSelectionDisabled,
 		currentUserId,
 	};

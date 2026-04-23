@@ -44,6 +44,7 @@ export function AddEditEventDialog({
 
 	const isDialogOpen = controlledOpen ?? isOpen;
 	const handleOpenChange = onOpenChange ?? setIsOpen;
+	const isSubmitting = form.formState.isSubmitting;
 
 	return (
 		<Modal open={isDialogOpen} onOpenChange={handleOpenChange}>
@@ -90,6 +91,7 @@ export function AddEditEventDialog({
 					<Button
 						form="event-form"
 						type="submit"
+						disabled={isSubmitting}
 						className="bg-orange-600 text-white hover:bg-orange-700"
 					>
 						{isEditing
