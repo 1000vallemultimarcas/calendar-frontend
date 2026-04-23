@@ -65,6 +65,34 @@ const CUSTOMERS_ENDPOINT =
 const SCHEDULES_ENDPOINT =
 	process.env.NEXT_PUBLIC_SCHEDULES_ENDPOINT ?? "/schedules";
 
+function hashStringToPositiveInt(value: string) {
+	let hash = 0;
+	for (let index = 0; index < value.length; index += 1) {
+		hash = (hash << 5) - hash + value.charCodeAt(index);
+		hash |= 0;
+	}
+
+	return Math.abs(hash) || 1;
+}
+
+function toEventNumericId(value: number | string) {
+	if (typeof value === "number" && Number.isFinite(value)) {
+		return value;
+	}
+
+	const stringValue = String(value).trim();
+	if (!stringValue) {
+		return 0;
+	}
+
+	const parsed = Number.parseInt(stringValue, 10);
+	if (Number.isFinite(parsed) && !Number.isNaN(parsed)) {
+		return parsed;
+	}
+
+	return hashStringToPositiveInt(stringValue);
+}
+
 function normalizeUsersResponse(payload: UsersApiResponse): IUser[] {
 	const items = Array.isArray(payload) ? payload : payload.users;
 
@@ -162,13 +190,10 @@ function mapScheduleToEvent(schedule: ScheduleApiItem, users: IUser[]): IEvent {
 		(schedule.attendantId
 			? `Responsavel ${schedule.attendantId.slice(0, 8)}`
 			: "Responsavel");
-	const numericId =
-		typeof schedule.id === "number"
-			? schedule.id
-			: Number.parseInt(String(schedule.id), 10);
+	const numericId = toEventNumericId(schedule.id);
 
 	return {
-		id: Number.isNaN(numericId) ? 0 : numericId,
+		id: numericId,
 		title: schedule.title,
 		description: schedule.description,
 		startDate: schedule.startDate,
