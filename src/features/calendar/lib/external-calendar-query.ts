@@ -48,24 +48,46 @@ function pickParam(searchParams: QuerySource, keys: string[]) {
 	return undefined;
 }
 
+function matches(value: string, aliases: string[]) {
+	return aliases.includes(value);
+}
+
 function normalizeStatus(input?: string): TEventStatus | undefined {
 	const value = compact(input ?? null);
 	if (!value) return undefined;
 
-	if (value === "scheduled" || value === "agendado") return "scheduled";
-	if (value === "not_contacted" || value === "nao_atendido") {
+	if (
+		matches(value, [
+			"not_contacted",
+			"nao_atendido",
+			"not_attended",
+		])
+	) {
 		return "not_contacted";
 	}
-	if (value === "in_negotiation" || value === "em_negociacao") {
+
+	if (matches(value, ["in_negotiation", "em_negociacao"])) {
 		return "in_negotiation";
 	}
-	if (value === "not_read" || value === "nao_lido") return "not_read";
-	if (value === "finished_sold" || value === "finalizado_vendido") {
+
+	if (matches(value, ["not_read", "nao_lido"])) {
+		return "not_read";
+	}
+
+	if (matches(value, ["scheduled", "agendado"])) {
+		return "scheduled";
+	}
+
+	if (matches(value, ["finished_sold", "finalizado_vendido"])) {
 		return "finished_sold";
 	}
+
 	if (
-		value === "finished_not_sold" ||
-		value === "finalizado_nao_vendido"
+		matches(value, [
+			"finished_not_sold",
+			"finalizado_nao_vendido",
+			"cancelled",
+		])
 	) {
 		return "finished_not_sold";
 	}
@@ -77,20 +99,29 @@ function normalizeType(input?: string): TEventType | undefined {
 	const value = compact(input ?? null);
 	if (!value) return undefined;
 
-	if (value === "initial_contact" || value === "contato_inicial") {
+	if (matches(value, ["initial_contact", "contato_inicial"])) {
 		return "initial_contact";
 	}
-	if (value === "proposal_sent" || value === "proposta_enviada") {
+
+	if (matches(value, ["proposal_sent", "proposta_enviada", "follow_up"])) {
 		return "proposal_sent";
 	}
-	if (value === "test_drive" || value === "testdrive") {
+
+	if (matches(value, ["test_drive", "testdrive"])) {
 		return "test_drive";
 	}
-	if (value === "waiting_response" || value === "aguardando_resposta") {
+
+	if (matches(value, ["waiting_response", "aguardando_resposta"])) {
 		return "waiting_response";
 	}
-	if (value === "closing" || value === "fechamento") return "closing";
-	if (value === "completed" || value === "concluido") return "completed";
+
+	if (matches(value, ["closing", "fechamento"])) {
+		return "closing";
+	}
+
+	if (matches(value, ["completed", "concluido", "attended"])) {
+		return "completed";
+	}
 
 	return undefined;
 }
@@ -99,9 +130,17 @@ function normalizePriority(input?: string): TEventPriority | undefined {
 	const value = compact(input ?? null);
 	if (!value) return undefined;
 
-	if (value === "cold" || value === "frio") return "cold";
-	if (value === "warm" || value === "morno") return "warm";
-	if (value === "hot" || value === "quente") return "hot";
+	if (matches(value, ["cold", "frio", "low"])) {
+		return "cold";
+	}
+
+	if (matches(value, ["warm", "morno", "normal"])) {
+		return "warm";
+	}
+
+	if (matches(value, ["hot", "quente", "high", "urgent"])) {
+		return "hot";
+	}
 
 	return undefined;
 }
@@ -140,11 +179,38 @@ function parseStartDate(value?: string) {
 export function parseExternalCalendarQuery(
 	searchParams: QuerySource,
 ): ExternalCalendarQueryData {
-	const status = normalizeStatus(pickParam(searchParams, ["status"]));
-	const type = normalizeType(pickParam(searchParams, ["tipo", "type"]));
-	const priority = normalizePriority(
-		pickParam(searchParams, ["prioridade", "priority"]),
+	const status = normalizeStatus(
+		pickParam(searchParams, [
+			"status",
+			"negotiationStatus",
+			"negotiation_status",
+			"statusNegociacao",
+		]),
 	);
+
+	const type = normalizeType(
+		pickParam(searchParams, [
+			"tipo",
+			"type",
+			"stage",
+			"etapa",
+			"negotiationStage",
+			"negotiation_stage",
+			"etapaNegociacao",
+		]),
+	);
+
+	const priority = normalizePriority(
+		pickParam(searchParams, [
+			"prioridade",
+			"priority",
+			"importance",
+			"importancia",
+			"leadImportance",
+			"lead_importance",
+		]),
+	);
+
 	const phone = formatPhone(
 		pickParam(searchParams, ["telefone", "customerPhone", "phone"]),
 	);
@@ -152,10 +218,11 @@ export function parseExternalCalendarQuery(
 	const title = pickParam(searchParams, ["titulo", "title"]);
 	const description = pickParam(searchParams, ["descricao", "description"]);
 	const startDate = parseStartDate(
-		pickParam(searchParams, ["dataInicial", "startDate"]),
+		pickParam(searchParams, ["dataInicial", "startDate", "start_date"]),
 	);
-	const shouldOpenScheduleDialog =
-		normalize(searchParams.get("agendar")) === "1";
+	const shouldOpenScheduleDialog = ["1", "true", "yes", "sim"].includes(
+		normalize(searchParams.get("agendar")),
+	);
 
 	const hasLeadPayload = Boolean(
 		status || type || priority || phone || customerId,
