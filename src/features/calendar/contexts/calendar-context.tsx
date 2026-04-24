@@ -15,6 +15,7 @@ import { useCalendarSettingsState } from "@/features/calendar/hooks/use-calendar
 import type { IEvent, IUser } from "@/features/calendar/interfaces";
 import { canManageEvent } from "@/features/calendar/lib/permissions";
 import type { TCalendarView } from "@/features/calendar/types";
+import { ApiError } from "@/lib/api";
 import { useCalendarEventState } from "../hooks/use-calendar-event-state";
 import { getEvents, getUsers, mapViewToSchedulePeriod } from "../requests";
 import { useAuth } from "./authContext";
@@ -298,9 +299,15 @@ export function CalendarProvider({
 				}
 			} catch (error) {
 				console.error("Erro ao carregar agendamentos:", error);
-				toast.error(
-					"Sem conexao com o backend. Verifique se a API esta online.",
-				);
+				if (error instanceof ApiError && error.status === 403) {
+					toast.error(
+						"Sem permissao para acessar a agenda com o token atual.",
+					);
+				} else {
+					toast.error(
+						"Sem conexao com o backend. Verifique se a API esta online.",
+					);
+				}
 			} finally {
 				if (isActive) {
 					setIsLoadingEvents(false);
