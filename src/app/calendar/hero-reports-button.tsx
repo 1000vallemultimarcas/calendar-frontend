@@ -50,9 +50,11 @@ export function HeroReportsButton() {
   } = useCalendar();
 
   const totalEvents = events.length;
-  const attendedEvents = events.filter((event) => event.status === "attended").length;
+  const attendedEvents = events.filter(
+    (event) => event.status === "finished_sold",
+  ).length;
   const notAttendedEvents = events.filter(
-    (event) => event.status === "not_attended",
+    (event) => event.status === "finished_not_sold",
   ).length;
   const attendanceBase = attendedEvents + notAttendedEvents;
   const attendanceRate =
@@ -80,23 +82,29 @@ export function HeroReportsButton() {
 
     const categories = [
       {
-        label: "Concluidos/confirmados",
-        count: events.filter(
-          (event) => event.status === "attended" || event.status === "confirmed",
-        ).length,
+        label: "Finalizado - vendido",
+        count: events.filter((event) => event.status === "finished_sold").length,
         color: "#2563eb",
       },
       {
-        label: "Reagendados",
-        count: events.filter((event) => event.status === "rescheduled").length,
+        label: "Em negociacao",
+        count: events.filter((event) => event.status === "in_negotiation").length,
         color: "#06b6d4",
       },
       {
-        label: "Cancelados/nao atendidos",
+        label: "Finalizado - nao vendido",
         count: events.filter(
-          (event) => event.status === "cancelled" || event.status === "not_attended",
+          (event) => event.status === "finished_not_sold",
         ).length,
         color: "#f97316",
+      },
+      {
+        label: "Nao atendido / Nao lido",
+        count: events.filter(
+          (event) =>
+            event.status === "not_contacted" || event.status === "not_read",
+        ).length,
+        color: "#8b5cf6",
       },
       {
         label: "Agendados",
@@ -223,7 +231,7 @@ export function HeroReportsButton() {
       emptyLabel: "Todos",
     },
     {
-      title: "Prioridade",
+      title: "Importancia do lead",
       values: selectedPriorities.map(
         (priority) => PRIORITY_LABELS_PT_BR[priority],
       ),

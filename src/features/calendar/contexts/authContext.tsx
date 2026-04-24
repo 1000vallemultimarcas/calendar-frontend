@@ -16,6 +16,7 @@ import {
 
 interface AuthContextType {
   token: string | null;
+  ssoTicket: string | null;
   user: DecodedToken | null;
   canManageCalendar: boolean;
   isManager: boolean;
@@ -59,13 +60,67 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [token, setToken] = useState<string | null>(null);
+  const [ssoTicket, setSsoTicket] = useState<string | null>(null);
   const [testRole, setTestRole] = useState<"manager" | "employee">("manager");
   const [user, setUser] = useState<DecodedToken | null>(null);
+  const ssoEndpoint = process.env.NEXT_PUBLIC_SSO_TICKET_ENDPOINT ?? "/sso/ticket";
+  const ssoTargetApp = process.env.NEXT_PUBLIC_SSO_TARGET_APP ?? "calendar-frontend";
+
+  const requestSsoTicket = async (accessToken: string) => {
+    const baseUrl = (
+      process.env.NEXT_PUBLIC_API_BASE_URL ??
+      process.env.NEXT_PUBLIC_API_URL ??
+      "http://localhost:4000"
+    ).replace(/\/$/, "");
+
+    const backendPrefix =
+      process.env.NEXT_PUBLIC_BACKEND_API_PREFIX ??
+      process.env.BACKEND_API_PREFIX ??
+      "";
+    const normalizedPrefix = backendPrefix
+      ? backendPrefix.startsWith("/")
+        ? backendPrefix
+        : `/${backendPrefix}`
+      : "";
+    const normalizedEndpoint = ssoEndpoint.startsWith("/")
+      ? ssoEndpoint
+      : `/${ssoEndpoint}`;
+
+    const response = await fetch(
+      `${baseUrl}${normalizedPrefix}${normalizedEndpoint}`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${accessToken}`,
+        },
+        body: JSON.stringify({ targetApp: ssoTargetApp }),
+      },
+    );
+
+    if (!response.ok) {
+      const body = await response.text();
+      throw new Error(body || `Falha ao gerar ticket SSO (${response.status}).`);
+    }
+
+    const data = (await response.json()) as { ticket?: string };
+    if (!data.ticket) {
+      throw new Error("Resposta de SSO sem o campo ticket.");
+    }
+
+    localStorage.setItem("sso_ticket", data.ticket);
+    setSsoTicket(data.ticket);
+  };
 
   useEffect(() => {
     const storedToken = localStorage.getItem("token");
+    const storedTicket = localStorage.getItem("sso_ticket");
     const fallbackToken = process.env.NEXT_PUBLIC_TEST_MANAGER_TOKEN;
     const tokenToUse = storedToken || fallbackToken;
+
+    if (storedTicket) {
+      setSsoTicket(storedTicket);
+    }
 
     if (!tokenToUse) {
       return;
@@ -80,9 +135,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
       setToken(tokenToUse);
       setUser(decoded);
+
+      requestSsoTicket(tokenToUse).catch((error) => {
+        console.error("Nao foi possivel gerar ticket SSO:", error);
+      });
     } catch (error) {
       console.error("Token invalido:", error);
       localStorage.removeItem("token");
+      localStorage.removeItem("sso_ticket");
+      setSsoTicket(null);
     }
   }, []);
 
@@ -101,6 +162,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       localStorage.setItem("token", newToken);
       setToken(newToken);
       setUser(decoded);
+      requestSsoTicket(newToken).catch((error) => {
+        console.error("Nao foi possivel gerar ticket SSO:", error);
+      });
     } catch (error) {
       console.error("Token invalido:", error);
     }
@@ -108,7 +172,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const logout = () => {
     localStorage.removeItem("token");
+    localStorage.removeItem("sso_ticket");
     setToken(null);
+    setSsoTicket(null);
     setUser(null);
   };
 
@@ -116,6 +182,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     <AuthContext.Provider
       value={{
         token,
+        ssoTicket,
         user,
         canManageCalendar: user
           ? checkCanManageCalendar(user.permissionLevel)

@@ -24,6 +24,8 @@ type ScheduleApiItem = {
   attendantId: string;
   status: string;
   type: string;
+  leadImportance?: string;
+  priority?: string;
   createdById?: string;
   createdByName?: string;
   createdByMail?: string;
@@ -83,20 +85,67 @@ function normalizeCustomersResponse(payload: CustomersApiResponse): ICustomer[] 
 }
 
 function normalizeStatus(status: string): TEventStatus {
-  switch (status.toUpperCase()) {
-    case "CONFIRMED":
-      return "confirmed";
-    case "CANCELLED":
-      return "cancelled";
-    case "ATTENDED":
-      return "attended";
-    case "RESCHEDULED":
-      return "rescheduled";
+  const normalized = status
+    .trim()
+    .toUpperCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[\s-]+/g, "_");
+
+  switch (normalized) {
+    case "NOT_CONTACTED":
+    case "NAO_ATENDIDO":
     case "NOT_ATTENDED":
-      return "not_attended";
+      return "not_contacted";
+    case "IN_NEGOTIATION":
+    case "EM_NEGOCIACAO":
+      return "in_negotiation";
+    case "NOT_READ":
+    case "NAO_LIDO":
+      return "not_read";
+    case "FINISHED_SOLD":
+    case "FINALIZADO_VENDIDO":
+    case "CONFIRMED":
+    case "ATTENDED":
+      return "finished_sold";
+    case "FINISHED_NOT_SOLD":
+    case "FINALIZADO_NAO_VENDIDO":
+    case "CANCELLED":
+      return "finished_not_sold";
+    case "RESCHEDULED":
     case "SCHEDULED":
     default:
       return "scheduled";
+  }
+}
+
+function normalizePriority(priority?: string): "frio" | "morno" | "quente" {
+  if (!priority) {
+    return "morno";
+  }
+
+  const normalized = priority
+    .trim()
+    .toUpperCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[\s-]+/g, "_");
+
+  switch (normalized) {
+    case "FRIO":
+    case "LOW":
+    case "BAIXA":
+      return "frio";
+    case "QUENTE":
+    case "HIGH":
+    case "URGENT":
+    case "ALTA":
+    case "URGENTE":
+      return "quente";
+    case "MORNO":
+    case "NORMAL":
+    default:
+      return "morno";
   }
 }
 
@@ -153,7 +202,7 @@ function mapScheduleToEvent(schedule: ScheduleApiItem, users: IUser[]): IEvent {
     updatedAt: schedule.updatedAt,
     status: normalizeStatus(schedule.status),
     type,
-    priority: "normal",
+    priority: normalizePriority(schedule.leadImportance ?? schedule.priority),
     color: getColorByType(type),
     customerId: schedule.customerId,
     customerPhone: schedule.customerPhone ?? undefined,
@@ -197,19 +246,31 @@ function mapEventTypeToApi(type: TEventType): string {
 
 function mapEventStatusToApi(status: TEventStatus): string {
   switch (status) {
-    case "confirmed":
-      return "CONFIRMED";
-    case "cancelled":
-      return "CANCELLED";
-    case "attended":
-      return "ATTENDED";
-    case "rescheduled":
-      return "RESCHEDULED";
-    case "not_attended":
-      return "NOT_ATTENDED";
+    case "not_contacted":
+      return "NOT_CONTACTED";
+    case "in_negotiation":
+      return "IN_NEGOTIATION";
+    case "not_read":
+      return "NOT_READ";
+    case "finished_sold":
+      return "FINISHED_SOLD";
+    case "finished_not_sold":
+      return "FINISHED_NOT_SOLD";
     case "scheduled":
     default:
       return "SCHEDULED";
+  }
+}
+
+function mapEventPriorityToApi(priority: IEvent["priority"]): string {
+  switch (priority) {
+    case "frio":
+      return "FRIO";
+    case "quente":
+      return "QUENTE";
+    case "morno":
+    default:
+      return "MORNO";
   }
 }
 
@@ -255,6 +316,7 @@ export async function createEvent(event: Omit<IEvent, "id">): Promise<IEvent> {
     customerPhone,
     attendantId: event.attendantId ?? event.user.id,
     status: mapEventStatusToApi(event.status),
+    leadImportance: mapEventPriorityToApi(event.priority),
     type: mapEventTypeToApi(event.type),
     createdById: event.scheduledBy?.id,
   };

@@ -56,7 +56,7 @@ export default function FilterEvents() {
 				</Toggle>
 			</DropdownMenuTrigger>
 			<DropdownMenuContent align="end" className="w-[240px]">
-				<DropdownMenuLabel>Status</DropdownMenuLabel>
+				<DropdownMenuLabel>Status da negociacao</DropdownMenuLabel>
 				{EVENT_STATUSES.map((status: TEventStatus) => (
 					<DropdownMenuItem
 						key={status}
@@ -88,7 +88,7 @@ export default function FilterEvents() {
 				))}
 
 				<DropdownMenuSeparator />
-				<DropdownMenuLabel>Prioridade</DropdownMenuLabel>
+				<DropdownMenuLabel>Importancia do lead</DropdownMenuLabel>
 				{EVENT_PRIORITIES.map((priority: TEventPriority) => (
 					<DropdownMenuItem
 						key={priority}

@@ -10,12 +10,12 @@ export const COLORS: TEventColor[] = [
 ];
 
 export const EVENT_STATUSES: TEventStatus[] = [
+	"not_contacted",
+	"in_negotiation",
+	"not_read",
 	"scheduled",
-	"confirmed",
-	"cancelled",
-	"attended",
-	"rescheduled",
-	"not_attended",
+	"finished_sold",
+	"finished_not_sold",
 ];
 
 export const EVENT_TYPES: TEventType[] = [
@@ -28,8 +28,7 @@ export const EVENT_TYPES: TEventType[] = [
 ];
 
 export const EVENT_PRIORITIES: TEventPriority[] = [
-	"low",
-	"normal",
-	"high",
-	"urgent",
+	"frio",
+	"morno",
+	"quente",
 ];

@@ -5,12 +5,12 @@
 } from "@/features/calendar/types";
 
 export const STATUS_LABELS_PT_BR: Record<TEventStatus, string> = {
+  not_contacted: "Nao atendido",
+  in_negotiation: "Em negociacao",
+  not_read: "Nao lido",
   scheduled: "Agendado",
-  confirmed: "Confirmado",
-  cancelled: "Cancelado",
-  attended: "Atendido",
-  rescheduled: "Reagendado",
-  not_attended: "Nao atendido",
+  finished_sold: "Finalizado - vendido",
+  finished_not_sold: "Finalizado - nao vendido",
 };
 
 export const TYPE_LABELS_PT_BR: Record<TEventType, string> = {
@@ -23,10 +23,9 @@ export const TYPE_LABELS_PT_BR: Record<TEventType, string> = {
 };
 
 export const PRIORITY_LABELS_PT_BR: Record<TEventPriority, string> = {
-  low: "Baixa",
-  normal: "Normal",
-  high: "Alta",
-  urgent: "Urgente",
+  frio: "Frio",
+  morno: "Morno",
+  quente: "Quente",
 };
 
 export const EVENT_FORM_TEXTS_PT_BR = {
@@ -36,12 +35,12 @@ export const EVENT_FORM_TEXTS_PT_BR = {
   editDescription: "Altere as informacoes do agendamento.",
   titleLabel: "Titulo",
   titlePlaceholder: "Digite o titulo",
-  statusLabel: "Status",
-  statusPlaceholder: "Selecione um status",
+  statusLabel: "Status da negociacao",
+  statusPlaceholder: "Selecione um status da negociacao",
   typeLabel: "Tipo",
   typePlaceholder: "Selecione um tipo",
-  priorityLabel: "Prioridade",
-  priorityPlaceholder: "Selecione uma prioridade",
+  priorityLabel: "Importancia do lead",
+  priorityPlaceholder: "Selecione a importancia do lead",
   responsibleLabel: "Responsavel",
   responsiblePlaceholder: "Selecione um responsavel",
   managerLabel: "Gerente",

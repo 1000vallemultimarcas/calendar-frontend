@@ -7,12 +7,12 @@ export type TEventColor =
 	| "purple"
 	| "orange";
 export type TEventStatus =
+	| "not_contacted"
+	| "in_negotiation"
+	| "not_read"
 	| "scheduled"
-	| "confirmed"
-	| "cancelled"
-	| "attended"
-	| "rescheduled"
-	| "not_attended";
+	| "finished_sold"
+	| "finished_not_sold";
 export type TEventType =
 	| "meeting"
 	| "follow_up"
@@ -20,4 +20,4 @@ export type TEventType =
 	| "personal"
 	| "visit"
 	| "test_drive";
-export type TEventPriority = "low" | "normal" | "high" | "urgent";
+export type TEventPriority = "frio" | "morno" | "quente";

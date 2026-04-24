@@ -35,7 +35,7 @@ export function getDefaultFormValues({
 		endDate: initialDates.endDate,
 		status: event?.status ?? "scheduled",
 		type: event?.type ?? "visit",
-		priority: event?.priority ?? "normal",
+		priority: event?.priority ?? "morno",
 		userId: defaultUserId,
 		managerId: event?.scheduledBy?.id ?? defaultUserId,
 		customerId: event?.customerId ? String(event.customerId) : undefined,
