@@ -182,6 +182,9 @@ export function useEventDialogForm({
 					const createdEvent = await createEventRequest(formattedEvent);
 					addEvent(createdEvent);
 					toast.success(EVENT_FORM_TEXTS_PT_BR.createSuccess);
+					if (typeof window !== "undefined") {
+						window.location.reload();
+					}
 				} finally {
 					submitLockRef.current = false;
 				}
