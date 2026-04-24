@@ -42,6 +42,9 @@ interface TokenPayload {
 	active?: boolean;
 }
 
+const ACCESS_TOKEN_STORAGE_KEY = "accessToken";
+const LEGACY_TOKEN_STORAGE_KEY = "token";
+
 function mapDecodedToken(payload: TokenPayload): DecodedToken {
 	const userIdRaw = payload.userId ?? payload.id;
 	const userId = userIdRaw ? String(userIdRaw) : "";
@@ -91,8 +94,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
 	useEffect(() => {
 		const params = new URLSearchParams(window.location.search);
-		const tokenFromQuery = params.get("token");
-		const storedToken = localStorage.getItem("token");
+		const tokenFromQuery =
+			params.get("accessToken") ?? params.get("token");
+		const storedToken =
+			localStorage.getItem(ACCESS_TOKEN_STORAGE_KEY) ??
+			localStorage.getItem(LEGACY_TOKEN_STORAGE_KEY);
 		const tokenToUse = tokenFromQuery || storedToken;
 
 		if (!tokenToUse) {
@@ -101,12 +107,26 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 		}
 
 		try {
-			const decoded = mapDecodedToken(jwtDecode<TokenPayload>(tokenToUse));
+			const decodedRaw = jwtDecode<TokenPayload>(tokenToUse);
+			const decoded: DecodedToken = {
+				id: decodedRaw.id,
+				userId: String(decodedRaw.userId ?? decodedRaw.id ?? ""),
+				name: decodedRaw.name ?? "Usuario",
+				mail: decodedRaw.mail ?? decodedRaw.email,
+				active: decodedRaw.active,
+				permissionId: decodedRaw.permissionId ?? 0,
+				permissionLevel: decodedRaw.permissionLevel ?? 0,
+			};
+			if (!decoded.userId) {
+				throw new Error("Token sem userId/id.");
+			}
 
 			if (tokenFromQuery) {
-				localStorage.setItem("token", tokenFromQuery);
+				localStorage.setItem(ACCESS_TOKEN_STORAGE_KEY, tokenFromQuery);
+				localStorage.removeItem(LEGACY_TOKEN_STORAGE_KEY);
 
 				const nextParams = new URLSearchParams(window.location.search);
+				nextParams.delete("accessToken");
 				nextParams.delete("token");
 				const nextQuery = nextParams.toString();
 				const nextUrl = `${window.location.pathname}${nextQuery ? `?${nextQuery}` : ""}`;
@@ -117,7 +137,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 			setUser(decoded);
 		} catch (error) {
 			console.error("Token invalido:", error);
-			localStorage.removeItem("token");
+			localStorage.removeItem(ACCESS_TOKEN_STORAGE_KEY);
+			localStorage.removeItem(LEGACY_TOKEN_STORAGE_KEY);
 		} finally {
 			setIsAuthReady(true);
 		}
@@ -135,7 +156,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 		try {
 			const decoded = mapDecodedToken(jwtDecode<TokenPayload>(newToken));
 
-			localStorage.setItem("token", newToken);
+			localStorage.setItem(ACCESS_TOKEN_STORAGE_KEY, newToken);
+			localStorage.removeItem(LEGACY_TOKEN_STORAGE_KEY);
 			setToken(newToken);
 			setUser(decoded);
 		} catch (error) {
@@ -144,7 +166,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 	};
 
 	const logout = () => {
-		localStorage.removeItem("token");
+		localStorage.removeItem(ACCESS_TOKEN_STORAGE_KEY);
+		localStorage.removeItem(LEGACY_TOKEN_STORAGE_KEY);
 		setToken(null);
 		setUser(null);
 	};

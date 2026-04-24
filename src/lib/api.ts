@@ -32,7 +32,10 @@ function getClientAuthToken() {
 		return null;
 	}
 
-	return window.localStorage.getItem("token");
+	return (
+		window.localStorage.getItem("accessToken") ??
+		window.localStorage.getItem("token")
+	);
 }
 
 export async function fetcher<T>(path: string, init?: RequestInit): Promise<T> {
