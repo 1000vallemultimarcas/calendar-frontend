@@ -32,6 +32,10 @@ type ScheduleApiItem = {
 	createdByName?: string;
 	createdByMail?: string;
 	createdByPermissionLevel?: number;
+	scheduledById?: string;
+	scheduledByName?: string;
+	scheduledByMail?: string;
+	scheduledByPermissionLevel?: number;
 };
 
 type UserApiItem = {
@@ -59,11 +63,82 @@ type GetEventsParams = {
 	users?: IUser[];
 };
 
+type SchedulerCacheEntry = {
+	id?: string;
+	name: string;
+	mail?: string;
+	permissionLevel?: number;
+};
+
 const USERS_ENDPOINT = process.env.NEXT_PUBLIC_USERS_ENDPOINT ?? "/users";
 const CUSTOMERS_ENDPOINT =
 	process.env.NEXT_PUBLIC_CUSTOMERS_ENDPOINT ?? "/customers";
 const SCHEDULES_ENDPOINT =
 	process.env.NEXT_PUBLIC_SCHEDULES_ENDPOINT ?? "/schedules";
+const SCHEDULER_CACHE_KEY = "calendar_scheduler_cache_v1";
+
+function readSchedulerCache(): Record<string, SchedulerCacheEntry> {
+	if (typeof window === "undefined") {
+		return {};
+	}
+
+	try {
+		const raw = window.localStorage.getItem(SCHEDULER_CACHE_KEY);
+		if (!raw) {
+			return {};
+		}
+
+		const parsed = JSON.parse(raw) as Record<string, SchedulerCacheEntry>;
+		return parsed && typeof parsed === "object" ? parsed : {};
+	} catch {
+		return {};
+	}
+}
+
+function writeSchedulerCache(cache: Record<string, SchedulerCacheEntry>) {
+	if (typeof window === "undefined") {
+		return;
+	}
+
+	try {
+		window.localStorage.setItem(SCHEDULER_CACHE_KEY, JSON.stringify(cache));
+	} catch {
+		// Ignore quota and serialization errors.
+	}
+}
+
+function getCachedSchedulerByEventId(
+	eventId: number | string,
+): SchedulerCacheEntry | undefined {
+	const key = String(eventId);
+	const cache = readSchedulerCache();
+	return cache[key];
+}
+
+function setCachedSchedulerByEventId(
+	eventId: number | string,
+	scheduler?: SchedulerCacheEntry,
+) {
+	if (!scheduler?.name) {
+		return;
+	}
+
+	const key = String(eventId);
+	const cache = readSchedulerCache();
+	cache[key] = scheduler;
+	writeSchedulerCache(cache);
+}
+
+function removeCachedSchedulerByEventId(eventId: number | string) {
+	const key = String(eventId);
+	const cache = readSchedulerCache();
+	if (!cache[key]) {
+		return;
+	}
+
+	delete cache[key];
+	writeSchedulerCache(cache);
+}
 
 function hashStringToPositiveInt(value: string) {
 	let hash = 0;
@@ -185,13 +260,21 @@ export function mapViewToSchedulePeriod(view: TCalendarView): SchedulePeriod {
 
 function mapScheduleToEvent(schedule: ScheduleApiItem, users: IUser[]): IEvent {
 	const type = normalizeType(schedule.type);
+	const schedulerId = schedule.createdById ?? schedule.scheduledById;
+	const schedulerNameFromApi =
+		schedule.createdByName ?? schedule.scheduledByName;
+	const schedulerMailFromApi =
+		schedule.createdByMail ?? schedule.scheduledByMail;
+	const schedulerPermissionFromApi =
+		schedule.createdByPermissionLevel ?? schedule.scheduledByPermissionLevel;
+	const cachedScheduler = getCachedSchedulerByEventId(schedule.id);
 	const fallbackUserName =
 		schedule.attendantName?.trim() ||
 		(schedule.attendantId
 			? `Responsavel ${schedule.attendantId.slice(0, 8)}`
 			: "Responsavel");
-	const schedulerById = schedule.createdById
-		? users.find((user) => user.id === String(schedule.createdById))
+	const schedulerById = schedulerId
+		? users.find((user) => user.id === String(schedulerId))
 		: undefined;
 	const numericId = toEventNumericId(schedule.id);
 
@@ -212,20 +295,24 @@ function mapScheduleToEvent(schedule: ScheduleApiItem, users: IUser[]): IEvent {
 		customerPhone: schedule.customerPhone ?? undefined,
 		attendantId: schedule.attendantId,
 		scheduledBy:
-			schedule.createdById ||
-			schedule.createdByName ||
-			schedule.createdByMail ||
-			typeof schedule.createdByPermissionLevel === "number"
+			schedulerId ||
+			schedulerNameFromApi ||
+			schedulerMailFromApi ||
+			typeof schedulerPermissionFromApi === "number" ||
+			cachedScheduler
 				? {
-						id: schedule.createdById,
+						id: schedulerId ?? cachedScheduler?.id,
 						name:
-							schedule.createdByName ||
+							schedulerNameFromApi ||
+							cachedScheduler?.name ||
 							schedulerById?.name ||
-							(schedule.createdById
-								? `Usuario ${schedule.createdById.slice(0, 8)}`
+							(schedulerId
+								? `Usuario ${schedulerId.slice(0, 8)}`
 								: "Sistema"),
-						mail: schedule.createdByMail,
-						permissionLevel: schedule.createdByPermissionLevel,
+						mail: schedulerMailFromApi ?? cachedScheduler?.mail,
+						permissionLevel:
+							schedulerPermissionFromApi ??
+							cachedScheduler?.permissionLevel,
 					}
 				: undefined,
 		user:
@@ -341,6 +428,10 @@ export async function createEvent(event: Omit<IEvent, "id">): Promise<IEvent> {
 		createdByName: event.scheduledBy?.name,
 		createdByMail: event.scheduledBy?.mail,
 		createdByPermissionLevel: event.scheduledBy?.permissionLevel,
+		scheduledById: event.scheduledBy?.id,
+		scheduledByName: event.scheduledBy?.name,
+		scheduledByMail: event.scheduledBy?.mail,
+		scheduledByPermissionLevel: event.scheduledBy?.permissionLevel,
 	};
 
 	const createdSchedule = await fetcher<ScheduleApiItem>(SCHEDULES_ENDPOINT, {
@@ -349,6 +440,8 @@ export async function createEvent(event: Omit<IEvent, "id">): Promise<IEvent> {
 	});
 
 	const mappedEvent = mapScheduleToEvent(createdSchedule, [event.user]);
+	setCachedSchedulerByEventId(createdSchedule.id, event.scheduledBy);
+
 	return {
 		...mappedEvent,
 		scheduledBy: mappedEvent.scheduledBy ?? event.scheduledBy,
@@ -360,4 +453,5 @@ export async function deleteEvent(eventId: number | string): Promise<void> {
 	await fetcher(`${SCHEDULES_ENDPOINT}/${eventId}`, {
 		method: "DELETE",
 	});
+	removeCachedSchedulerByEventId(eventId);
 }

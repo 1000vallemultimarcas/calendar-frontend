@@ -32,7 +32,7 @@ export function EventDetailsDialog({ event, children }: IProps) {
   const scheduledAt = event.createdAt ? parseISO(event.createdAt) : null;
   const { use24HourFormat, removeEvent } = useCalendar();
   const { user, canManageCalendar } = useAuth();
-  const schedulerName = event.scheduledBy?.name ?? "Nao informado";
+  const schedulerName = event.scheduledBy?.name ?? event.user?.name ?? "Sistema";
 
   const deleteEvent = (eventId: number) => {
     try {

@@ -87,7 +87,7 @@ export function EventListDialog({
 
                   <div className="rounded-lg border border-slate-200 dark:border-white/20 px-3 py-2 text-xs font-semibold text-black dark:text-orange-100">
                     <p>
-                      Agendado por: {event.scheduledBy?.name ?? "Nao informado"}
+                      Agendado por: {event.scheduledBy?.name ?? event.user?.name ?? "Sistema"}
                     </p>
                     <p>
                       Criado em:{" "}
