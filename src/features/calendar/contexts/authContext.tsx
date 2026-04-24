@@ -93,8 +93,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 		const params = new URLSearchParams(window.location.search);
 		const tokenFromQuery = params.get("token");
 		const storedToken = localStorage.getItem("token");
-		const fallbackToken = process.env.NEXT_PUBLIC_TEST_MANAGER_TOKEN;
-		const tokenToUse = tokenFromQuery || storedToken || fallbackToken;
+		const tokenToUse = tokenFromQuery || storedToken;
 
 		if (!tokenToUse) {
 			setIsAuthReady(true);
@@ -112,8 +111,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 				const nextQuery = nextParams.toString();
 				const nextUrl = `${window.location.pathname}${nextQuery ? `?${nextQuery}` : ""}`;
 				window.history.replaceState(null, "", nextUrl);
-			} else if (!storedToken && fallbackToken) {
-				localStorage.setItem("token", fallbackToken);
 			}
 
 			setToken(tokenToUse);

@@ -8,8 +8,6 @@ const API_PREFIX =
 	process.env.BACKEND_API_PREFIX ||
 	"";
 
-const TEST_TOKEN = process.env.NEXT_PUBLIC_TEST_MANAGER_TOKEN;
-
 export class ApiError extends Error {
 	status: number;
 	statusText: string;
@@ -34,7 +32,7 @@ function getClientAuthToken() {
 		return null;
 	}
 
-	return window.localStorage.getItem("token") || TEST_TOKEN;
+	return window.localStorage.getItem("token");
 }
 
 export async function fetcher<T>(path: string, init?: RequestInit): Promise<T> {
