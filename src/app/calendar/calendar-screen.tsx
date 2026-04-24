@@ -3,6 +3,7 @@ import { Calendar } from "@/features/calendar/calendar";
 import { CalendarProvider } from "@/features/calendar/contexts/calendar-context";
 import { DndProvider } from "@/features/calendar/contexts/dnd-context";
 import { CalendarSkeleton } from "@/features/calendar/skeletons/calendar-skeleton";
+import { ExternalEventLinkDialog } from "./external-event-link-dialog";
 import { HeroBannerActions } from "./hero-banner-actions";
 import { HeroReportsButton } from "./hero-reports-button";
 
@@ -47,6 +48,7 @@ export function CalendarScreen({ badgeLabel }: CalendarScreenProps) {
               </div>
             </div>
             <Suspense fallback={<CalendarSkeleton />}>
+              <ExternalEventLinkDialog />
               <Calendar />
             </Suspense>
           </div>

@@ -8,6 +8,9 @@ export interface AddEditEventDialogProps {
   startDate?: Date;
   startTime?: { hour: number; minute: number };
   event?: IEvent;
+  prefillValues?: Partial<TEventFormData>;
+  autoOpen?: boolean;
+  autoOpenKey?: string;
 }
 
 export interface EventDialogFormSectionsProps {

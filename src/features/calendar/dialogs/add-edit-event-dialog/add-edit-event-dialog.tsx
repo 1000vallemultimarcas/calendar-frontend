@@ -22,6 +22,9 @@ export function AddEditEventDialog({
   event,
   startDate,
   startTime,
+  prefillValues,
+  autoOpen,
+  autoOpenKey,
 }: AddEditEventDialogProps) {
   const {
     form,
@@ -36,6 +39,9 @@ export function AddEditEventDialog({
     event,
     startDate,
     startTime,
+    prefillValues,
+    autoOpen,
+    autoOpenKey,
   });
 
   return (

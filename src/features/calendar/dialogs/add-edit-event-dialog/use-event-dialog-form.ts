@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -21,7 +21,13 @@ export function useEventDialogForm({
   event,
   startDate,
   startTime,
-}: Pick<AddEditEventDialogProps, "event" | "startDate" | "startTime">) {
+  prefillValues,
+  autoOpen,
+  autoOpenKey,
+}: Pick<
+  AddEditEventDialogProps,
+  "event" | "startDate" | "startTime" | "prefillValues" | "autoOpen" | "autoOpenKey"
+>) {
   const { addEvent, updateEvent, users } = useCalendar();
   const { user, isManager, canManageCalendar } = useAuth();
   const { isOpen, onClose, onOpen, onToggle, setIsOpen } = useDisclosure();
@@ -47,24 +53,46 @@ export function useEventDialogForm({
       : getDefaultUserId(users, event)
     : getDefaultUserId(users, event);
 
-  const form = useForm<TEventFormData>({
-    resolver: zodResolver(eventSchema),
-    defaultValues: getDefaultFormValues({
+  const mergedDefaultValues = useMemo(() => {
+    const baseValues = getDefaultFormValues({
       event,
       initialDates,
       defaultUserId,
-    }),
+    });
+
+    if (isEditing || !prefillValues) {
+      return baseValues;
+    }
+
+    return {
+      ...baseValues,
+      ...prefillValues,
+    };
+  }, [defaultUserId, event, initialDates, isEditing, prefillValues]);
+
+  const form = useForm<TEventFormData>({
+    resolver: zodResolver(eventSchema),
+    defaultValues: mergedDefaultValues,
   });
 
   useEffect(() => {
-    form.reset(
-      getDefaultFormValues({
-        event,
-        initialDates,
-        defaultUserId,
-      }),
-    );
-  }, [event, form, initialDates, defaultUserId]);
+    form.reset(mergedDefaultValues);
+  }, [form, mergedDefaultValues]);
+
+  const lastAutoOpenKeyRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (!autoOpen || isEditing) {
+      return;
+    }
+
+    const key = autoOpenKey ?? "__default__";
+    if (lastAutoOpenKeyRef.current === key) {
+      return;
+    }
+
+    setIsOpen(true);
+    lastAutoOpenKeyRef.current = key;
+  }, [autoOpen, autoOpenKey, isEditing, setIsOpen]);
 
   const onSubmit = async (values: TEventFormData) => {
     try {

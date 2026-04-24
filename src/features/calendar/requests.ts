@@ -60,6 +60,8 @@ const CUSTOMERS_ENDPOINT =
   process.env.NEXT_PUBLIC_CUSTOMERS_ENDPOINT ?? "/customers";
 const SCHEDULES_ENDPOINT =
   process.env.NEXT_PUBLIC_SCHEDULES_ENDPOINT ?? "/schedules";
+const RETROACTIVE_GRACE_WINDOW_MS = 60 * 1000;
+const MIN_START_OFFSET_MS = 30 * 1000;
 
 function normalizeUsersResponse(payload: UsersApiResponse): IUser[] {
   const items = Array.isArray(payload) ? payload : payload.users;
@@ -308,10 +310,36 @@ export async function createEvent(event: Omit<IEvent, "id">): Promise<IEvent> {
     throw new Error("Informe o telefone do cliente.");
   }
 
+  const parsedStartDate = new Date(event.startDate);
+  const parsedEndDate = new Date(event.endDate);
+
+  if (
+    Number.isNaN(parsedStartDate.getTime()) ||
+    Number.isNaN(parsedEndDate.getTime())
+  ) {
+    throw new Error("Data/hora invalida para o agendamento.");
+  }
+
+  const durationMs = Math.max(
+    parsedEndDate.getTime() - parsedStartDate.getTime(),
+    30 * 60 * 1000,
+  );
+  const now = new Date();
+  const isBarelyRetroactive =
+    parsedStartDate.getTime() <= now.getTime() &&
+    now.getTime() - parsedStartDate.getTime() <= RETROACTIVE_GRACE_WINDOW_MS;
+
+  const normalizedStartDate = isBarelyRetroactive
+    ? new Date(now.getTime() + MIN_START_OFFSET_MS)
+    : parsedStartDate;
+  const normalizedEndDate = isBarelyRetroactive
+    ? new Date(normalizedStartDate.getTime() + durationMs)
+    : parsedEndDate;
+
   const payload = {
     title: event.title,
-    startDate: new Date(event.startDate).toISOString(),
-    endDate: new Date(event.endDate).toISOString(),
+    startDate: normalizedStartDate.toISOString(),
+    endDate: normalizedEndDate.toISOString(),
     description: event.description,
     customerPhone,
     attendantId: event.attendantId ?? event.user.id,
