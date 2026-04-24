@@ -42,7 +42,8 @@ export function DeletedEventsDialog() {
 
   const purge = async (eventId: number) => {
     try {
-      await deleteEventRequest(eventId);
+      const event = deletedEvents.find((item) => item.id === eventId);
+      await deleteEventRequest(event?.backendId ?? eventId);
       purgeEvent(eventId);
       toast.success("Evento removido permanentemente.");
     } catch {
@@ -73,7 +74,7 @@ export function DeletedEventsDialog() {
 
     try {
       const purgeResults = await Promise.allSettled(
-        deletedEvents.map((event) => deleteEventRequest(event.id)),
+        deletedEvents.map((event) => deleteEventRequest(event.backendId ?? event.id)),
       );
 
       let successCount = 0;

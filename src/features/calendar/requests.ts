@@ -194,6 +194,7 @@ function mapScheduleToEvent(schedule: ScheduleApiItem, users: IUser[]): IEvent {
 
 	return {
 		id: numericId,
+		backendId: String(schedule.id),
 		title: schedule.title,
 		description: schedule.description,
 		startDate: schedule.startDate,
@@ -207,14 +208,22 @@ function mapScheduleToEvent(schedule: ScheduleApiItem, users: IUser[]): IEvent {
 		customerId: schedule.customerId,
 		customerPhone: schedule.customerPhone ?? undefined,
 		attendantId: schedule.attendantId,
-		scheduledBy: schedule.createdByName
-			? {
-					id: schedule.createdById,
-					name: schedule.createdByName,
-					mail: schedule.createdByMail,
-					permissionLevel: schedule.createdByPermissionLevel,
-				}
-			: undefined,
+		scheduledBy:
+			schedule.createdById ||
+			schedule.createdByName ||
+			schedule.createdByMail ||
+			typeof schedule.createdByPermissionLevel === "number"
+				? {
+						id: schedule.createdById,
+						name:
+							schedule.createdByName ||
+							(schedule.createdById
+								? `Usuario ${schedule.createdById.slice(0, 8)}`
+								: "Sistema"),
+						mail: schedule.createdByMail,
+						permissionLevel: schedule.createdByPermissionLevel,
+					}
+				: undefined,
 		user:
 			users.find((user) => user.id === schedule.attendantId) ??
 			withUserColor({
@@ -325,6 +334,9 @@ export async function createEvent(event: Omit<IEvent, "id">): Promise<IEvent> {
 		status: mapEventStatusToApi(event.status),
 		type: mapEventTypeToApi(event.type),
 		createdById: event.scheduledBy?.id,
+		createdByName: event.scheduledBy?.name,
+		createdByMail: event.scheduledBy?.mail,
+		createdByPermissionLevel: event.scheduledBy?.permissionLevel,
 	};
 
 	const createdSchedule = await fetcher<ScheduleApiItem>(SCHEDULES_ENDPOINT, {
@@ -340,7 +352,7 @@ export async function createEvent(event: Omit<IEvent, "id">): Promise<IEvent> {
 	};
 }
 
-export async function deleteEvent(eventId: number): Promise<void> {
+export async function deleteEvent(eventId: number | string): Promise<void> {
 	await fetcher(`${SCHEDULES_ENDPOINT}/${eventId}`, {
 		method: "DELETE",
 	});

@@ -110,7 +110,7 @@ export function useEventDialogForm({
 				toast.error(
 					"Data e hora inicial nao podem ser retroativas ao momento atual",
 				);
-				return;
+				return false;
 			}
 
 			if (values.endDate.getTime() <= values.startDate.getTime()) {
@@ -119,12 +119,12 @@ export function useEventDialogForm({
 					message: "Data final deve ser maior que a data inicial",
 				});
 				toast.error("Data final deve ser maior que a data inicial");
-				return;
+				return false;
 			}
 
 			if (!canManageCalendar) {
 				toast.error("Perfil atendente possui acesso somente leitura.");
-				return;
+				return false;
 			}
 
 			if (
@@ -134,7 +134,7 @@ export function useEventDialogForm({
 				toast.error(
 					"Somente perfis com permissao de gestao podem editar eventos.",
 				);
-				return;
+				return false;
 			}
 
 			const formattedEvent = buildFormattedEvent({
@@ -172,11 +172,11 @@ export function useEventDialogForm({
 					toast.error(
 						"Somente perfis com permissao de gestao podem criar eventos.",
 					);
-					return;
+					return false;
 				}
 
 				if (submitLockRef.current) {
-					return;
+					return false;
 				}
 
 				submitLockRef.current = true;
@@ -201,6 +201,7 @@ export function useEventDialogForm({
 					window.location.reload();
 				}, 5000);
 			}
+			return true;
 		} catch (error) {
 			console.error(
 				`Erro ao ${isEditing ? "editar" : "criar"} agendamento:`,
@@ -214,6 +215,7 @@ export function useEventDialogForm({
 					? `${fallbackMessage}: ${error.message}`
 					: fallbackMessage;
 			toast.error(errorMessage);
+			return false;
 		}
 	};
 

@@ -11,6 +11,7 @@ import {
 	ModalTrigger,
 } from "@/components/ui/responsive-modal";
 import { EVENT_FORM_TEXTS_PT_BR } from "@/features/calendar/constants/event-form.constants";
+import type { TEventFormData } from "@/features/calendar/schemas";
 import type { AddEditEventDialogProps } from "./event-dialog.types";
 import { EventBasicFields } from "./sections/event-basic-fields";
 import { EventMetaFields } from "./sections/event-meta-fields";
@@ -45,6 +46,12 @@ export function AddEditEventDialog({
 	const isDialogOpen = controlledOpen ?? isOpen;
 	const handleOpenChange = onOpenChange ?? setIsOpen;
 	const isSubmitting = form.formState.isSubmitting;
+	const handleFormSubmit = async (values: TEventFormData) => {
+		const didSucceed = await onSubmit(values);
+		if (didSucceed) {
+			handleOpenChange(false);
+		}
+	};
 
 	return (
 		<Modal open={isDialogOpen} onOpenChange={handleOpenChange}>
@@ -67,7 +74,7 @@ export function AddEditEventDialog({
 				<Form {...form}>
 					<form
 						id="event-form"
-						onSubmit={form.handleSubmit(onSubmit)}
+						onSubmit={form.handleSubmit(handleFormSubmit)}
 						className="grid gap-6 py-4"
 					>
 						<EventBasicFields form={form} />

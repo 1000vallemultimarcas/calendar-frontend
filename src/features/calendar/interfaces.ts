@@ -22,6 +22,7 @@ export interface IEventSchedulerProfile {
 
 export interface IEvent {
 	id: number;
+	backendId?: string;
 	startDate: string;
 	endDate: string;
 	createdAt?: string;
