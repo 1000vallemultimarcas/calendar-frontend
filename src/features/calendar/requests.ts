@@ -190,6 +190,9 @@ function mapScheduleToEvent(schedule: ScheduleApiItem, users: IUser[]): IEvent {
 		(schedule.attendantId
 			? `Responsavel ${schedule.attendantId.slice(0, 8)}`
 			: "Responsavel");
+	const schedulerById = schedule.createdById
+		? users.find((user) => user.id === String(schedule.createdById))
+		: undefined;
 	const numericId = toEventNumericId(schedule.id);
 
 	return {
@@ -217,6 +220,7 @@ function mapScheduleToEvent(schedule: ScheduleApiItem, users: IUser[]): IEvent {
 						id: schedule.createdById,
 						name:
 							schedule.createdByName ||
+							schedulerById?.name ||
 							(schedule.createdById
 								? `Usuario ${schedule.createdById.slice(0, 8)}`
 								: "Sistema"),
