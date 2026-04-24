@@ -95,6 +95,8 @@ export function useEventDialogForm({
 	}, [defaultUserId, event, form, initialDates, isEditing, prefill]);
 
 	const onSubmit = async (values: TEventFormData) => {
+		let shouldReloadAfterCreate = false;
+
 		try {
 			const now = new Date();
 			now.setSeconds(0, 0);
@@ -181,10 +183,11 @@ export function useEventDialogForm({
 				try {
 					const createdEvent = await createEventRequest(formattedEvent);
 					addEvent(createdEvent);
-					toast.success(EVENT_FORM_TEXTS_PT_BR.createSuccess);
-					if (typeof window !== "undefined") {
-						window.location.reload();
-					}
+					toast.success(EVENT_FORM_TEXTS_PT_BR.createSuccess, {
+						description: "A pagina sera atualizada em 5 segundos.",
+						duration: 5000,
+					});
+					shouldReloadAfterCreate = true;
 				} finally {
 					submitLockRef.current = false;
 				}
@@ -192,6 +195,12 @@ export function useEventDialogForm({
 
 			onClose();
 			form.reset();
+
+			if (shouldReloadAfterCreate && typeof window !== "undefined") {
+				window.setTimeout(() => {
+					window.location.reload();
+				}, 5000);
+			}
 		} catch (error) {
 			console.error(
 				`Erro ao ${isEditing ? "editar" : "criar"} agendamento:`,
