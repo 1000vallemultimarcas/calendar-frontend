@@ -60,7 +60,14 @@ const CUSTOMERS_ENDPOINT =
   process.env.NEXT_PUBLIC_CUSTOMERS_ENDPOINT ?? "/customers";
 const SCHEDULES_ENDPOINT =
   process.env.NEXT_PUBLIC_SCHEDULES_ENDPOINT ?? "/schedules";
-const RETROACTIVE_GRACE_WINDOW_MS = 60 * 1000;
+const retroactiveGraceSeconds = Number.parseInt(
+  process.env.NEXT_PUBLIC_RETROACTIVE_GRACE_SECONDS ?? "60",
+  10,
+);
+const RETROACTIVE_GRACE_WINDOW_MS =
+  Number.isFinite(retroactiveGraceSeconds) && retroactiveGraceSeconds >= 0
+    ? retroactiveGraceSeconds * 1000
+    : 60 * 1000;
 const MIN_START_OFFSET_MS = 30 * 1000;
 
 function normalizeUsersResponse(payload: UsersApiResponse): IUser[] {
@@ -249,15 +256,15 @@ function mapEventTypeToApi(type: TEventType): string {
 function mapEventStatusToApi(status: TEventStatus): string {
   switch (status) {
     case "not_contacted":
-      return "NOT_CONTACTED";
+      return "NOT_ATTENDED";
     case "in_negotiation":
-      return "IN_NEGOTIATION";
+      return "RESCHEDULED";
     case "not_read":
-      return "NOT_READ";
+      return "SCHEDULED";
     case "finished_sold":
-      return "FINISHED_SOLD";
+      return "ATTENDED";
     case "finished_not_sold":
-      return "FINISHED_NOT_SOLD";
+      return "CANCELLED";
     case "scheduled":
     default:
       return "SCHEDULED";
@@ -325,14 +332,13 @@ export async function createEvent(event: Omit<IEvent, "id">): Promise<IEvent> {
     30 * 60 * 1000,
   );
   const now = new Date();
-  const isBarelyRetroactive =
-    parsedStartDate.getTime() <= now.getTime() &&
-    now.getTime() - parsedStartDate.getTime() <= RETROACTIVE_GRACE_WINDOW_MS;
+  const shouldClampToFuture =
+    parsedStartDate.getTime() - now.getTime() <= RETROACTIVE_GRACE_WINDOW_MS;
 
-  const normalizedStartDate = isBarelyRetroactive
+  const normalizedStartDate = shouldClampToFuture
     ? new Date(now.getTime() + MIN_START_OFFSET_MS)
     : parsedStartDate;
-  const normalizedEndDate = isBarelyRetroactive
+  const normalizedEndDate = shouldClampToFuture
     ? new Date(normalizedStartDate.getTime() + durationMs)
     : parsedEndDate;
 

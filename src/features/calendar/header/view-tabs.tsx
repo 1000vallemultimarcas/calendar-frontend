@@ -1,4 +1,5 @@
 import { motion, AnimatePresence } from "motion/react";
+import { memo, useEffect, useState } from "react";
 
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
@@ -12,7 +13,6 @@ import {
   Grid2X2,
 } from "lucide-react";
 import { TCalendarView } from "../types";
-import { memo } from "react";
 
 const tabs = [
   {
@@ -44,6 +44,13 @@ const tabs = [
 
 function Views() {
   const { view, setView } = useCalendar();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) return null;
 
   return (
     <Tabs

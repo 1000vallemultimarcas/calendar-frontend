@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useMemo } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { format, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import jsPDF from "jspdf";
@@ -39,6 +39,12 @@ const COLOR_LABELS_PT_BR: Record<TEventColor, string> = {
 };
 
 export function HeroReportsButton() {
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   const {
     events,
     users,
@@ -310,6 +316,8 @@ export function HeroReportsButton() {
     doc.save(`relatorio-calendario-${generatedAtFile}.pdf`);
   }, [filterGroups, generatedAt, meetingsPerDay, pieData, reportSummary]);
 
+  if (!mounted) return null;
+
   return (
     <Modal>
       <ModalTrigger asChild>
@@ -489,3 +497,4 @@ export function HeroReportsButton() {
     </Modal>
   );
 }
+
